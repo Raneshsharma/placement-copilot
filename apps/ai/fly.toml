@@ -1,0 +1,39 @@
+app = "placement-copilot-ai"
+primary_region = "nrt"
+
+[build]
+
+[env]
+  PORT = "8000"
+  NODE_ENV = "production"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[vm]]
+  memory = "256mb"
+  cpu_kind = "shared"
+  count = 1
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 8000
+  auto_start = true
+  auto_stop_machines = true
+
+  [[services.ports]]
+    handlers = ["http"]
+    port = 80
+
+  [[services.ports]]
+    handlers = ["tls"]
+    port = 443
+
+  [[services.tcp_checks]]
+    interval = "10s"
+    timeout = "2s"
+    grace_period = "5s"
