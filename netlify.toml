@@ -1,0 +1,12 @@
+[build]
+  command = "npm install && npm run build"
+  publish = "apps/web/.next"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[context.production.environment]
+  NEXT_PUBLIC_API_URL = "https://placement-copilot-api.flycast"
