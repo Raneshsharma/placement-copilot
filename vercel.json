@@ -1,0 +1,16 @@
+{
+  "projects": [
+    {
+      "path": "apps/web",
+      "settings": {
+        "buildCommand": "cd apps/web && npm install && npm run build",
+        "installCommand": "cd apps/web && npm install",
+        "outputDirectory": "apps/web/.next",
+        "framework": null,
+        "env": {
+          "NEXT_PUBLIC_API_URL": "https://placement-copilot-api.flycast"
+        }
+      }
+    }
+  ]
+}

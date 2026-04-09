@@ -2,6 +2,7 @@
   "name": "placement-copilot",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "npm@10.0.0",
   "workspaces": ["apps/*", "packages/*"],
   "scripts": {
     "dev": "turbo dev",
