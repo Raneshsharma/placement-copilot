@@ -1,0 +1,38 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+
+jobs:
+  deploy:
+    name: Deploy to ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - target: Railway
+            url: ${{ secrets.RAILWAY_TOKEN }}
+          - target: Render
+            url: ${{ secrets.RENDER_API_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy via Railway
+        if: matrix.target == 'Railway'
+        run: |
+          curl -X POST https://backboard.railway.app/box/import \
+            -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+            -d '{"repo": "${{ github.repository }}", "branch": "main"}'
+        continue-on-error: true
+
+      - name: Notify deployment
+        if: always()
+        run: |
+          echo "Deployment to ${{ matrix.target }}: ${{ job.status }}"

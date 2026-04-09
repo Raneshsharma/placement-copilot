@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 60 9% 98%;
+    --foreground: 240 10% 14%;
+    --primary: 182 100% 25%;
+    --primary-light: 178 50% 93%;
+    --accent: 16 100% 55%;
+    --accent-light: 20 100% 94%;
+    --secondary: 254 30% 54%;
+    --secondary-light: 252 50% 95%;
+    --surface: 0 0% 100%;
+    --text-secondary: 240 4% 37%;
+    --text-tertiary: 240 4% 61%;
+    --border: 40 7% 91%;
+    --success: 142 71% 45%;
+    --warning: 38 92% 50%;
+    --error: 0 84% 60%;
+  }
+}
+
+body {
+  background-color: #FAFAF8;
+  color: #1A1A2E;
+}
+
+@layer utilities {
+  .animate-shimmer {
+    background: linear-gradient(90deg, #E8E8E6 0%, #F4F4F2 50%, #E8E8E6 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+}

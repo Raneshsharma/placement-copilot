@@ -17,7 +17,7 @@ Placement Copilot AI is a production-ready, full-stack monorepo platform that gu
 │  │    Web App    │   │   API Server │   │   AI Service │    │
 │  │   (Next.js)   │◄──│   (NestJS)   │◄──│   (FastAPI)  │    │
 │  │  localhost:   │   │  localhost:  │   │  localhost:  │    │
-│  │    3000       │   │    3001      │   │    3002      │    │
+│  │    3000       │   │    4000      │   │    8000      │    │
 │  └──────────────┘   └──────┬───────┘   └──────┬───────┘    │
 │                            │                  │              │
 │                     ┌──────▼──────────────────▼───────┐     │
@@ -66,17 +66,45 @@ Placement Copilot AI is a production-ready, full-stack monorepo platform that gu
 git clone https://github.com/your-org/placement-copilot.git
 cd placement-copilot
 
-# 2. Start infrastructure services
+# 2. Copy environment variables
+cp .env.example .env
+# Edit .env and fill in required secrets:
+#   - ANTHROPIC_API_KEY (required for AI)
+#   - JWT_SECRET (change this in production)
+#   - DATABASE_URL (defaults to local Docker)
+
+# 3. Start infrastructure (PostgreSQL, Redis, Elasticsearch, Weaviate)
 docker compose up -d
 
-# 3. Install dependencies
+# 4. Install dependencies
 npm install
 
-# 4. Start all apps in development mode
+# 5. Generate Prisma client and run migrations
+npm run prisma:generate --workspace=@placementcopilot/api
+npm run prisma:migrate --workspace=@placementcopilot/api
+npm run prisma:seed --workspace=@placementcopilot/api
+
+# 6. Start all apps in development mode
 npm run dev
 ```
 
-The web app will be available at `http://localhost:3000`.
+| Service | URL |
+|---|---|
+| **Web App** | http://localhost:3000 |
+| **API Server** | http://localhost:4000 |
+| **AI Service** | http://localhost:8000 |
+| **Swagger API Docs** | http://localhost:4000/api |
+| **AI Health Check** | http://localhost:8000/health |
+
+### Production with Docker
+
+```bash
+# Build and run all services
+docker compose up -d --build
+
+# View logs
+docker compose logs -f
+```
 
 ---
 

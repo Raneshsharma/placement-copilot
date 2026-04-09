@@ -4,6 +4,7 @@ const nextConfig = {
   images: {
     domains: ["localhost", "images.unsplash.com", "picsum.photos"],
   },
+  output: "standalone",
 };
 
 module.exports = nextConfig;
