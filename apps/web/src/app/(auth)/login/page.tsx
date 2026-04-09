@@ -53,8 +53,8 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-10 h-10 rounded-[6px] bg-primary flex items-center justify-center shadow-glow">
+              <svg className="w-6 h-6 text-[#3c2f00]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
               </svg>
             </div>
@@ -64,9 +64,9 @@ export default function LoginPage() {
           <p className="text-text-secondary mt-2">Sign in to continue your placement journey</p>
         </div>
 
-        <div className="bg-surface rounded-lg border border-border p-8 shadow-sm">
+        <div className="bg-surface rounded-[6px] border border-border p-8 shadow-card">
           {error && (
-            <div className="mb-4 p-3 rounded-[10px] bg-error/10 border border-error/20 text-error text-sm">
+            <div className="mb-4 p-3 rounded-[6px] bg-error/10 border border-error/20 text-error text-sm">
               {error}
             </div>
           )}
@@ -99,7 +99,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-secondary"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-primary transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -135,7 +135,7 @@ export default function LoginPage() {
 
           <p className="text-center text-sm text-text-secondary mt-6">
             Don&apos;t have an account?{" "}
-            <Link href="/register" className="font-medium text-primary hover:underline">
+            <Link href="/register" className="font-medium text-primary hover:text-primary/80 transition-colors">
               Sign up free
             </Link>
           </p>

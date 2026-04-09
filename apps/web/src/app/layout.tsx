@@ -1,23 +1,23 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, DM_Sans } from "next/font/google";
-import { Toaster } from "@/components/ui/sonner";
+import { Manrope, Noto_Serif } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 
-const plusJakartaSans = Plus_Jakarta_Sans({
+const manrope = Manrope({
   subsets: ["latin"],
-  variable: "--font-plus-jakarta",
+  variable: "--font-manrope",
   display: "swap",
 });
 
-const dmSans = DM_Sans({
+const notoSerif = Noto_Serif({
   subsets: ["latin"],
-  variable: "--font-dm-sans",
+  variable: "--font-noto-serif",
   display: "swap",
 });
 
 export const metadata: Metadata = {
   title: "Placement Copilot AI",
-  description: "Your AI-powered career placement assistant",
+  description: "AI-powered career placement platform for students and professionals",
 };
 
 export default function RootLayout({
@@ -26,10 +26,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={`${plusJakartaSans.variable} ${dmSans.variable} font-sans antialiased`}>
+    <html lang="en" className={`${manrope.variable} ${notoSerif.variable}`}>
+      <body>
         {children}
-        <Toaster richColors position="top-right" />
+        <Toaster />
       </body>
     </html>
   );

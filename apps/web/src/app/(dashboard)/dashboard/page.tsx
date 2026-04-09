@@ -16,10 +16,10 @@ const MOCK_DASHBOARD = {
   ppsScore: 78,
   ppsBreakdown: { profile: 80, skills: 65, resume: 85, interview: 72 },
   stats: [
-    { label: "Active Applications", value: 5, trend: "+2", icon: Briefcase, color: "#0D7377" },
-    { label: "Interviews Scheduled", value: 1, trend: "+1", icon: Calendar, color: "#7C6BB2" },
-    { label: "Match Score", value: "78%", trend: "+5%", icon: Target, color: "#22C55E" },
-    { label: "Skills Gap Closed", value: "3/10", trend: "+2", icon: TrendingUp, color: "#F59E0B" },
+    { label: "Active Applications", value: 5, trend: "+2", icon: Briefcase, color: "#f2ca50" },
+    { label: "Interviews Scheduled", value: 1, trend: "+1", icon: Calendar, color: "#f2cc00" },
+    { label: "Match Score", value: "78%", trend: "+5%", icon: Target, color: "#e9c349" },
+    { label: "Skills Gap Closed", value: "3/10", trend: "+2", icon: TrendingUp, color: "#c6c6c6" },
   ],
   activeApplications: [
     { id: "1", company: "Google", role: "Software Engineer", status: "INTERVIEW", logo: "G", appliedAt: "2026-04-05", match: 92 },
@@ -56,9 +56,9 @@ function PPSRing({ score }: { score: number }) {
   const strokeDashoffset = circumference - (score / 100) * circumference;
   return (
     <svg height={radius * 2} width={radius * 2} className="transform -rotate-90">
-      <circle stroke="#E8E8E6" fill="#fafafa" strokeWidth={stroke} r={normalizedRadius} cx={radius} cy={radius} />
+      <circle stroke="#353534" fill="transparent" strokeWidth={stroke} r={normalizedRadius} cx={radius} cy={radius} />
       <circle
-        stroke="#0D7377"
+        stroke="#f2ca50"
         fill="transparent"
         strokeWidth={stroke}
         strokeDasharray={circumference}
@@ -81,10 +81,10 @@ function WeeklyBarChart({ data }: { data: number[] }) {
       {data.map((val, i) => (
         <div key={i} className="flex-1 flex flex-col items-center gap-1">
           <div
-            className="w-full rounded-t-md transition-all"
+            className="w-full rounded-t-sm transition-all duration-300"
             style={{
               height: `${(val / max) * 48}px`,
-              backgroundColor: i === data.length - 1 ? "#0D7377" : "#0D737730",
+              backgroundColor: i === data.length - 1 ? "#f2ca50" : "#353534",
             }}
           />
           <span className="text-[10px] text-text-tertiary">{days[i]}</span>
@@ -107,9 +107,9 @@ export default function DashboardPage() {
   }, []);
 
   const statusColors: Record<string, string> = {
-    SUBMITTED: "yellow",
-    UNDER_REVIEW: "blue",
-    INTERVIEW: "default",
+    SUBMITTED: "gold",
+    UNDER_REVIEW: "secondary",
+    INTERVIEW: "accent",
     SCREENING: "warning",
   };
 
@@ -118,9 +118,9 @@ export default function DashboardPage() {
       <div className="p-6 lg:p-8 space-y-6">
         <Skeleton className="h-12 w-64" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
+          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-24 rounded-lg" />)}
         </div>
-        <Skeleton className="h-48 rounded-xl" />
+        <Skeleton className="h-48 rounded-lg" />
       </div>
     );
   }
@@ -136,8 +136,8 @@ export default function DashboardPage() {
             {getGreeting()}, {user?.firstName || "there"}
           </h1>
           <p className="text-text-secondary mt-1 flex items-center gap-2">
-            <Flame className="w-4 h-4 text-[#FF6B35]" />
-            <span className="font-medium">{data.streak}-day streak</span>
+            <Flame className="w-4 h-4 text-primary animate-pulse" />
+            <span className="font-medium text-text-primary">{data.streak}-day streak</span>
             <span className="text-text-tertiary">
               &bull; {data.weeklyApplications} applications this week
             </span>
@@ -153,14 +153,14 @@ export default function DashboardPage() {
       {/* Quick Actions */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: "Build Resume", href: "/resume", icon: Briefcase, color: "#0D7377", desc: "Optimize with AI" },
-          { label: "Mock Interview", href: "/interview", icon: Zap, color: "#7C6BB2", desc: "Practice now" },
-          { label: "Find Roles", href: "/roles", icon: Target, color: "#22C55E", desc: "Match & apply" },
-          { label: "Skill Gap", href: "/skills", icon: TrendingUp, color: "#FF6B35", desc: "Level up" },
+          { label: "Build Resume", href: "/resume", icon: Briefcase, color: "#f2ca50", desc: "Optimize with AI" },
+          { label: "Mock Interview", href: "/interview", icon: Zap, color: "#f2cc00", desc: "Practice now" },
+          { label: "Find Roles", href: "/roles", icon: Target, color: "#e9c349", desc: "Match & apply" },
+          { label: "Skill Gap", href: "/skills", icon: TrendingUp, color: "#c6c6c6", desc: "Level up" },
         ].map((action) => (
           <Link key={action.label} href={action.href}>
-            <Card className="p-4 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer group">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ backgroundColor: action.color + "15" }}>
+            <Card className="p-4 hover:shadow-glow hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group border-border">
+              <div className="w-10 h-10 rounded-[6px] flex items-center justify-center mb-3 shadow-glow-sm" style={{ backgroundColor: action.color + "20" }}>
                 <action.icon className="w-5 h-5" style={{ color: action.color }} />
               </div>
               <p className="font-semibold text-sm text-text-primary">{action.label}</p>
@@ -171,12 +171,12 @@ export default function DashboardPage() {
       </div>
 
       {/* PPS Card */}
-      <Card className="p-6">
+      <Card className="p-6 border-border shadow-card">
         <div className="flex items-center gap-8">
           <div className="relative flex items-center justify-center flex-shrink-0">
             <PPSRing score={data.ppsScore} />
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="font-display text-3xl font-bold text-text-primary">{data.ppsScore}</span>
+              <span className="font-display text-3xl font-bold text-primary">{data.ppsScore}</span>
               <span className="text-xs text-text-tertiary">PPS</span>
             </div>
           </div>
@@ -186,16 +186,16 @@ export default function DashboardPage() {
               {Object.entries(data.ppsBreakdown).map(([key, val]) => (
                 <div key={key} className="flex items-center gap-3">
                   <span className="text-sm text-text-secondary w-20 capitalize">{key}</span>
-                  <div className="flex-1 h-2 bg-[#E8E8E6] rounded-full overflow-hidden">
-                    <div className="h-full bg-[#0D7377] rounded-full transition-all" style={{ width: `${val}%` }} />
+                  <div className="flex-1 h-2 bg-surfaceContainer rounded-full overflow-hidden">
+                    <div className="h-full bg-primary rounded-full transition-all duration-500 ease-out" style={{ width: `${val}%` }} />
                   </div>
-                  <span className="text-sm font-medium text-text-primary w-10 text-right">{val}%</span>
+                  <span className="text-sm font-medium text-primary w-10 text-right">{val}%</span>
                 </div>
               ))}
             </div>
           </div>
         </div>
-        <Link href="/skills" className="inline-flex items-center gap-1 text-sm text-primary font-medium mt-4 hover:underline">
+        <Link href="/skills" className="inline-flex items-center gap-1 text-sm text-primary font-medium mt-4 hover:text-primary/80 transition-colors">
           Update your profile to improve <ChevronRight className="w-4 h-4" />
         </Link>
       </Card>
@@ -205,12 +205,12 @@ export default function DashboardPage() {
         {/* Stats */}
         <div className="md:col-span-2 grid grid-cols-2 gap-4">
           {data.stats.map((stat) => (
-            <Card key={stat.label} className="p-4">
+            <Card key={stat.label} className="p-4 border-border shadow-card hover:shadow-glow-sm transition-all duration-200">
               <div className="flex items-start justify-between mb-3">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: stat.color + "20" }}>
+                <div className="w-10 h-10 rounded-[6px] flex items-center justify-center" style={{ backgroundColor: stat.color + "20" }}>
                   <stat.icon className="w-5 h-5" style={{ color: stat.color }} />
                 </div>
-                <span className="text-xs font-medium text-[#22C55E]">{stat.trend}</span>
+                <span className="text-xs font-medium text-primary">{stat.trend}</span>
               </div>
               <div className="font-display text-2xl font-bold text-text-primary">{stat.value}</div>
               <p className="text-xs text-text-tertiary mt-1">{stat.label}</p>
@@ -219,19 +219,19 @@ export default function DashboardPage() {
         </div>
 
         {/* Milestones */}
-        <Card className="p-5">
+        <Card className="p-5 border-border shadow-card">
           <h3 className="font-semibold text-text-primary mb-4 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#FF6B35]" />
+            <Sparkles className="w-4 h-4 text-primary" />
             Journey Milestones
           </h3>
           <div className="space-y-3">
             {data.milestones.map((m) => (
               <div key={m.id} className="flex items-center gap-3">
-                <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${m.done ? "bg-[#22C55E]/15" : "bg-[#E8E8E6]"}`}>
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${m.done ? "bg-primary/15 shadow-glow-sm" : "bg-surfaceContainer"}`}>
                   {m.done ? (
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#22C55E]" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
                   ) : (
-                    <div className="w-2 h-2 rounded-full bg-[#C0C0BC]" />
+                    <div className="w-2 h-2 rounded-full bg-text-tertiary" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -245,18 +245,18 @@ export default function DashboardPage() {
       </div>
 
       {/* CTA Banner */}
-      <div className="bg-[#FF6B35] rounded-xl p-6 flex items-center justify-between flex-wrap gap-4">
+      <div className="bg-primary rounded-lg p-6 flex items-center justify-between flex-wrap gap-4 shadow-glow animate-pulse-glow">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-            <Calendar className="w-6 h-6 text-white" />
+          <div className="w-12 h-12 rounded-[6px] bg-[#3c2f00]/20 flex items-center justify-center">
+            <Calendar className="w-6 h-6 text-[#3c2f00]" />
           </div>
           <div>
-            <p className="font-semibold text-white text-lg">Interview with {data.upcomingInterview.company} in 2 days</p>
-            <p className="text-white/80 text-sm">{data.upcomingInterview.role} &bull; {data.upcomingInterview.date}</p>
+            <p className="font-semibold text-[#3c2f00] text-lg">Interview with {data.upcomingInterview.company} in 2 days</p>
+            <p className="text-[#3c2f00]/70 text-sm">{data.upcomingInterview.role} &bull; {data.upcomingInterview.date}</p>
           </div>
         </div>
         <Link href="/interview">
-          <Button variant="default" className="bg-white text-[#FF6B35] hover:bg-white/90">
+          <Button variant="secondary" className="text-text-primary">
             <Sparkles className="w-4 h-4 mr-2" />
             Start Practice
           </Button>
@@ -267,14 +267,14 @@ export default function DashboardPage() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-display text-lg font-bold text-text-primary">Active Applications</h2>
-          <Link href="/applications" className="text-sm text-primary font-medium hover:underline flex items-center gap-1">
+          <Link href="/applications" className="text-sm text-primary font-medium hover:text-primary/80 transition-colors flex items-center gap-1">
             View All <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
         <div className="space-y-3">
           {data.activeApplications.map((app) => (
-            <Card key={app.id} className="p-4 flex items-center gap-4">
-              <div className="w-10 h-10 rounded-lg bg-[#E8F6F6] flex items-center justify-center text-[#0D7377] font-bold text-sm flex-shrink-0">
+            <Card key={app.id} className="p-4 flex items-center gap-4 border-border shadow-card hover:shadow-glow-sm transition-all duration-200">
+              <div className="w-10 h-10 rounded-[6px] bg-primary/10 flex items-center justify-center text-primary font-bold text-sm flex-shrink-0 shadow-glow-sm">
                 {app.logo}
               </div>
               <div className="flex-1 min-w-0">
@@ -292,19 +292,19 @@ export default function DashboardPage() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-display text-lg font-bold text-text-primary">Role Recommendations</h2>
-          <Link href="/roles" className="text-sm text-primary font-medium hover:underline flex items-center gap-1">
+          <Link href="/roles" className="text-sm text-primary font-medium hover:text-primary/80 transition-colors flex items-center gap-1">
             See all <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {data.roleRecommendations.map((role) => (
             <Link key={role.id} href="/roles" className="group">
-              <Card className="p-4 hover:shadow-md transition-all cursor-pointer">
+              <Card className="p-4 hover:shadow-glow transition-all duration-200 cursor-pointer border-border">
                 <div className="flex items-start justify-between mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-[#E8F6F6] flex items-center justify-center text-[#0D7377] font-bold text-sm">
+                  <div className="w-10 h-10 rounded-[6px] bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shadow-glow-sm">
                     {role.logo}
                   </div>
-                  <Badge variant="success" className="text-xs">{role.match}% match</Badge>
+                  <Badge variant="gold" className="text-xs">{role.match}% match</Badge>
                 </div>
                 <p className="font-semibold text-text-primary">{role.role}</p>
                 <p className="text-sm text-text-secondary mb-2">{role.company}</p>
@@ -314,7 +314,7 @@ export default function DashboardPage() {
                 </div>
                 {role.salary && (
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1 text-xs text-[#22C55E] font-medium">
+                    <div className="flex items-center gap-1 text-xs text-primary font-medium">
                       <DollarSign className="w-3 h-3" />
                       {role.salary}
                     </div>

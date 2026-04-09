@@ -4,37 +4,113 @@
 
 @layer base {
   :root {
-    --background: 60 9% 98%;
-    --foreground: 240 10% 14%;
-    --primary: 182 100% 25%;
-    --primary-light: 178 50% 93%;
-    --accent: 16 100% 55%;
-    --accent-light: 20 100% 94%;
-    --secondary: 254 30% 54%;
-    --secondary-light: 252 50% 95%;
-    --surface: 0 0% 100%;
-    --text-secondary: 240 4% 37%;
-    --text-tertiary: 240 4% 61%;
-    --border: 40 7% 91%;
-    --success: 142 71% 45%;
-    --warning: 38 92% 50%;
-    --error: 0 84% 60%;
+    --font-manrope: "Manrope", sans-serif;
+    --font-noto-serif: "Noto Serif", serif;
+    color-scheme: dark;
   }
-}
 
-body {
-  background-color: #FAFAF8;
-  color: #1A1A2E;
+  html {
+    background-color: #131313;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    background-color: #131313;
+    color: #e5e2e1;
+    font-family: var(--font-manrope), sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background-color: rgba(242, 202, 80, 0.2);
+    color: #f2ca50;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0e0e0e;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #353534;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #4d4635;
+  }
 }
 
 @layer utilities {
-  .animate-shimmer {
-    background: linear-gradient(90deg, #E8E8E6 0%, #F4F4F2 50%, #E8E8E6 100%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
+  .text-gradient-gold {
+    background: linear-gradient(135deg, #f2ca50 0%, #d4af37 50%, #e9c349 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
-  @keyframes shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+
+  .bg-glass {
+    background: rgba(32, 31, 31, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
   }
+
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+  }
+
+  .animate-slide-in {
+    animation: slide-in 0.4s ease-out forwards;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .stagger-1 { animation-delay: 100ms; }
+  .stagger-2 { animation-delay: 200ms; }
+  .stagger-3 { animation-delay: 300ms; }
+  .stagger-4 { animation-delay: 400ms; }
+  .stagger-5 { animation-delay: 500ms; }
+  .stagger-6 { animation-delay: 600ms; }
+}
+
+@keyframes fade-in {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in {
+  0% { opacity: 0; transform: translateX(-8px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(242, 202, 80, 0.2); }
+  50% { box-shadow: 0 0 40px rgba(242, 202, 80, 0.4); }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, #201f1f 0%, #2a2a2a 50%, #201f1f 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }

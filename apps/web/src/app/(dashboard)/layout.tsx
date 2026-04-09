@@ -3,11 +3,14 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth-store";
+import { useUIStore } from "@/stores/ui-store";
 import { Sidebar } from "@/components/layout/sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
+import { cn } from "@/lib/utils";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const { sidebarCollapsed } = useUIStore();
   const router = useRouter();
 
   useEffect(() => {
@@ -32,7 +35,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Desktop Sidebar */}
       <Sidebar />
       {/* Main Content */}
-      <main className="flex-1 min-h-screen pb-20 lg:pb-0 lg:ml-60">
+      <main className={cn("flex-1 min-h-screen pb-20 lg:pb-0 lg:transition-all lg:duration-300", sidebarCollapsed ? "lg:ml-16" : "lg:ml-60")}>
         {children}
       </main>
       {/* Mobile Bottom Nav */}

@@ -42,18 +42,28 @@ export function Sidebar() {
       {/* Logo */}
       <div className="flex items-center justify-between p-4 border-b border-border">
         {!sidebarCollapsed && (
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-[6px] bg-primary flex items-center justify-center shadow-glow-sm">
+              <svg className="w-5 h-5 text-[#3c2f00]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
               </svg>
             </div>
             <span className="font-display font-bold text-text-primary">Copilot</span>
           </div>
         )}
+        {sidebarCollapsed && (
+          <div className="w-9 h-9 rounded-[6px] bg-primary flex items-center justify-center shadow-glow-sm mx-auto">
+            <svg className="w-5 h-5 text-[#3c2f00]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+          </div>
+        )}
         <button
           onClick={toggleSidebar}
-          className="p-1.5 rounded-md hover:bg-surfaceAlt text-text-tertiary hover:text-text-secondary"
+          className={cn(
+            "p-1.5 rounded-[6px] hover:bg-surfaceContainer text-text-tertiary hover:text-primary transition-colors",
+            sidebarCollapsed && "absolute -right-3 top-8 bg-surface border border-border shadow-sm"
+          )}
         >
           {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </button>
@@ -68,10 +78,10 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-sm font-medium transition-colors",
+                "flex items-center gap-3 px-3 py-2.5 rounded-[6px] text-sm font-medium transition-all duration-200",
                 isActive
-                  ? "bg-primary-light text-primary"
-                  : "text-text-secondary hover:bg-surfaceAlt hover:text-text-primary"
+                  ? "bg-primary/10 text-primary shadow-glow-sm"
+                  : "text-text-secondary hover:bg-surfaceContainer hover:text-text-primary"
               )}
               title={sidebarCollapsed ? item.label : undefined}
             >
@@ -85,7 +95,7 @@ export function Sidebar() {
       {/* User */}
       <div className="p-3 border-t border-border">
         <div className={cn("flex items-center gap-3", sidebarCollapsed && "justify-center")}>
-          <div className="w-9 h-9 rounded-full bg-primary-light flex items-center justify-center flex-shrink-0">
+          <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 shadow-glow-sm">
             <span className="text-sm font-semibold text-primary">
               {user?.firstName?.[0]}{user?.lastName?.[0]}
             </span>

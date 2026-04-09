@@ -25,9 +25,9 @@ export function ApplicationWidget({ applications }: ApplicationWidgetProps) {
         <Link
           key={app.id}
           href={`/applications`}
-          className="flex items-center gap-3 p-3 rounded-lg bg-surfaceAlt hover:bg-border/50 transition-colors"
+          className="flex items-center gap-3 p-3 rounded-lg bg-surfaceContainer hover:bg-surfaceContainer-high transition-colors"
         >
-          <div className="w-9 h-9 rounded-full bg-primary-light flex items-center justify-center text-xs font-semibold text-primary">
+          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary shadow-glow-sm">
             {app.companyLogo}
           </div>
           <div className="flex-1 min-w-0">
@@ -39,8 +39,8 @@ export function ApplicationWidget({ applications }: ApplicationWidgetProps) {
               app.status === "INTERVIEW"
                 ? "success"
                 : app.status === "UNDER_REVIEW"
-                ? "yellow"
-                : "gray"
+                ? "warning"
+                : "outline"
             }
           >
             {app.status.replace("_", " ")}
