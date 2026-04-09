@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { resumeApi } from "@/lib/api";
+import { toast } from "sonner";
 import {
   Sparkles,
   Download,
@@ -114,13 +117,102 @@ export default function ResumePage() {
   const [template, setTemplate] = useState("Modern");
   const [section, setSection] = useState("Summary");
   const [data, setData] = useState(mockResume);
+  const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [optimizing, setOptimizing] = useState(false);
+
+  useEffect(() => {
+    resumeApi.get()
+      .then((res) => {
+        const resumeData = res.data.data ?? res.data;
+        if (resumeData && Object.keys(resumeData).length > 0) {
+          setData(resumeData);
+        }
+      })
+      .catch(() => toast.error("Failed to load resume data."))
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleGenerate = async () => {
     setGenerating(true);
-    await new Promise((r) => setTimeout(r, 1500));
-    setGenerating(false);
+    try {
+      const res = await resumeApi.generateSummary({ prompt: "Generate a professional summary" });
+      const summary = res.data.data ?? res.data.summary;
+      if (summary) setData((p) => ({ ...p, summary }));
+      toast.success("AI summary generated!");
+    } catch {
+      toast.error("Failed to generate summary.");
+    } finally {
+      setGenerating(false);
+    }
   };
+
+  const handleOptimize = async () => {
+    setOptimizing(true);
+    try {
+      const res = await resumeApi.optimize(data);
+      const optimized = res.data.data ?? res.data;
+      if (optimized) setData(optimized);
+      toast.success("Resume optimized for ATS!");
+    } catch {
+      toast.error("Failed to optimize resume.");
+    } finally {
+      setOptimizing(false);
+    }
+  };
+
+  const handleDownloadPdf = async () => {
+    try {
+      const res = await resumeApi.downloadPdf();
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "resume.pdf");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("PDF downloaded!");
+    } catch {
+      toast.error("Failed to download PDF.");
+    }
+  };
+
+  const handleDownloadDocx = async () => {
+    try {
+      const res = await resumeApi.downloadDocx();
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "resume.docx");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("DOCX downloaded!");
+    } catch {
+      toast.error("Failed to download DOCX.");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6 max-w-7xl mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="w-48 h-8 rounded mb-2" />
+            <Skeleton className="w-64 h-4 rounded" />
+          </div>
+          <Skeleton className="w-32 h-9 rounded" />
+        </div>
+        <Skeleton className="w-full h-44 rounded-xl" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Skeleton className="h-96 rounded-xl" />
+          <Skeleton className="h-96 rounded-xl" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
@@ -130,8 +222,8 @@ export default function ResumePage() {
           <p className="text-sm text-[#5C5C6D]">Create ATS-optimized resumes tailored to each role</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm"><Download className="w-4 h-4 mr-2" />PDF</Button>
-          <Button variant="outline" size="sm"><FileText className="w-4 h-4 mr-2" />DOCX</Button>
+          <Button variant="outline" size="sm" onClick={handleDownloadPdf}><Download className="w-4 h-4 mr-2" />PDF</Button>
+          <Button variant="outline" size="sm" onClick={handleDownloadDocx}><FileText className="w-4 h-4 mr-2" />DOCX</Button>
         </div>
       </div>
 
@@ -241,8 +333,8 @@ export default function ResumePage() {
           <div className="sticky top-6">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-medium text-[#5C5C6D]">Live Preview</p>
-              <Button size="sm" variant="accent" onClick={handleGenerate}>
-                <Zap className="w-3 h-3 mr-1" /> Optimize for ATS
+              <Button size="sm" variant="accent" onClick={handleOptimize} disabled={optimizing}>
+                <Zap className="w-3 h-3 mr-1" /> {optimizing ? "Optimizing..." : "Optimize for ATS"}
               </Button>
             </div>
             <div className="transform scale-[0.7] origin-top-left" style={{ width: "142%", height: "143%" }}>

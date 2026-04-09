@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import { applicationApi } from "@/lib/api";
+import { toast } from "sonner";
 import {
   Plus,
   Calendar,
@@ -106,6 +109,27 @@ export default function ApplicationsPage() {
   const [activeColumn, setActiveColumn] = useState<string | null>(null);
   const [draggedApp, setDraggedApp] = useState<any>(null);
   const [data, setData] = useState(APPLICATION_DATA);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    applicationApi.list()
+      .then((res) => {
+        const apps = res.data.data ?? res.data ?? [];
+        const grouped: Record<string, any[]> = {};
+        COLUMNS.forEach((col) => { grouped[col.id] = []; });
+        apps.forEach((app: any) => {
+          const status = app.status?.toLowerCase() ?? "applied";
+          if (grouped[status]) {
+            grouped[status].push(app);
+          } else {
+            grouped.applied.push(app);
+          }
+        });
+        if (apps.length > 0) setData(grouped);
+      })
+      .catch(() => toast.error("Failed to load applications."))
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleDragStart = (colId: string, app: any) => {
     setDraggedApp({ colId, app });
@@ -118,10 +142,15 @@ export default function ApplicationsPage() {
       setActiveColumn(null);
       return;
     }
+    const appId = draggedApp.app.id;
+    const targetStatus = targetColId;
+    applicationApi.updateStatus(appId, targetStatus).catch(() => {
+      toast.error("Failed to update status. Changes may not persist.");
+    });
     setData((prev) => {
       const newData = { ...prev };
       newData[draggedApp.colId] = prev[draggedApp.colId].filter((a: any) => a.id !== draggedApp.app.id);
-      newData[targetColId] = [...prev[targetColId], { ...draggedApp.app }];
+      newData[targetColId] = [...prev[targetColId], { ...draggedApp.app, status: targetStatus }];
       return newData;
     });
     setDraggedApp(null);
@@ -188,17 +217,26 @@ export default function ApplicationsPage() {
 
       {/* Kanban Board */}
       <div className="flex gap-3 overflow-x-auto pb-6">
-        {COLUMNS.map((col) => {
-          const apps = data[col.id] || [];
-          return (
-            <div
-              key={col.id}
-              className={`flex-shrink-0 w-72 rounded-xl p-3 transition-colors ${
-                activeColumn === col.id ? "ring-2 ring-[#0D7377]/30" : ""
-              }`}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={() => handleDrop(col.id)}
-            >
+        {loading ? (
+          Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="flex-shrink-0 w-72 rounded-xl p-3 space-y-2">
+              <Skeleton className="h-6 w-32 rounded" />
+              <Skeleton className="h-24 rounded-lg" />
+              <Skeleton className="h-24 rounded-lg" />
+            </div>
+          ))
+        ) : (
+          COLUMNS.map((col) => {
+            const apps = data[col.id] || [];
+            return (
+              <div
+                key={col.id}
+                className={`flex-shrink-0 w-72 rounded-xl p-3 transition-colors ${
+                  activeColumn === col.id ? "ring-2 ring-[#0D7377]/30" : ""
+                }`}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => handleDrop(col.id)}
+              >
               {/* Column header */}
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
@@ -228,7 +266,8 @@ export default function ApplicationsPage() {
               </div>
             </div>
           );
-        })}
+        })
+        )}
       </div>
     </div>
   );

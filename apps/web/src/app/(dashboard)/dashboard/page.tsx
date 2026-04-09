@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { Flame, TrendingUp, Target, Briefcase, MapPin, DollarSign, Calendar, ChevronRight, Sparkles, Zap, CheckCircle2, ArrowRight } from "lucide-react";
 import { progressApi } from "@/lib/api";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { MotionCard } from "@/components/ui/motion-card";
 import { useAuthStore } from "@/stores/auth-store";
 
 const MOCK_DASHBOARD = {
@@ -159,18 +161,23 @@ export default function DashboardPage() {
           { label: "Skill Gap", href: "/skills", icon: TrendingUp, color: "#c6c6c6", desc: "Level up" },
         ].map((action) => (
           <Link key={action.label} href={action.href}>
-            <Card className="p-4 hover:shadow-glow hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group border-border">
+            <MotionCard className="p-4 hover:shadow-glow cursor-pointer group border-border">
               <div className="w-10 h-10 rounded-[6px] flex items-center justify-center mb-3 shadow-glow-sm" style={{ backgroundColor: action.color + "20" }}>
                 <action.icon className="w-5 h-5" style={{ color: action.color }} />
               </div>
               <p className="font-semibold text-sm text-text-primary">{action.label}</p>
               <p className="text-xs text-text-tertiary mt-0.5">{action.desc}</p>
-            </Card>
+            </MotionCard>
           </Link>
         ))}
       </div>
 
       {/* PPS Card */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
+      >
       <Card className="p-6 border-border shadow-card">
         <div className="flex items-center gap-8">
           <div className="relative flex items-center justify-center flex-shrink-0">
@@ -199,13 +206,19 @@ export default function DashboardPage() {
           Update your profile to improve <ChevronRight className="w-4 h-4" />
         </Link>
       </Card>
+      </motion.div>
 
       {/* Two column: Stats + Milestones */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Stats */}
         <div className="md:col-span-2 grid grid-cols-2 gap-4">
           {data.stats.map((stat) => (
-            <Card key={stat.label} className="p-4 border-border shadow-card hover:shadow-glow-sm transition-all duration-200">
+            <motion.div
+              key={stat.label}
+              whileHover={{ scale: 1.03, y: -4 }}
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            >
+            <Card className="p-4 border-border shadow-card hover:shadow-glow-sm transition-all duration-200 h-full">
               <div className="flex items-start justify-between mb-3">
                 <div className="w-10 h-10 rounded-[6px] flex items-center justify-center" style={{ backgroundColor: stat.color + "20" }}>
                   <stat.icon className="w-5 h-5" style={{ color: stat.color }} />
@@ -215,6 +228,7 @@ export default function DashboardPage() {
               <div className="font-display text-2xl font-bold text-text-primary">{stat.value}</div>
               <p className="text-xs text-text-tertiary mt-1">{stat.label}</p>
             </Card>
+            </motion.div>
           ))}
         </div>
 
@@ -299,7 +313,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {data.roleRecommendations.map((role) => (
             <Link key={role.id} href="/roles" className="group">
-              <Card className="p-4 hover:shadow-glow transition-all duration-200 cursor-pointer border-border">
+              <MotionCard className="p-4 hover:shadow-glow transition-all duration-200 cursor-pointer border-border">
                 <div className="flex items-start justify-between mb-3">
                   <div className="w-10 h-10 rounded-[6px] bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shadow-glow-sm">
                     {role.logo}
@@ -321,7 +335,7 @@ export default function DashboardPage() {
                     <ArrowRight className="w-3.5 h-3.5 text-text-tertiary group-hover:text-primary transition-colors" />
                   </div>
                 )}
-              </Card>
+              </MotionCard>
             </Link>
           ))}
         </div>

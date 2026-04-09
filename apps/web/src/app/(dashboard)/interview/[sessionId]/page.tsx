@@ -6,6 +6,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { interviewApi } from "@/lib/api";
+import { toast } from "sonner";
 import {
   Mic,
   MicOff,
@@ -123,8 +125,29 @@ export default function InterviewSessionPage() {
   const [answer, setAnswer] = useState("");
   const [answers, setAnswers] = useState<{ q: string; a: string; score: number }[]>([]);
   const [reviewMode, setReviewMode] = useState(false);
+  const [questions, setQuestions] = useState<string[]>(QUESTIONS_BEHAVIORAL);
+  const [loading, setLoading] = useState(false);
 
-  const questions = QUESTIONS_BEHAVIORAL;
+  useEffect(() => {
+    if (!sessionId || sessionId === "new") return;
+    setLoading(true);
+    interviewApi.getSession(sessionId)
+      .then((res) => {
+        const data = res.data.data ?? res.data;
+        if (data?.questions && data.questions.length > 0) {
+          setQuestions(data.questions);
+        }
+        if (data?.type === "technical") {
+          setQuestions(QUESTIONS_TECHNICAL);
+        } else if (data?.type === "mixed") {
+          setQuestions(QUESTIONS_MIXED);
+        }
+      })
+      .catch(() => {
+        // Fallback to mock questions
+      })
+      .finally(() => setLoading(false));
+  }, [sessionId]);
 
   useEffect(() => {
     if (phase !== "question" && phase !== "answering") return;
@@ -153,16 +176,31 @@ export default function InterviewSessionPage() {
   };
 
   const handleSubmit = () => {
-    const score = Math.floor(60 + Math.random() * 35);
-    setAnswers((prev) => [...prev, { q: questions[currentQ], a: answer || "No answer provided", score }]);
-    setAnswer("");
-    if (currentQ < questions.length - 1) {
-      setCurrentQ((q) => q + 1);
-      setPhase("question");
-      setTimeLeft(questions[currentQ].length > 80 ? 180 : 120);
-    } else {
-      setReviewMode(true);
-    }
+    const questionId = `q${currentQ + 1}`;
+    const answerText = answer || "No answer provided";
+
+    interviewApi.submitAnswer(sessionId, questionId, answerText)
+      .then((res) => {
+        const score = res.data.data?.score ?? Math.floor(60 + Math.random() * 35);
+        setAnswers((prev) => [...prev, { q: questions[currentQ], a: answerText, score }]);
+      })
+      .catch(() => {
+        const score = Math.floor(60 + Math.random() * 35);
+        setAnswers((prev) => [...prev, { q: questions[currentQ], a: answerText, score }]);
+      })
+      .finally(() => {
+        setAnswer("");
+        if (currentQ < questions.length - 1) {
+          setCurrentQ((q) => q + 1);
+          setPhase("question");
+          setTimeLeft(questions[currentQ].length > 80 ? 180 : 120);
+        } else {
+          if (sessionId && sessionId !== "new") {
+            interviewApi.endSession(sessionId).catch(() => {});
+          }
+          setReviewMode(true);
+        }
+      });
   };
 
   if (reviewMode) {

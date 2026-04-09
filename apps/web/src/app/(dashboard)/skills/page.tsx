@@ -6,6 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import { skillGapApi } from "@/lib/api";
+import { toast } from "sonner";
 import {
   Radar,
   TrendingUp,
@@ -135,9 +138,26 @@ function SimpleRadarChart({ data }: { data: typeof RADAR_DATA }) {
 export default function SkillsPage() {
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
   const [tab, setTab] = useState("overview");
+  const [analyzing, setAnalyzing] = useState(false);
+  const [skills, setSkills] = useState(SKILL_DATA);
+  const [gaps, setGaps] = useState(GAPS);
+  const [radarData, setRadarData] = useState(RADAR_DATA);
 
-  const totalGap = GAPS.reduce((s, g) => s + g.gap, 0);
-  const priorityCount = GAPS.filter((g) => g.priority === "High").length;
+  const handleRunAnalysis = async () => {
+    setAnalyzing(true);
+    try {
+      const res = await skillGapApi.analyze("Software Engineer");
+      const data = res.data.data ?? res.data;
+      if (data?.skills) setSkills(data.skills);
+      if (data?.gaps) setGaps(data.gaps);
+      if (data?.radar) setRadarData(data.radar);
+      toast.success("AI analysis complete!");
+    } catch {
+      toast.error("Failed to run analysis.");
+    } finally {
+      setAnalyzing(false);
+    }
+  };
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">
@@ -147,27 +167,27 @@ export default function SkillsPage() {
           <h1 className="text-2xl font-bold font-display text-[#1A1A2E]">Skill Gap Analysis</h1>
           <p className="text-sm text-[#5C5C6D] mt-1">Identify and close gaps between your skills and target roles</p>
         </div>
-        <Button className="bg-[#0D7377] hover:bg-[#0a5c5f]">
-          <Zap className="w-4 h-4 mr-2" /> Run AI Analysis
+        <Button className="bg-[#0D7377] hover:bg-[#0a5c5f]" onClick={handleRunAnalysis} disabled={analyzing}>
+          <Zap className="w-4 h-4 mr-2" /> {analyzing ? "Analyzing..." : "Run AI Analysis"}
         </Button>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-4 text-center">
-          <p className="text-2xl font-bold text-[#1A1A2E]">{SKILL_DATA.length}</p>
+          <p className="text-2xl font-bold text-[#1A1A2E]">{skills.length}</p>
           <p className="text-xs text-[#5C5C6D] mt-1">Skills Tracked</p>
         </Card>
         <Card className="p-4 text-center">
-          <p className="text-2xl font-bold text-[#FF6B35]">{GAPS.length}</p>
+          <p className="text-2xl font-bold text-[#FF6B35]">{gaps.length}</p>
           <p className="text-xs text-[#5C5C6D] mt-1">Gaps Identified</p>
         </Card>
         <Card className="p-4 text-center">
-          <p className="text-2xl font-bold text-[#EF4444]">{priorityCount}</p>
+          <p className="text-2xl font-bold text-[#EF4444]">{gaps.filter((g) => g.priority === "High").length}</p>
           <p className="text-xs text-[#5C5C6D] mt-1">High Priority</p>
         </Card>
         <Card className="p-4 text-center">
-          <p className="text-2xl font-bold text-[#22C55E]">{Math.round(SKILL_DATA.reduce((s, d) => s + (d.level / d.target), 0) / SKILL_DATA.length * 100)}%</p>
+          <p className="text-2xl font-bold text-[#22C55E]">{Math.round(skills.reduce((s, d) => s + (d.level / d.target), 0) / skills.length * 100)}%</p>
           <p className="text-xs text-[#5C5C6D] mt-1">Overall Readiness</p>
         </Card>
       </div>
@@ -201,8 +221,8 @@ export default function SkillsPage() {
             <Card className="p-6">
               <h3 className="font-semibold text-[#1A1A2E] mb-4">Top Priority Gaps</h3>
               <div className="space-y-3">
-                {GAPS.filter((g) => g.priority === "High").map((gap) => {
-                  const skill = SKILL_DATA.find((s) => s.name === gap.skill);
+                {gaps.filter((g) => g.priority === "High").map((gap) => {
+                  const skill = skills.find((s) => s.name === gap.skill);
                   return (
                     <div key={gap.skill} className="p-3 rounded-lg border border-[#E8E8E6]">
                       <div className="flex items-center justify-between mb-1">

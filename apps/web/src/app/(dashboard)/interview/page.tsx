@@ -1,12 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import { interviewApi } from "@/lib/api";
+import { toast } from "sonner";
 import {
   Mic,
   Video,
@@ -91,6 +95,43 @@ function ScoreRing({ score, size = 48 }: { score: number; size?: number }) {
 
 export default function InterviewPage() {
   const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [sessions, setSessions] = useState<typeof PAST_SESSIONS>([]);
+  const [loadingSessions, setLoadingSessions] = useState(true);
+  const [startingSession, setStartingSession] = useState<string | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    interviewApi.getSessions()
+      .then((res) => {
+        const data = res.data.data ?? res.data ?? [];
+        const completed = Array.isArray(data)
+          ? data.filter((s: any) => s.status === "COMPLETED" || s.status === "completed")
+          : [];
+        setSessions(completed.length > 0 ? completed : PAST_SESSIONS);
+      })
+      .catch(() => {
+        setSessions(PAST_SESSIONS);
+      })
+      .finally(() => setLoadingSessions(false));
+  }, []);
+
+  const handleStartInterview = async (type: string) => {
+    setStartingSession(type);
+    try {
+      const res = await interviewApi.startSession(type);
+      const sessionId = res.data.data?.id ?? res.data.id;
+      if (sessionId) {
+        router.push(`/interview/${sessionId}`);
+      } else {
+        router.push(`/interview/new?type=${type}`);
+      }
+    } catch {
+      toast.error("Failed to start interview session.");
+      router.push(`/interview/new?type=${type}`);
+    } finally {
+      setStartingSession(null);
+    }
+  };
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-8">
@@ -152,11 +193,16 @@ export default function InterviewPage() {
               </div>
               <p className="text-xs text-[#5C5C6D] italic">"{type.prompt}"</p>
               {selectedType === type.id && (
-                <Link href={`/interview/new?type=${type.id}`} className="block mt-4">
-                  <Button size="sm" className="w-full" style={{ backgroundColor: type.color }}>
-                    Start Interview <ArrowRight className="w-3 h-3 ml-1" />
-                  </Button>
-                </Link>
+                <Button
+                  size="sm"
+                  className="w-full mt-4"
+                  style={{ backgroundColor: type.color }}
+                  onClick={() => handleStartInterview(type.id)}
+                  disabled={startingSession === type.id}
+                >
+                  {startingSession === type.id ? "Starting..." : "Start Interview"}
+                  {!startingSession && <ArrowRight className="w-3 h-3 ml-1" />}
+                </Button>
               )}
             </Card>
           ))}
@@ -167,7 +213,22 @@ export default function InterviewPage() {
       <div>
         <h2 className="text-base font-semibold text-[#1A1A2E] mb-3">Past Sessions</h2>
         <div className="space-y-3">
-          {PAST_SESSIONS.map((s) => (
+          {loadingSessions ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i} className="p-4 flex items-center gap-4">
+                <Skeleton className="w-12 h-12 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="w-48 h-4 rounded" />
+                  <Skeleton className="w-32 h-3 rounded" />
+                </div>
+                <Skeleton className="w-24 h-8 rounded" />
+              </Card>
+            ))
+          ) : sessions.length === 0 ? (
+            <Card className="p-6 text-center text-[#5C5C6D]">
+              <p className="text-sm">No past sessions yet. Start your first interview above!</p>
+            </Card>
+          ) : sessions.map((s) => (
             <Card key={s.id} className="p-4 flex items-center gap-4">
               <ScoreRing score={s.score} />
               <div className="flex-1 min-w-0">

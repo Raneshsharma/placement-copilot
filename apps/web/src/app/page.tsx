@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { motion } from "framer-motion";
 import {
   UserPlus,
   TrendingUp,
@@ -18,6 +19,7 @@ import {
   Shield,
   Clock,
 } from "lucide-react";
+import { ParticleBg } from "@/components/ui/particle-bg";
 
 const features = [
   { icon: UserPlus, title: "Profile Builder", description: "Create a standout professional profile that highlights your unique strengths and career goals." },
@@ -54,6 +56,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <ParticleBg />
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-surface/85 backdrop-blur-xl border-b border-border">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -140,7 +143,14 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {steps.map((step, i) => (
-              <div key={step.num} className="relative animate-fade-in" style={{ animationDelay: `${i * 100}ms` }}>
+              <motion.div
+                key={step.num}
+                className="relative"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+              >
                 {i < steps.length - 1 && (
                   <div className="hidden md:block absolute top-10 right-0 translate-x-1/2 w-8 border-t-2 border-dashed border-border z-0" />
                 )}
@@ -152,7 +162,7 @@ export default function HomePage() {
                   <h3 className="font-semibold text-lg text-text-primary mb-2">{step.title}</h3>
                   <p className="text-sm text-text-secondary leading-relaxed">{step.description}</p>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -172,17 +182,20 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {features.map((f, i) => (
-              <div
+              <motion.div
                 key={f.title}
-                className="bg-surface p-6 rounded-lg border border-border hover:shadow-glow hover:border-primary/20 transition-all duration-300 group animate-fade-in"
-                style={{ animationDelay: `${i * 75}ms` }}
+                className="bg-surface p-6 rounded-lg border border-border hover:shadow-glow hover:border-primary/20 transition-all duration-300 group"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
               >
                 <div className="w-11 h-11 rounded-[6px] bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 group-hover:shadow-glow-sm transition-all duration-300">
                   <f.icon className="w-5 h-5 text-primary" />
                 </div>
                 <h3 className="font-semibold text-text-primary mb-2">{f.title}</h3>
                 <p className="text-sm text-text-secondary leading-relaxed">{f.description}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -199,10 +212,13 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {testimonials.map((t, i) => (
-              <div
+              <motion.div
                 key={t.name}
-                className="bg-surface p-6 rounded-lg border border-border hover:shadow-glow transition-all duration-300 animate-fade-in"
-                style={{ animationDelay: `${i * 100}ms` }}
+                className="bg-surface p-6 rounded-lg border border-border hover:shadow-glow transition-all duration-300"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
               >
                 <div className="flex gap-1 mb-4">
                   {Array.from({ length: t.rating }).map((_, i) => (
@@ -219,7 +235,7 @@ export default function HomePage() {
                     <p className="text-xs text-text-tertiary">{t.role}</p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>

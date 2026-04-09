@@ -65,6 +65,8 @@ export const resumeApi = {
   update: (data: Record<string, unknown>) => apiClient.patch("/api/resume", data),
   generateSummary: (data: { prompt: string }) =>
     apiClient.post("/api/resume/generate-summary", data),
+  optimize: (data: Record<string, unknown>) =>
+    apiClient.post("/api/resumes/optimize", data),
   downloadPdf: () =>
     apiClient.get("/api/resume/pdf", { responseType: "blob" }),
   downloadDocx: () =>
@@ -74,10 +76,20 @@ export const resumeApi = {
 export const jobApi = {
   list: (params?: Record<string, unknown>) => apiClient.get("/api/jobs", { params }),
   get: (id: string) => apiClient.get(`/api/jobs/${id}`),
+  getSaved: () => apiClient.get("/api/jobs/saved"),
+  getRecommendations: (params?: Record<string, unknown>) =>
+    apiClient.get("/api/jobs/recommendations", { params }),
   recommendations: (params?: Record<string, unknown>) =>
     apiClient.get("/api/jobs/recommendations", { params }),
   search: (query: string, params?: Record<string, unknown>) =>
     apiClient.get("/api/jobs/search", { params: { q: query, ...params } }),
+};
+
+export const notificationApi = {
+  list: () => apiClient.get("/api/notifications"),
+  markRead: (id: string) => apiClient.patch(`/api/notifications/${id}/read`),
+  register: (data: Record<string, unknown>) =>
+    apiClient.post("/api/notifications/register", data),
 };
 
 export const applicationApi = {
@@ -93,6 +105,7 @@ export const applicationApi = {
 
 export const interviewApi = {
   getTypes: () => apiClient.get("/api/interviews/types"),
+  getSessions: () => apiClient.get("/api/interviews"),
   startSession: (type: string, params?: Record<string, unknown>) =>
     apiClient.post("/api/interviews/sessions", { type, ...params }),
   getSession: (id: string) => apiClient.get(`/api/interviews/sessions/${id}`),

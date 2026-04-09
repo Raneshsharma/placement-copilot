@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Search, MapPin, DollarSign, Clock, Grid, List, Heart, Zap, Building2, Globe, Briefcase } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { jobApi } from "@/lib/api";
+import { toast } from "sonner";
 
 const MOCK_ROLES = [
   { id: "r1", company: "Google", logo: "G", role: "Software Engineer", location: "Mountain View, CA", salary: "$120k - $180k", postedAt: "2 days ago", match: 92, skills: ["Python", "Go", "Distributed Systems"], type: "Full-time" },
@@ -34,6 +37,18 @@ export default function RolesPage() {
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [savedRoles, setSavedRoles] = useState<string[]>([]);
+  const [roles, setRoles] = useState<typeof MOCK_ROLES>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    jobApi.list()
+      .then((res) => setRoles(res.data.data ?? res.data))
+      .catch(() => {
+        setRoles(MOCK_ROLES);
+        toast.error("Failed to load roles. Showing cached data.");
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const toggleFilter = (label: string) => {
     setActiveFilters((prev) => prev.includes(label) ? prev.filter((f) => f !== label) : [...prev, label]);
@@ -43,7 +58,7 @@ export default function RolesPage() {
     setSavedRoles((prev) => prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]);
   };
 
-  const filteredRoles = MOCK_ROLES.filter((role) => {
+  const filteredRoles = roles.filter((role) => {
     if (searchQuery && !role.role.toLowerCase().includes(searchQuery.toLowerCase()) && !role.company.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
@@ -99,11 +114,32 @@ export default function RolesPage() {
       </div>
 
       {/* Results count */}
-      <p className="text-sm text-text-tertiary mb-4">{filteredRoles.length} roles found</p>
+      <p className="text-sm text-text-tertiary mb-4">{loading ? "Loading..." : `${filteredRoles.length} roles found`}</p>
 
       {/* Role Cards */}
       <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : "space-y-3"}>
-        {filteredRoles.map((role) => (
+        {loading ? (
+          Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i} className={`p-4 ${viewMode === "list" ? "flex items-center gap-4" : ""}`}>
+              <div className="flex items-start justify-between mb-3">
+                <Skeleton className="w-10 h-10 rounded-lg" />
+                <Skeleton className="w-10 h-4 rounded" />
+              </div>
+              <Skeleton className="w-3/4 h-4 rounded mb-1" />
+              <Skeleton className="w-1/2 h-3 rounded mb-2" />
+              <Skeleton className="w-full h-3 rounded mb-3" />
+              <div className="flex gap-1.5 mb-3">
+                <Skeleton className="w-12 h-5 rounded-full" />
+                <Skeleton className="w-16 h-5 rounded-full" />
+              </div>
+              <Skeleton className="w-full h-8 rounded" />
+            </Card>
+          ))
+        ) : filteredRoles.length === 0 ? (
+          <div className="col-span-full text-center py-12 text-text-tertiary">
+            <p>No roles found matching your search.</p>
+          </div>
+        ) : filteredRoles.map((role) => (
           <Card key={role.id} className={`p-4 hover:shadow-md transition-shadow ${viewMode === "list" ? "flex items-center gap-4" : ""}`}>
             {viewMode === "grid" ? (
               <>

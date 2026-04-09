@@ -1,11 +1,15 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import { jobApi } from "@/lib/api";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   Share2,
@@ -63,8 +67,40 @@ function PPSRing({ score }: { score: number }) {
 
 export default function RoleDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const roleId = params.roleId as string;
-  const role = roles[roleId] || roles["1"];
+  const [role, setRole] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    jobApi.get(roleId)
+      .then((res) => setRole(res.data.data ?? res.data))
+      .catch(() => {
+        setRole(roles[roleId] || roles["1"]);
+        toast.error("Failed to load role details.");
+      })
+      .finally(() => setLoading(false));
+  }, [roleId]);
+
+  if (loading) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto space-y-6">
+        <div className="flex items-center gap-4">
+          <Skeleton className="w-10 h-10 rounded-lg" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="w-48 h-6 rounded" />
+            <Skeleton className="w-32 h-4 rounded" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-40 rounded-xl" />)}
+        </div>
+        <Skeleton className="h-96 rounded-xl" />
+      </div>
+    );
+  }
+
+  if (!role) return null;
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">

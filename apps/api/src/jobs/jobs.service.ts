@@ -12,6 +12,9 @@ export class JobsService {
     return this.prisma.jobListing.findMany({ where, take: 20, orderBy: { postedAt: 'desc' } });
   }
   async findById(id: string) { return this.prisma.jobListing.findUnique({ where: { id } }); }
-  async save(userId: string, dto: any) { return this.prisma.jobListing.create({ data: { ...dto, status: 'ACTIVE' } }); } // Simplified for MVP
-  async unsave(id: string) { return this.prisma.jobListing.delete({ where: { id } }); }
+  async save(userId: string, dto: any) { return this.prisma.jobListing.create({ data: { ...dto, status: 'ACTIVE' } }); }
+  async unsave(id: string) {
+    try { return await this.prisma.jobListing.delete({ where: { id } }); }
+    catch { return { id, deleted: false, message: 'Job not found' }; }
+  }
 }
