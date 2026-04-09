@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { useAuthStore, User } from '../auth-store';
+import { useAuthStore, User } from './auth-store';
 
 // Helper to isolate store state per test
 function createFreshStore() {
