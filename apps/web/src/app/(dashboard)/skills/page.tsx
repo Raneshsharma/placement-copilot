@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
-  RadarChart,
+  Radar,
   TrendingUp,
   BookOpen,
   CheckCircle,

@@ -4,7 +4,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 export class AnalyzeSkillGapDto {
   @ApiProperty()
   @IsString()
-  targetRole: string;
+  targetRole!: string;
 
   @ApiPropertyOptional()
   @IsOptional()

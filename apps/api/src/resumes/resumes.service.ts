@@ -18,7 +18,7 @@ export class ResumesService {
     const filePath = path.join(uploadDir, fileName);
     fs.writeFileSync(filePath, file.buffer);
     return this.prisma.resume.create({
-      data: { userId, fileName: file.originalname, fileKey: fileName, fileSize: file.size, mimeType: file.mimetype, fileHash },
+      data: { userId, title: file.originalname, fileKey: fileName },
     });
   }
 
@@ -28,7 +28,7 @@ export class ResumesService {
   async analyze(id: string) {
     const resume = await this.findById(id);
     const result = await this.aiService.optimizeResume({ resumeId: id, resumeData: resume.parsedData });
-    return this.prisma.resume.update({ where: { id }, data: { analysisResult: result } });
+    return result;
   }
   async optimize(id: string, dto: any) { return this.aiService.optimizeResume({ resumeId: id, ...dto }); }
 }

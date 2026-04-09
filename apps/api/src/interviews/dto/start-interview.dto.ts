@@ -5,15 +5,15 @@ import { InterviewType } from '@prisma/client';
 export class StartInterviewDto {
   @ApiProperty({ enum: InterviewType })
   @IsEnum(InterviewType)
-  type: InterviewType;
+  type!: InterviewType;
 
   @ApiProperty()
   @IsString()
-  role: string;
+  role!: string;
 
   @ApiProperty()
   @IsString()
-  company: string;
+  company!: string;
 
   @ApiPropertyOptional()
   @IsOptional()

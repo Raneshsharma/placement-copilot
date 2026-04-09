@@ -4,5 +4,5 @@ import { ApiProperty } from '@nestjs/swagger';
 export class SubmitAnswerDto {
   @ApiProperty()
   @IsString()
-  answer: string;
+  answer!: string;
 }

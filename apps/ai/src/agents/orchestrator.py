@@ -1,6 +1,6 @@
 import os
 from typing import Literal
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage
 from langgraph.graph import StateGraph, END
@@ -188,6 +188,7 @@ def create_orchestrator():
             "interview_agent": "interview_agent",
             "skill_gap_agent": "skill_gap_agent",
             "application_agent": "application_agent",
+            "tracking_agent": "tracking_agent",
             "synthesize": "synthesize",
         },
     )

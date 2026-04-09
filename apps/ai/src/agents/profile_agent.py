@@ -1,5 +1,5 @@
 import os
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_anthropic import ChatAnthropic
 
 from src.prompts.profile_agent import system_prompt as profile_system_prompt

@@ -138,7 +138,7 @@ export default function InterviewPage() {
               className={`p-5 cursor-pointer transition-all hover:shadow-md ${
                 selectedType === type.id ? "ring-2 ring-offset-2" : ""
               }`}
-              style={selectedType === type.id ? { ringColor: type.color } : {}}
+              style={selectedType === type.id ? { ["--tw-ring-color" as string]: type.color } : {}}
               onClick={() => setSelectedType(selectedType === type.id ? null : type.id)}
             >
               <div className={`w-12 h-12 rounded-xl ${type.bg} flex items-center justify-center mb-4`}>

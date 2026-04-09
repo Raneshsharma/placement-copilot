@@ -2,7 +2,17 @@
 
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { ApplicationListing } from "@/components/dashboard/pps-card";
+
+interface ApplicationListing {
+  id: string;
+  company: string;
+  role: string;
+  companyLogo: string;
+  status: string;
+  appliedAt: string;
+  salary?: string;
+  location?: string;
+}
 
 interface ApplicationWidgetProps {
   applications: ApplicationListing[];

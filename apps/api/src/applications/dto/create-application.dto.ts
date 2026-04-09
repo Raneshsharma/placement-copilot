@@ -14,11 +14,11 @@ export class CreateApplicationDto {
 
   @ApiProperty()
   @IsString()
-  company: string;
+  company!: string;
 
   @ApiProperty()
   @IsString()
-  position: string;
+  position!: string;
 
   @ApiPropertyOptional()
   @IsOptional()

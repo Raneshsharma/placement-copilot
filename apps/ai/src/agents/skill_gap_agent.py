@@ -1,5 +1,5 @@
 import os
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_anthropic import ChatAnthropic
 
 from src.prompts.skill_gap_agent import system_prompt as skill_gap_system_prompt

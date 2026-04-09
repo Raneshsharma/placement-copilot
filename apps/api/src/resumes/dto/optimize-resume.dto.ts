@@ -4,7 +4,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 export class OptimizeResumeDto {
   @ApiProperty()
   @IsString()
-  targetRole: string;
+  targetRole!: string;
 
   @ApiPropertyOptional()
   @IsOptional()

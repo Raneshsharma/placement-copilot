@@ -1,7 +1,7 @@
 from .orchestrator import OrchestratorInput, OrchestratorOutput, AgentEvent
 from .profile import ProfileInput, ProfileOutput
 from .scoring import ScoringInput, ScoringOutput, GapAnalysis
-from .resume import ResumeInput, ResumeOutput, ATSAnalysis
+from .resume import ResumeInput, ResumeOutput
 from .interview import InterviewInput, InterviewOutput, InterviewQuestion
 from .skill_gap import SkillGapInput, SkillGapOutput, Gap
 from .application import ApplicationInput, ApplicationOutput, CoverLetter
@@ -18,7 +18,6 @@ __all__ = [
     "GapAnalysis",
     "ResumeInput",
     "ResumeOutput",
-    "ATSAnalysis",
     "InterviewInput",
     "InterviewOutput",
     "InterviewQuestion",

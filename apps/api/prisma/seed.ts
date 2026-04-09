@@ -1,4 +1,4 @@
-import { PrismaClient, LocationType, JobSource } from '@prisma/client';
+import { PrismaClient, LocationType, JobSource, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
 

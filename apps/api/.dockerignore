@@ -1,0 +1,9 @@
+node_modules
+dist
+.git
+*.log
+prisma/migrations
+.env*
+coverage
+*.test.ts
+!.env.example

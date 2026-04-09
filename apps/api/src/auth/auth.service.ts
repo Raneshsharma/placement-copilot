@@ -17,7 +17,7 @@ export class AuthService {
     if (existing) throw new ConflictException('Email already in use');
     const passwordHash = await bcrypt.hash(dto.password, 10);
     const user = await this.prisma.user.create({
-      data: { email: dto.email, passwordHash, firstName: dto.firstName, lastName: dto.lastName },
+      data: { email: dto.email, password: passwordHash, firstName: dto.firstName, lastName: dto.lastName },
     });
     await this.prisma.profile.create({ data: { userId: user.id } });
     const tokens = await this.generateTokens(user);
@@ -26,8 +26,8 @@ export class AuthService {
 
   async login(email: string, password: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
-    if (!user || !user.passwordHash) throw new UnauthorizedException('Invalid credentials');
-    const valid = await bcrypt.compare(password, user.passwordHash);
+    if (!user || !user.password) throw new UnauthorizedException('Invalid credentials');
+    const valid = await bcrypt.compare(password, user.password);
     if (!valid) throw new UnauthorizedException('Invalid credentials');
     const tokens = await this.generateTokens(user);
     return { user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role }, ...tokens };
