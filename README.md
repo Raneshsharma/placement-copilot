@@ -1,0 +1,165 @@
+# Placement Copilot AI
+
+> Your AI-powered job search co-pilot — from resume to offer letter.
+
+Placement Copilot AI is a production-ready, full-stack monorepo platform that guides job seekers through every stage of the job search journey using a multi-agent AI system powered by Claude 4 and LangGraph.
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Placement Copilot AI                      │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐    │
+│  │    Web App    │   │   API Server │   │   AI Service │    │
+│  │   (Next.js)   │◄──│   (NestJS)   │◄──│   (FastAPI)  │    │
+│  │  localhost:   │   │  localhost:  │   │  localhost:  │    │
+│  │    3000       │   │    3001      │   │    3002      │    │
+│  └──────────────┘   └──────┬───────┘   └──────┬───────┘    │
+│                            │                  │              │
+│                     ┌──────▼──────────────────▼───────┐     │
+│                     │         Shared Package          │     │
+│                     │   (Types, Schemas, Constants)    │     │
+│                     └──────────────────────────────────┘     │
+│                                                              │
+│  ┌──────────────┐  ┌──────────────┐  ┌───────────────────┐   │
+│  │  PostgreSQL  │  │    Redis     │  │   Elasticsearch   │   │
+│  │  (Primary DB)│  │ (Cache/Sess) │  │   (Job Search)    │   │
+│  └──────────────┘  └──────────────┘  └───────────────────┘   │
+│                                                              │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │                    Weaviate                           │   │
+│  │              (Vector Store — Job-Resume Matching)     │   │
+│  └──────────────────────────────────────────────────────┘   │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Frontend** | Next.js 14 (App Router), TypeScript, Tailwind CSS, shadcn/ui, Zustand |
+| **Backend API** | NestJS 10, TypeScript, Prisma ORM, PostgreSQL, BullMQ |
+| **AI Service** | FastAPI (Python 3.11), LangGraph, LangChain, Claude 4 (Anthropic) |
+| **Vector Store** | Weaviate 1.23 |
+| **Search Engine** | Elasticsearch 8.12 |
+| **Cache / Sessions** | Redis 7 |
+| **Database** | PostgreSQL 16 |
+| **AI Models** | Claude 4 (Anthropic) |
+| **Orchestration** | LangGraph (7-agent state machine) |
+| **Containerization** | Docker, Docker Compose |
+| **Monorepo** | Turborepo 2 |
+| **Auth** | JWT, Google OAuth via Supabase |
+
+---
+
+## Quick Start
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/your-org/placement-copilot.git
+cd placement-copilot
+
+# 2. Start infrastructure services
+docker compose up -d
+
+# 3. Install dependencies
+npm install
+
+# 4. Start all apps in development mode
+npm run dev
+```
+
+The web app will be available at `http://localhost:3000`.
+
+---
+
+## Features
+
+- **AI Profile Builder** — Guided 5-step onboarding wizard that uses Claude 4 to parse resumes, extract skills, and build a comprehensive job seeker profile with PPS (Placement Profile Score) scoring.
+
+- **Smart Resume Builder** — AI-powered resume creation with ATS scoring, keyword optimization, and version history. Supports multiple tailored versions per target role.
+
+- **Mock Interview Engine** — Real-time AI interview simulation with 7 interview types (Technical, Behavioral, System Design, LeetCode, etc.), live transcription, and detailed scoring with improvement feedback.
+
+- **Role Matching & Job Search** — Semantic job search powered by Elasticsearch and Weaviate vector embeddings. Match % scoring based on profile vs. job requirements with personalized recommendations.
+
+- **Application Tracker** — Kanban board for managing job applications with drag-and-drop status transitions, timeline tracking, and analytics dashboard.
+
+- **Skill Gap Analysis** — AI-driven gap detection between current skills and target role requirements, with ranked gaps, learning resources, and personalized roadmaps.
+
+- **Analytics Dashboard** — Real-time PPS score card, application funnel metrics, interview performance trends, and market alignment insights.
+
+---
+
+## Repository Structure
+
+```
+placement-copilot/
+├── apps/
+│   ├── web/                    # Next.js 14 frontend
+│   │   ├── src/
+│   │   │   ├── app/            # App Router pages
+│   │   │   ├── components/     # UI components
+│   │   │   ├── lib/            # API client, stores, utilities
+│   │   │   └── styles/         # Global styles
+│   │   ├── prisma/             # Prisma schema for type generation
+│   │   └── package.json
+│   ├── api/                    # NestJS backend
+│   │   ├── src/
+│   │   │   ├── auth/           # JWT + Google OAuth
+│   │   │   ├── users/          # User management
+│   │   │   ├── profiles/       # Profile CRUD
+│   │   │   ├── resumes/        # Resume upload & versioning
+│   │   │   ├── jobs/           # Job listing management
+│   │   │   ├── applications/   # Application tracker
+│   │   │   ├── interviews/     # Mock interview sessions
+│   │   │   ├── skill-gaps/     # Gap analysis
+│   │   │   ├── progress/       # Dashboard analytics
+│   │   │   ├── notifications/  # Push & email notifications
+│   │   │   ├── ai/             # HTTP client to AI service
+│   │   │   └── common/         # Guards, DTOs, interceptors, filters
+│   │   ├── prisma/
+│   │   │   └── schema.prisma   # Database schema
+│   │   └── package.json
+│   └── ai/                     # FastAPI AI service
+│       ├── src/
+│       │   ├── agents/         # LangGraph agents (7 agents)
+│       │   ├── tools/          # LangChain tools per agent
+│       │   ├── prompts/        # Prompt templates
+│       │   ├── schemas/        # Pydantic I/O models
+│       │   ├── state/          # LangGraph state definitions
+│       │   └── api/            # FastAPI routes
+│       ├── requirements.txt
+│       └── Dockerfile
+├── packages/
+│   └── shared/                  # Shared TypeScript package
+│       ├── src/
+│       │   ├── types/          # Entity types (TypeScript)
+│       │   ├── schemas/        # Zod validation schemas
+│       │   ├── constants/      # Taxonomies, enums, step configs
+│       │   └── utils/          # Formatting, helpers
+│       └── package.json
+├── docker-compose.yml           # PostgreSQL, Redis, ES, Weaviate
+├── turbo.json                   # Turborepo pipeline config
+├── package.json                 # Root workspace manifest
+└── tsconfig.base.json           # Shared TypeScript config
+```
+
+---
+
+## Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for setup instructions, commit conventions, and PR process.
+
+---
+
+## License
+
+MIT License. See [LICENSE](./LICENSE) for details.

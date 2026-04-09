@@ -1,0 +1,240 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  USER
+  PREMIUM
+  ADMIN
+}
+
+enum LocationType {
+  ONSITE
+  REMOTE
+  HYBRID
+}
+
+enum JobSource {
+  LINKEDIN
+  INDEED
+  INTERNAL
+  SCRAPED
+}
+
+enum ApplicationStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  INTERVIEW
+  OFFERED
+  REJECTED
+  WITHDRAWN
+}
+
+enum InterviewType {
+  BEHAVIORAL
+  TECHNICAL
+  CASE_STUDY
+  SYSTEM_DESIGN
+  HYBRID
+}
+
+enum InterviewStatus {
+  SETUP
+  IN_PROGRESS
+  COMPLETED
+  FEEDBACK_READY
+}
+
+enum NotificationType {
+  APPLICATION_STATUS
+  INTERVIEW_READY
+  SKILL_ALERT
+  SYSTEM
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String?
+  firstName     String
+  lastName      String
+  role          UserRole  @default(USER)
+  isActive      Boolean   @default(true)
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  profile       Profile?
+  resumes       Resume[]
+  applications  Application[]
+  notifications Notification[]
+  analytics     AnalyticsEvent[]
+
+  @@map("users")
+}
+
+model Profile {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  headline        String?
+  summary         String?
+  experience      Json     @default("[]")
+  education       Json     @default("[]")
+  skills          Json     @default("[]")
+  certifications  Json     @default("[]")
+  languages       Json     @default("[]")
+  projects        Json     @default("[]")
+  portfolioUrl    String?
+  linkedinUrl     String?
+  githubUrl       String?
+  websiteUrl      String?
+  location        String?
+  phone           String?
+  ppsScore        Float?
+  completeness    Float    @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("profiles")
+}
+
+model Resume {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  fileUrl     String?
+  fileKey     String?
+  parsedData  Json     @default("{}")
+  atsScore    Float?
+  version     Int      @default(1)
+  isPrimary   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("resumes")
+}
+
+model JobListing {
+  id            String       @id @default(uuid())
+  title         String
+  company       String
+  location      String
+  locationType  LocationType @default(ONSITE)
+  salaryMin     Int?
+  salaryMax     Int?
+  currency      String       @default("USD")
+  description   String
+  requirements  Json        @default("[]")
+  benefits      Json         @default("[]")
+  keywords      Json         @default("[]")
+  source        JobSource    @default(INTERNAL)
+  sourceUrl     String?
+  applyUrl      String?
+  status        String       @default("ACTIVE")
+  postedAt      DateTime?
+  expiresAt     DateTime?
+  data          Json         @default("{}")
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  applications  Application[]
+
+  @@map("job_listings")
+}
+
+model Application {
+  id              String             @id @default(uuid())
+  userId          String
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobListingId   String?
+  jobListing      JobListing?        @relation(fields: [jobListingId], references: [id])
+  resumeId        String?
+  company         String
+  position        String
+  status          ApplicationStatus  @default(DRAFT)
+  appliedAt       DateTime?
+  timeline        Json               @default("[]")
+  coverLetterUrl  String?
+  notes           String?
+  data            Json               @default("{}")
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  interviews      MockInterview[]
+
+  @@map("applications")
+}
+
+model MockInterview {
+  id              String           @id @default(uuid())
+  applicationId   String?
+  application     Application?     @relation(fields: [applicationId], references: [id])
+  userId          String
+  type            InterviewType    @default(TECHNICAL)
+  status          InterviewStatus  @default(SETUP)
+  questions       Json             @default("[]")
+  answers         Json              @default("[]")
+  scores          Json              @default("{}")
+  feedback        String?
+  transcript      Json              @default("[]")
+  duration        Int?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  data            Json              @default("{}")
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@map("mock_interviews")
+}
+
+model SkillGapAnalysis {
+  id            String   @id @default(uuid())
+  userId        String
+  targetRole    String
+  currentSkills Json     @default("[]")
+  gaps          Json     @default("[]")
+  recommendations Json   @default("[]")
+  roadmap       Json     @default("[]")
+  priorityScore Float?
+  data          Json     @default("{}")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("skill_gap_analyses")
+}
+
+model Notification {
+  id          String           @id @default(uuid())
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        NotificationType
+  title       String
+  message     String
+  payload     Json             @default("{}")
+  isRead      Boolean          @default(false)
+  data        Json             @default("{}")
+  createdAt   DateTime         @default(now())
+
+  @@map("notifications")
+}
+
+model AnalyticsEvent {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventType   String
+  eventData   Json     @default("{}")
+  sessionId   String?
+  createdAt   DateTime @default(now())
+
+  @@map("analytics_events")
+}
