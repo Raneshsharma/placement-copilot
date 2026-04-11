@@ -1,0 +1,306 @@
+/* Page wrapper — warm off-white, full-height, centered */
+.pageWrapper {
+  min-height: 100vh;
+  background-color: var(--warm-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 80px 24px 60px;
+}
+
+/* Container — max 900px, centered */
+.container {
+  max-width: 900px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Brand mark */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 48px;
+}
+.brandIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background-color: var(--warm-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.brandName {
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--warm-text-primary);
+}
+
+/* Heading */
+.heading {
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--warm-text-primary);
+  text-align: center;
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+
+/* Subheading */
+.subheading {
+  font-size: 18px;
+  color: var(--warm-text-secondary);
+  text-align: center;
+  max-width: 520px;
+  line-height: 1.6;
+  margin-bottom: 48px;
+}
+
+/* Cards grid */
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  width: 100%;
+  max-width: 860px;
+}
+
+@media (max-width: 639px) {
+  .cardsGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .heading {
+    font-size: 28px;
+  }
+  .subheading {
+    font-size: 16px;
+  }
+  .pageWrapper {
+    padding: 48px 16px 40px;
+  }
+}
+
+/* Individual card */
+.card {
+  background: var(--warm-surface);
+  border: 1px solid var(--warm-border);
+  border-radius: 16px;
+  padding: 32px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+  border-color: var(--warm-primary);
+}
+.card:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 639px) {
+  .card {
+    padding: 24px;
+  }
+}
+
+/* Card icon area */
+.cardIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background-color: var(--warm-primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Card content */
+.cardTitle {
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--warm-text-primary);
+  margin: 0;
+}
+.cardDescription {
+  font-size: 15px;
+  color: var(--warm-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* CTA button inside card */
+.cardButton {
+  background-color: var(--warm-primary);
+  color: white;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 14px 24px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s ease;
+  width: 100%;
+  justify-content: center;
+  min-height: 48px;
+  font-family: var(--font-inter), sans-serif;
+}
+.cardButton:hover {
+  background-color: var(--warm-primary-hover);
+}
+.cardButton:active {
+  transform: scale(0.98);
+}
+.cardButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Skip link */
+.skipLink {
+  margin-top: 32px;
+  font-size: 14px;
+  color: var(--warm-text-muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.skipLink:hover {
+  color: var(--warm-text-secondary);
+}
+
+/* Inline upload area (shown after card click) */
+.uploadArea {
+  background: var(--warm-surface);
+  border: 2px dashed var(--warm-border);
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+  transition: border-color 0.2s ease;
+  width: 100%;
+}
+.uploadArea:hover {
+  border-color: var(--warm-primary);
+  cursor: pointer;
+}
+.uploadInput {
+  display: none;
+}
+.uploadIcon {
+  color: var(--warm-text-muted);
+  margin-bottom: 12px;
+}
+.uploadText {
+  font-size: 15px;
+  color: var(--warm-text-primary);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.uploadHint {
+  font-size: 13px;
+  color: var(--warm-text-muted);
+}
+
+/* Loading state */
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px;
+  background: var(--warm-surface);
+  border: 1px solid var(--warm-border);
+  border-radius: 16px;
+  width: 100%;
+}
+.loadingText {
+  font-size: 15px;
+  color: var(--warm-text-secondary);
+  font-weight: 500;
+}
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--warm-border);
+  border-top-color: var(--warm-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Success state */
+.successState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px;
+  background: var(--warm-surface);
+  border: 1px solid #86efac;
+  border-radius: 16px;
+  width: 100%;
+}
+.successIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #dcfce7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.successText {
+  font-size: 15px;
+  color: var(--warm-text-primary);
+  font-weight: 600;
+}
+
+/* Error state */
+.errorState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px;
+  background: var(--warm-surface);
+  border: 1px solid var(--warm-primary-light);
+  border-radius: 16px;
+  width: 100%;
+  text-align: center;
+}
+.errorText {
+  font-size: 14px;
+  color: var(--warm-primary);
+  font-weight: 500;
+}
+.errorRetry {
+  background-color: var(--warm-surface);
+  color: var(--warm-primary);
+  border: 1px solid var(--warm-primary);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 24px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  min-height: 40px;
+}
+.errorRetry:hover {
+  background-color: var(--warm-primary-light);
+}
