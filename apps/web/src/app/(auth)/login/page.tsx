@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff } from "lucide-react";
-import { authApi } from "@/lib/api"; // Used for login
+import { authApi, profileApi } from "@/lib/api"; // Used for login and profile check
 import { useAuthStore } from "@/stores/auth-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,7 +44,15 @@ export default function LoginPage() {
       localStorage.setItem("user", JSON.stringify(user));
       // Set cookie for middleware auth check
       document.cookie = `auth-token=${accessToken}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
-      router.push("/dashboard");
+      // Check if user already has a profile
+      try {
+        const profileRes = await profileApi.get();
+        const hasProfile = profileRes.data?.data !== null;
+        router.push(hasProfile ? "/dashboard" : "/onboarding/entry");
+      } catch {
+        // No profile exists — redirect to onboarding
+        router.push("/onboarding/entry");
+      }
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { error?: { message?: string }; message?: string }; message?: string }; message?: string };
       const errMsg =
