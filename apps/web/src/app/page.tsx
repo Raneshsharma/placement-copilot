@@ -263,6 +263,70 @@ function FeaturesGrid() {
   );
 }
 
+// ── FAQ ──
+const faqs = [
+  {
+    q: "How does the AI actually improve my resume?",
+    a: "We analyze successful resumes in your target field and apply ATS optimization patterns — keyword density, action verb variety, quantified impact statements. You can review and approve every change before saving.",
+  },
+  {
+    q: "Will this work for my industry or role?",
+    a: "Yes — we have specialized templates and keyword sets for tech, finance, healthcare, consulting, creative roles, and more. If we don't have a template for your field yet, our AI adapts to generic best practices while you wait.",
+  },
+  {
+    q: "How is my data handled? Is my resume private?",
+    a: "Your resume is private and encrypted. We never share your data with third parties. You can delete your account and all data at any time from your settings.",
+  },
+  {
+    q: "Do I need to start from scratch?",
+    a: "No — you can import an existing resume (PDF or paste text), or import directly from LinkedIn. Our AI reads what you have and builds from there, not from a blank page.",
+  },
+  {
+    q: "What's the difference between free and premium?",
+    a: "Free gives you one resume, basic ATS scanning, and access to all templates. Premium unlocks unlimited AI rewrites, unlimited ATS scans, application tracking, interview prep, and role-based tailoring.",
+  },
+  {
+    q: "Can I cancel anytime?",
+    a: "Yes — monthly or annual. Cancel anytime with no contracts and no cancellation fees.",
+  },
+];
+
+function FAQ() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  return (
+    <section className={`${styles.section} ${styles.sectionAlt}`}>
+      <div className={styles.sectionInner}>
+        <div className={styles.sectionHeader} style={{ textAlign: "center" }}>
+          <p className={styles.sectionEyebrow}>FAQ</p>
+          <h2 className={styles.sectionTitle}>Questions people actually ask</h2>
+        </div>
+        <div className={styles.faqInner}>
+          <div className={styles.faqList}>
+            {faqs.map((faq, i) => (
+              <div
+                key={i}
+                className={`${styles.faqItem} ${openIndex === i ? styles.isOpen : ""}`}
+              >
+                <button
+                  className={styles.faqQuestion}
+                  onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                >
+                  {faq.q}
+                  <ChevronDown className={styles.faqChevron} size={20} />
+                </button>
+                {openIndex === i && (
+                  <div className={styles.faqAnswer}>{faq.a}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ── Footer ──
 function Footer() {
   return (
@@ -365,6 +429,7 @@ export default function HomePage() {
         <HowItWorks />
         <FeaturesGrid />
         <Testimonials />
+        <FAQ />
         {/* more sections will be added by other tasks */}
       </main>
       <Footer />
