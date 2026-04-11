@@ -6,6 +6,7 @@ import { ReadinessBand } from "@/components/workspace/readiness-band";
 import { SectionedRail } from "@/components/workspace/sectioned-rail";
 import { IssueCard } from "@/components/workspace/issue-card";
 import { ResumePreview } from "@/components/workspace/resume-preview";
+import { AiAssistantDrawer } from "@/components/workspace/ai-assistant-drawer";
 import styles from "./workspace.module.css";
 
 export default function WorkspacePage() {
@@ -21,6 +22,14 @@ export default function WorkspacePage() {
     selectCategory,
     selectIssue,
     togglePreview,
+    // AI Assistant
+    aiHelpOpen,
+    aiMessages,
+    aiInput,
+    aiIsLoading,
+    toggleAiHelp,
+    setAiInput,
+    sendAiMessage,
   } = useWorkspaceStore();
 
   useEffect(() => {
@@ -30,6 +39,7 @@ export default function WorkspacePage() {
 
   const categories = profileStrength?.categories ?? [];
   const selectedCategory = categories.find(c => c.id === selectedCategoryId) ?? null;
+  const selectedIssue = selectedCategory?.issues.find(i => i.id === selectedIssueId) ?? null;
 
   const isLoading = status === "loading" || status === "analyzing";
   const isError = status === "error";
@@ -44,6 +54,7 @@ export default function WorkspacePage() {
         onTogglePreview={togglePreview}
         previewVisible={previewVisible}
         isLoading={isLoading}
+        onGetAiHelp={toggleAiHelp}
       />
 
       {/* Main workspace layout */}
@@ -142,6 +153,19 @@ export default function WorkspacePage() {
           isLoading={isLoading}
         />
       </div>
+
+      {/* AI Assistant Drawer */}
+      <AiAssistantDrawer
+        isOpen={aiHelpOpen}
+        onClose={toggleAiHelp}
+        selectedCategory={selectedCategory}
+        selectedIssue={selectedIssue}
+        messages={aiMessages}
+        inputValue={aiInput}
+        onInputChange={setAiInput}
+        onSend={sendAiMessage}
+        isLoading={aiIsLoading}
+      />
     </div>
   );
 }
