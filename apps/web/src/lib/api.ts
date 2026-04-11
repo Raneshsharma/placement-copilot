@@ -159,19 +159,19 @@ export const resumeApi = {
   get: () => apiClient.get("/api/resume"),
   update: (data: Record<string, unknown>) => apiClient.patch("/api/resume", data),
   updateById: (id: string, data: Record<string, unknown>) => apiClient.patch(`/api/resumes/${id}`, data),
-  generateSummary: (data: { prompt: string; currentSummary?: string }) =>
+  generateSummary: (data: { prompt: string; currentSummary?: string; resumeData?: unknown }) =>
     apiClient.post("/api/resume/generate-summary", data),
   suggestTitle: (data: { title: string }) =>
     apiClient.post("/api/resume/ai-suggest-title", data),
-  suggestAchievements: (data: { jobTitle: string; company: string; bullets?: string[] }) =>
-    apiClient.post("/api/resume/ai-suggest-achievements", data),
-  matchSkills: (data: { jobTitle: string; experience?: string }) =>
-    apiClient.post("/api/resume/ai-match-skills", data),
+  suggestAchievements: (data: { jobTitle: string; company: string; bullets?: string[]; existingAchievements?: string[] }) =>
+    apiClient.post("/api/resume/suggest-achievements", data),
+  matchSkills: (data: { jobTitle: string; experience?: string; skills?: string[] }) =>
+    apiClient.post("/api/resume/match-skills", data),
   describeProject: (data: { projectName: string; technologies?: string[] }) =>
     apiClient.post("/api/resume/ai-describe-project", data),
-  autoOptimize: (data: { resumeId?: string; roleId?: string }) =>
+  autoOptimize: (data: { resumeId?: string; roleId?: string; resumeData?: unknown; jobDescription?: string }) =>
     apiClient.post("/api/resume/auto-optimize", data),
-  getAtsScore: (data: { resumeId?: string; roleId?: string; jobDescription?: string }) =>
+  getAtsScore: (data: { resumeId?: string; roleId?: string; jobDescription?: string; resumeData?: unknown }) =>
     apiClient.post("/api/resume/ats-score", data),
   importPdf: (file: File) => {
     const formData = new FormData();

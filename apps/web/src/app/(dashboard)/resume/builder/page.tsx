@@ -13,84 +13,153 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { ATSScoreMeter } from "@/components/resume/ats-score-meter";
 import { resumeApi } from "@/lib/api";
-import { useResumeStore, ResumeState, TemplateType, SkillCategory, ResumeSkill, ResumeExperience, ResumeEducation, ResumeCertification, ResumeProject, ResumeVolunteer, ResumeAward } from "@/stores/resume-store";
+import { useResumeStore, ResumeState, TemplateType, SkillCategory, ResumeExperience, ResumeEducation } from "@/stores/resume-store";
 import { toast } from "sonner";
 import {
   ArrowLeft, ArrowRight, Check, Save, Sparkles, Eye, Download,
   Plus, Trash2, GripVertical, ChevronDown, ChevronUp, X, Loader2,
-  FileText, Wand2, Zap, Link2, RotateCcw, CheckCircle2, AlertCircle,
-  BookOpen, Award, Code2, Globe, Heart, Star, Briefcase, GraduationCap,
-  FileUp, LayoutTemplate, PenLine, User
+  FileText, Wand2, Zap, CheckCircle2, AlertCircle,
+  Award, Code2, Globe, Heart, Star, Briefcase, GraduationCap,
+  User, BookOpen, FileUp, LayoutTemplate, PenLine, Upload,
+  RefreshCw, Clock, BrainCircuit
 } from "lucide-react";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-type StepId = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+type StepId = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 
-interface Step {
-  id: StepId;
-  label: string;
-  icon: React.ReactNode;
-  optional?: boolean;
-}
-
-// ─── Step Definitions ────────────────────────────────────────────────────────
-
-const STEPS: Step[] = [
-  { id: 0, label: "Start", icon: <FileUp className="w-4 h-4" /> },
-  { id: 1, label: "Template", icon: <LayoutTemplate className="w-4 h-4" /> },
-  { id: 2, label: "Profile", icon: <User className="w-4 h-4" /> },
-  { id: 3, label: "Experience", icon: <Briefcase className="w-4 h-4" /> },
-  { id: 4, label: "Education", icon: <GraduationCap className="w-4 h-4" /> },
-  { id: 5, label: "Skills", icon: <Star className="w-4 h-4" /> },
-  { id: 6, label: "Additional", icon: <Plus className="w-4 h-4" />, optional: true },
-  { id: 7, label: "ATS Score", icon: <Zap className="w-4 h-4" /> },
-  { id: 8, label: "Preview", icon: <Eye className="w-4 h-4" /> },
-  { id: 9, label: "Save", icon: <Save className="w-4 h-4" /> },
+const STEPS = [
+  { id: 0 as StepId, label: "Start" },
+  { id: 1 as StepId, label: "Template" },
+  { id: 2 as StepId, label: "Profile" },
+  { id: 3 as StepId, label: "Experience" },
+  { id: 4 as StepId, label: "Education" },
+  { id: 5 as StepId, label: "Skills" },
+  { id: 6 as StepId, label: "Additional" },
+  { id: 7 as StepId, label: "ATS Score" },
+  { id: 8 as StepId, label: "Preview" },
+  { id: 9 as StepId, label: "Save" },
 ];
 
-const TEMPLATES: Array<{ id: TemplateType; name: string; desc: string; atsSafe: boolean }> = [
-  { id: "MODERN", name: "Modern", desc: "Bold header, color accents", atsSafe: true },
-  { id: "MINIMAL", name: "Minimal", desc: "Maximum whitespace, clean", atsSafe: true },
-  { id: "EXECUTIVE", name: "Executive", desc: "Elegant, traditional serif", atsSafe: true },
-  { id: "CREATIVE", name: "Creative", desc: "Colored sidebar, unique layout", atsSafe: false },
-  { id: "TECHNICAL", name: "Technical", desc: "Code-friendly, structured", atsSafe: true },
-  { id: "CONSULTING", name: "Consulting", desc: "Professional, achievement-focused", atsSafe: true },
-  { id: "ACADEMIC", name: "Academic", desc: "Research-focused, publication-ready", atsSafe: true },
-  { id: "ENTRY_LEVEL", name: "Entry Level", desc: "Fresh graduate friendly", atsSafe: true },
+const TEMPLATES: Array<{ id: TemplateType; name: string; desc: string; atsSafe: boolean; accentColor: string; style: "modern" | "minimal" | "executive" | "sidebar" | "two-col" | "academic" }> = [
+  { id: "MODERN", name: "Modern", desc: "Bold header, clean layout", atsSafe: true, accentColor: "#003178", style: "modern" },
+  { id: "MINIMAL", name: "Minimal", desc: "Maximum whitespace, clean", atsSafe: true, accentColor: "#2D2D2D", style: "minimal" },
+  { id: "EXECUTIVE", name: "Executive", desc: "Traditional, serif-forward", atsSafe: true, accentColor: "#1a1a2e", style: "executive" },
+  { id: "TECHNICAL", name: "Technical", desc: "Code-friendly, structured", atsSafe: true, accentColor: "#006879", style: "two-col" },
+  { id: "CONSULTING", name: "Consulting", desc: "Achievement-focused", atsSafe: true, accentColor: "#2D4A6B", style: "sidebar" },
+  { id: "CREATIVE", name: "Creative", desc: "Colorful sidebar", atsSafe: false, accentColor: "#7C3AED", style: "sidebar" },
+  { id: "ACADEMIC", name: "Academic", desc: "Publication-ready", atsSafe: true, accentColor: "#166534", style: "academic" },
+  { id: "ENTRY_LEVEL", name: "Entry Level", desc: "Fresh graduate friendly", atsSafe: true, accentColor: "#003178", style: "modern" },
 ];
 
 const SKILL_CATEGORIES: Array<{ id: SkillCategory; label: string; icon: React.ReactNode }> = [
   { id: "technical", label: "Technical", icon: <Code2 className="w-3 h-3" /> },
   { id: "soft", label: "Soft Skills", icon: <Heart className="w-3 h-3" /> },
-  { id: "tools", label: "Tools & Software", icon: <Wand2 className="w-3 h-3" /> },
+  { id: "tools", label: "Tools", icon: <Wand2 className="w-3 h-3" /> },
   { id: "languages", label: "Languages", icon: <Globe className="w-3 h-3" /> },
-];
-
-const START_METHODS = [
-  { id: "scratch", icon: <PenLine className="w-6 h-6" />, title: "Start from Scratch", desc: "Build resume section by section manually" },
-  { id: "ai", icon: <Sparkles className="w-6 h-6" />, title: "AI-Assisted Build", desc: "Answer questions, AI generates draft content" },
-  { id: "import", icon: <FileUp className="w-6 h-6" />, title: "Import Resume", desc: "Upload PDF/DOCX, AI parses and converts" },
-  { id: "template", icon: <LayoutTemplate className="w-6 h-6" />, title: "Use a Template", desc: "Browse gallery and start from a design" },
 ];
 
 const PROFICIENCY_LABELS = ["", "Beginner", "Intermediate", "Advanced", "Expert"];
 
-// ─── Auto-Save Hook ─────────────────────────────────────────────────────────
+const START_METHODS = [
+  { id: "scratch", icon: <PenLine className="w-6 h-6" />, title: "Start from Scratch", desc: "Build resume section by section" },
+  { id: "import", icon: <FileUp className="w-6 h-6" />, title: "Import Resume", desc: "Upload PDF — AI parses and imports" },
+  { id: "template", icon: <LayoutTemplate className="w-6 h-6" />, title: "Use a Template", desc: "Browse gallery and start from a design" },
+];
 
-function useAutoSave(store: ResumeState, resumeId: string | null) {
+// ─── Template Preview Renderer ──────────────────────────────────────────────
+
+function TemplatePreview({ template }: { template: typeof TEMPLATES[0] }) {
+  const { accentColor, style } = template;
+
+  if (style === "minimal") {
+    return (
+      <div className="w-full h-full bg-white rounded p-3 font-sans">
+        <div className="h-4 w-3/4 mx-auto bg-gray-200 rounded mb-2" />
+        <div className="h-2 w-1/2 mx-auto bg-gray-100 rounded mb-3" />
+        <div className="border-t border-b border-gray-200 py-2 mb-2">
+          <div className="h-1.5 w-full bg-gray-100 rounded mb-1" />
+          <div className="h-1.5 w-4/5 bg-gray-100 rounded mb-1" />
+          <div className="h-1.5 w-3/5 bg-gray-100 rounded" />
+        </div>
+        <div className="space-y-1">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-1 bg-gray-100 rounded" style={{ width: `${70 + i * 8}%` }} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (style === "sidebar") {
+    return (
+      <div className="w-full h-full bg-white rounded flex overflow-hidden font-sans">
+        <div className="w-1/3 bg-gray-900 p-2">
+          <div className="h-3 bg-gray-700 rounded mb-2" />
+          <div className="space-y-1">
+            {[1, 2, 3, 4].map(i => <div key={i} className="h-1 bg-gray-700 rounded opacity-60" style={{ width: `${60 + i * 10}%` }} />)}
+          </div>
+        </div>
+        <div className="w-2/3 p-2">
+          <div className="h-4 bg-gray-300 rounded mb-1" />
+          <div className="h-2 bg-gray-200 rounded mb-2" />
+          <div className="space-y-0.5">
+            {[1, 2, 3].map(i => <div key={i} className="h-1 bg-gray-100 rounded" style={{ width: `${80 - i * 5}%` }} />)}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (style === "two-col") {
+    return (
+      <div className="w-full h-full bg-white rounded p-3 font-sans">
+        <div className="h-5 rounded mb-1" style={{ backgroundColor: accentColor }} />
+        <div className="h-2 w-1/2 rounded mb-2" style={{ backgroundColor: accentColor + "30" }} />
+        <div className="grid grid-cols-2 gap-1 mb-2">
+          <div className="bg-gray-100 rounded p-1"><div className="h-1.5 bg-gray-300 rounded mb-0.5" /><div className="h-1 bg-gray-200 rounded" /></div>
+          <div className="bg-gray-100 rounded p-1"><div className="h-1.5 bg-gray-300 rounded mb-0.5" /><div className="h-1 bg-gray-200 rounded" /></div>
+        </div>
+        <div className="space-y-0.5">
+          {[1, 2, 3].map(i => <div key={i} className="h-1 bg-gray-100 rounded" style={{ width: `${90 - i * 8}%` }} />)}
+        </div>
+      </div>
+    );
+  }
+
+  // Default modern
+  return (
+    <div className="w-full h-full bg-white rounded p-3 font-sans">
+      <div className="h-5 rounded mb-1" style={{ backgroundColor: accentColor }} />
+      <div className="h-2 w-1/2 rounded mb-2" style={{ backgroundColor: accentColor + "30" }} />
+      <div className="border-t border-b border-gray-200 py-1.5 mb-2">
+        <div className="space-y-0.5">
+          {[1, 2, 3].map(i => <div key={i} className="h-1 bg-gray-100 rounded" style={{ width: `${80 - i * 5}%` }} />)}
+        </div>
+      </div>
+      <div className="space-y-0.5">
+        {[1, 2, 3, 4].map(i => <div key={i} className="h-1 bg-gray-100 rounded" style={{ width: `${70 + i * 7}%` }} />)}
+      </div>
+    </div>
+  );
+}
+
+// ─── Auto-Save ───────────────────────────────────────────────────────────────
+
+function useAutoSave(store: ResumeState, resumeId: string | null, currentStep: StepId) {
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isDirtyRef = useRef(false);
+  const saveCountRef = useRef(0);
 
-  useEffect(() => {
-    isDirtyRef.current = store.hasUnsavedChanges;
-  }, [store.hasUnsavedChanges]);
+  useEffect(() => { isDirtyRef.current = store.hasUnsavedChanges; }, [store.hasUnsavedChanges]);
 
-  const save = useCallback(async () => {
+  const save = useCallback(async (label = "auto") => {
     if (!store.currentResume || !isDirtyRef.current) return;
+    if (saveStatus === "saving") return; // Prevent concurrent saves
+
     setSaveStatus("saving");
     store.markSaving();
+
     try {
       if (resumeId) {
         await resumeApi.updateById(resumeId, store.currentResume as unknown as Record<string, unknown>);
@@ -103,25 +172,31 @@ function useAutoSave(store: ResumeState, resumeId: string | null) {
       }
       store.markSaved();
       setSaveStatus("saved");
-      setTimeout(() => setSaveStatus("idle"), 2000);
-    } catch {
+      saveCountRef.current++;
+      setTimeout(() => setSaveStatus(s => s === "saved" ? "idle" : s), 2500);
+    } catch (err: any) {
       store.markUnsaved();
       setSaveStatus("error");
-      toast.error("Auto-save failed — your changes are local");
+      console.error("Auto-save failed:", err?.message || err);
     }
-  }, [store, resumeId]);
+  }, [store, resumeId, saveStatus]);
 
-  // Auto-save on interval
+  // Save on step change (user navigating)
   useEffect(() => {
-    timerRef.current = setInterval(() => {
-      if (isDirtyRef.current) save();
-    }, 30000);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+    if (store.hasUnsavedChanges) save("step");
+  }, [currentStep]);
+
+  // Save on 15s interval
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (isDirtyRef.current) save("interval");
+    }, 15000);
+    return () => clearInterval(timer);
   }, [save]);
 
   // Save on window blur
   useEffect(() => {
-    const handler = () => { if (isDirtyRef.current) save(); };
+    const handler = () => { if (isDirtyRef.current) save("blur"); };
     window.addEventListener("blur", handler);
     return () => window.removeEventListener("blur", handler);
   }, [save]);
@@ -129,52 +204,107 @@ function useAutoSave(store: ResumeState, resumeId: string | null) {
   return { save, saveStatus };
 }
 
-// ─── Step 0: Start Method ────────────────────────────────────────────────────
+// ─── Step 0: Start Method ──────────────────────────────────────────────────────
 
-function StepStart({ onNext }: { onNext: (method: string) => void }) {
-  const [selected, setSelected] = useState<string | null>(null);
+function StepStart({
+  onScratch, onImport, onTemplate
+}: {
+  onScratch: () => void;
+  onImport: () => void;
+  onTemplate: () => void;
+}) {
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+    if (!allowedTypes.includes(file.type)) {
+      setImportError("Only PDF or DOCX files are supported");
+      return;
+    }
+
+    setImporting(true);
+    setImportError("");
+
+    try {
+      const res = await resumeApi.importPdf(file);
+      const result = res.data?.data ?? res.data;
+
+      if (result?.parsed) {
+        toast.success("Resume imported! Review and edit the parsed content.");
+        onImport(); // pass parsed data up
+      } else {
+        toast.info("File uploaded. Fill in details manually or use a template.");
+        onImport();
+      }
+    } catch (err: any) {
+      setImportError(err?.response?.data?.error || "Failed to import. Try again.");
+    } finally {
+      setImporting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="font-display text-2xl font-bold text-on-surface mb-2">How would you like to start?</h2>
         <p className="text-on-surface-variant">Choose the method that works best for you</p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
-        {START_METHODS.map((m) => (
-          <Card
-            key={m.id}
-            className={`p-5 cursor-pointer transition-all hover:shadow-ambient-md surface-shift ${
-              selected === m.id
-                ? "bg-primary/8 border-2 border-primary shadow-ambient-sm"
-                : "bg-surface-container-highest shadow-ambient-sm hover:border-primary/30"
-            }`}
-            onClick={() => setSelected(m.id)}
-          >
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-3 ${
-              selected === m.id ? "bg-primary text-white" : "bg-surface-container-low text-on-surface-variant"
-            }`}>
-              {m.icon}
-            </div>
-            <h3 className="font-semibold text-on-surface mb-1">{m.title}</h3>
-            <p className="text-sm text-on-surface-variant">{m.desc}</p>
-            {selected === m.id && (
-              <div className="absolute top-3 right-3 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                <Check className="w-3 h-3 text-white" />
-              </div>
-            )}
-          </Card>
-        ))}
-      </div>
-      <div className="flex justify-center">
-        <Button size="lg" onClick={() => selected && onNext(selected)} disabled={!selected}>
-          Continue <ArrowRight className="w-4 h-4 ml-2" />
-        </Button>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
+        {/* Scratch */}
+        <Card
+          className="p-6 cursor-pointer transition-all hover:shadow-ambient-md surface-shift text-center group"
+          onClick={onScratch}
+        >
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+            <PenLine className="w-7 h-7" />
+          </div>
+          <h3 className="font-semibold text-on-surface mb-1">Start from Scratch</h3>
+          <p className="text-sm text-on-surface-variant">Build your resume section by section with guided prompts</p>
+        </Card>
+
+        {/* Import */}
+        <Card className="p-6 cursor-pointer transition-all hover:shadow-ambient-md surface-shift text-center group relative">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.docx"
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            onChange={handleFileChange}
+            disabled={importing}
+          />
+          <div className="w-14 h-14 rounded-2xl bg-secondary/10 flex items-center justify-center mx-auto mb-4 text-secondary group-hover:bg-secondary group-hover:text-white transition-colors">
+            {importing ? <Loader2 className="w-7 h-7 animate-spin" /> : <FileUp className="w-7 h-7" />}
+          </div>
+          <h3 className="font-semibold text-on-surface mb-1">Import Resume</h3>
+          <p className="text-sm text-on-surface-variant">Upload PDF — AI parses and imports</p>
+          {importError && (
+            <p className="text-xs text-error mt-2">{importError}</p>
+          )}
+        </Card>
+
+        {/* Template */}
+        <Card
+          className="p-6 cursor-pointer transition-all hover:shadow-ambient-md surface-shift text-center group"
+          onClick={onTemplate}
+        >
+          <div className="w-14 h-14 rounded-2xl bg-success/10 flex items-center justify-center mx-auto mb-4 text-success group-hover:bg-success group-hover:text-white transition-colors">
+            <LayoutTemplate className="w-7 h-7" />
+          </div>
+          <h3 className="font-semibold text-on-surface mb-1">Use a Template</h3>
+          <p className="text-sm text-on-surface-variant">Browse gallery and start from a design</p>
+        </Card>
       </div>
     </div>
   );
 }
 
-// ─── Step 1: Template Selection ─────────────────────────────────────────────
+// ─── Step 1: Template ─────────────────────────────────────────────────────────
 
 function StepTemplate({ store }: { store: ResumeState }) {
   const t = store.activeTemplate;
@@ -189,25 +319,18 @@ function StepTemplate({ store }: { store: ResumeState }) {
           <button
             key={tmpl.id}
             onClick={() => store.setTemplate(tmpl.id)}
-            className={`relative rounded-xl border-2 p-1 transition-all hover:shadow-ambient-md ${
+            className={`relative rounded-xl border-2 p-1.5 transition-all hover:shadow-ambient-md ${
               t === tmpl.id
                 ? "border-primary bg-primary/5 shadow-ambient-sm"
                 : "border-outline-variant bg-surface-container-highest hover:border-primary/30"
             }`}
           >
-            {/* Template preview thumbnail */}
-            <div className="w-full aspect-[3/4] bg-white rounded-lg border border-outline-variant p-2 flex flex-col gap-1">
-              <div className="h-4 w-3/4 bg-surface-container-mid rounded mx-auto mb-1" />
-              <div className="h-2 w-1/2 bg-surface-container-low rounded mx-auto" />
-              <div className="mt-auto space-y-0.5">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="h-1 bg-surface-container-low rounded" style={{ width: `${70 + i * 8}%` }} />
-                ))}
-              </div>
+            <div className="aspect-[3/4]">
+              <TemplatePreview template={tmpl} />
             </div>
-            <div className="flex items-center justify-between mt-1 px-1">
+            <div className="flex items-center justify-between mt-1.5 px-0.5">
               <span className="text-xs font-medium text-on-surface">{tmpl.name}</span>
-              {!tmpl.atsSafe && <Badge variant="warning" className="text-[10px]">⚠ ATS</Badge>}
+              {!tmpl.atsSafe && <Badge variant="warning" className="text-[9px] px-1 py-0">⚠ ATS</Badge>}
             </div>
             {t === tmpl.id && (
               <div className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-ambient-sm">
@@ -217,14 +340,11 @@ function StepTemplate({ store }: { store: ResumeState }) {
           </button>
         ))}
       </div>
-      <p className="text-xs text-center text-on-surface-variant">
-        Templates flagged ⚠ ATS may reduce compatibility with Applicant Tracking Systems
-      </p>
     </div>
   );
 }
 
-// ─── Step 2: Profile ────────────────────────────────────────────────────────
+// ─── Step 2: Profile ──────────────────────────────────────────────────────────
 
 function StepProfile({ store }: { store: ResumeState }) {
   const resume = store.currentResume;
@@ -232,6 +352,7 @@ function StepProfile({ store }: { store: ResumeState }) {
   const [summary, setSummary] = useState(resume?.summary ?? "");
   const [generating, setGenerating] = useState(false);
   const [improving, setImproving] = useState(false);
+  const [improvedSummary, setImprovedSummary] = useState("");
 
   const updateHeader = (field: string, value: string) => {
     if (!resume) return;
@@ -243,37 +364,49 @@ function StepProfile({ store }: { store: ResumeState }) {
     if (resume) store.updateSection("summary", val);
   };
 
-  const handleGenerateSummary = async () => {
+  const handleGenerate = async () => {
     setGenerating(true);
     try {
       const res = await resumeApi.generateSummary({
-        prompt: `Generate a professional summary for a ${header.name || "professional"} with experience.`,
-        currentSummary: summary,
+        prompt: "Generate a professional summary",
+        resumeData: {
+          header: resume?.header,
+          title: resume?.title,
+          experience: resume?.experience,
+          education: resume?.education,
+          skills: resume?.skills,
+        },
       });
-      const generated = res.data?.data ?? res.data?.summary ?? "";
+      const generated = res.data?.data?.summary ?? "";
       if (generated) {
         updateSummary(generated);
         toast.success("Summary generated!");
       }
-    } catch {
-      toast.error("Failed to generate summary");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || "Failed to generate summary");
     } finally {
       setGenerating(false);
     }
   };
 
-  const handleImproveSummary = async () => {
+  const handleImprove = async () => {
     if (!summary) return;
     setImproving(true);
     try {
       const res = await resumeApi.generateSummary({
-        prompt: "Improve this professional summary:",
+        prompt: "Improve this summary",
         currentSummary: summary,
+        resumeData: {
+          header: resume?.header,
+          title: resume?.title,
+          experience: resume?.experience,
+          education: resume?.education,
+          skills: resume?.skills,
+        },
       });
-      const improved = res.data?.data ?? res.data?.summary ?? "";
+      const improved = res.data?.data?.summary ?? "";
       if (improved) {
-        updateSummary(improved);
-        toast.success("Summary improved!");
+        setImprovedSummary(improved);
       }
     } catch {
       toast.error("Failed to improve summary");
@@ -282,13 +415,21 @@ function StepProfile({ store }: { store: ResumeState }) {
     }
   };
 
+  const acceptImproved = () => {
+    if (improvedSummary) {
+      updateSummary(improvedSummary);
+      setImprovedSummary("");
+      toast.success("Summary updated!");
+    }
+  };
+
   const fields = [
     { key: "name", label: "Full Name", placeholder: "Jane Smith", required: true },
     { key: "email", label: "Email", placeholder: "jane@email.com", type: "email", required: true },
     { key: "phone", label: "Phone", placeholder: "+1 (555) 123-4567", type: "tel", required: true },
     { key: "location", label: "Location", placeholder: "San Francisco, CA" },
-    { key: "linkedin", label: "LinkedIn URL", placeholder: "linkedin.com/in/janesmith" },
-    { key: "github", label: "GitHub URL", placeholder: "github.com/janesmith" },
+    { key: "linkedin", label: "LinkedIn", placeholder: "linkedin.com/in/janesmith" },
+    { key: "github", label: "GitHub", placeholder: "github.com/janesmith" },
     { key: "website", label: "Portfolio / Website", placeholder: "janesmith.dev" },
   ];
 
@@ -300,14 +441,14 @@ function StepProfile({ store }: { store: ResumeState }) {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {fields.map(f => (
+        {fields.map((f) => (
           <div key={f.key} className="space-y-1.5">
-            <Label htmlFor={f.key}>{f.label} {f.required && <span className="text-error">*</span>}</Label>
+            <Label htmlFor={`profile-${f.key}`}>{f.label} {f.required && <span className="text-error">*</span>}</Label>
             <Input
-              id={f.key}
+              id={`profile-${f.key}`}
               type={f.type ?? "text"}
               placeholder={f.placeholder}
-              value={(header as any)[f.key] ?? ""}
+              value={(header as Record<string, string>)[f.key] ?? ""}
               onChange={(e) => updateHeader(f.key, e.target.value)}
             />
           </div>
@@ -315,41 +456,36 @@ function StepProfile({ store }: { store: ResumeState }) {
       </div>
 
       <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <div>
-            <Label htmlFor="title">Professional Title</Label>
-            <p className="text-xs text-on-surface-variant">e.g., Senior Frontend Engineer</p>
-          </div>
-        </div>
+        <Label htmlFor="profile-title">Professional Title</Label>
         <Input
-          id="title"
+          id="profile-title"
           placeholder="e.g., Senior Frontend Engineer"
           value={resume?.title ?? ""}
           onChange={(e) => store.setResumeTitle(e.target.value)}
         />
       </div>
 
+      {/* Summary with AI */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div>
             <Label htmlFor="summary">Professional Summary</Label>
-            <p className="text-xs text-on-surface-variant">
-              {summary.length}/400 chars recommended ({Math.max(0, 400 - summary.length)} remaining)
-            </p>
+            <p className="text-xs text-on-surface-variant">{summary.length}/400 chars recommended</p>
           </div>
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={handleGenerateSummary} disabled={generating}>
+            <Button size="sm" variant="outline" onClick={handleGenerate} disabled={generating}>
               {generating ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Sparkles className="w-3 h-3 mr-1" />}
-              {generating ? "Generating..." : "Generate"}
+              {generating ? "Generating..." : "Generate with AI"}
             </Button>
             {summary && (
-              <Button size="sm" variant="outline" onClick={handleImproveSummary} disabled={improving}>
+              <Button size="sm" variant="outline" onClick={handleImprove} disabled={improving}>
                 {improving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Wand2 className="w-3 h-3 mr-1" />}
                 Improve
               </Button>
             )}
           </div>
         </div>
+
         <Textarea
           id="summary"
           placeholder="Write a brief summary of your experience, skills, and what you're looking for..."
@@ -358,85 +494,110 @@ function StepProfile({ store }: { store: ResumeState }) {
           className="min-h-[120px]"
           maxLength={600}
         />
+
+        {/* Improved version preview */}
+        {improvedSummary && (
+          <Card className="p-3 bg-success/8 border border-success/20">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles className="w-4 h-4 text-success" />
+              <span className="text-sm font-medium text-success">AI Improved Version</span>
+            </div>
+            <p className="text-sm text-on-surface mb-3">{improvedSummary}</p>
+            <div className="flex gap-2">
+              <Button size="sm" onClick={acceptImproved}>Use This Version</Button>
+              <Button size="sm" variant="ghost" onClick={() => setImprovedSummary("")}>Discard</Button>
+            </div>
+          </Card>
+        )}
       </div>
     </div>
   );
 }
 
-// ─── Step 3: Experience ──────────────────────────────────────────────────────
+// ─── Step 3: Experience ───────────────────────────────────────────────────────
 
 function StepExperience({ store }: { store: ResumeState }) {
   const resume = store.currentResume;
-  const [expanding, setExpanding] = useState<string | null>(null);
-  const [addingNew, setAddingNew] = useState(false);
-
-  const makeExpId = () => `exp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [suggesting, setSuggesting] = useState<string | null>(null);
+  const [showSuggestFor, setShowSuggestFor] = useState<string | null>(null);
+  const [suggestedBullets, setSuggestedBullets] = useState<string[]>([]);
+  const experiences: ResumeExperience[] = resume?.experience ?? [];
 
   const addExperience = () => {
     store.addExperience({
       company: "", title: "", period: "", startDate: "", endDate: "",
       isCurrent: false, bullets: [], location: "", employmentType: "Full-time",
     });
-    setAddingNew(true);
     const newId = store.currentResume?.experience[store.currentResume.experience.length - 1]?.id;
-    if (newId) setExpanding(newId);
+    if (newId) setExpanded(newId);
   };
 
-  const removeExperience = (id: string) => {
-    store.removeExperience(id);
-    setExpanding(null);
-  };
-
-  const updateExperience = (id: string, field: string, value: unknown) => {
+  const updateExp = (id: string, field: string, value: unknown) => {
     if (!resume) return;
-    const updated = resume.experience.map((e: ResumeExperience) =>
-      e.id === id ? { ...e, [field]: value } : e
-    );
-    store.updateSection("experience", updated);
+    store.updateSection("experience", resume.experience.map((e: ResumeExperience) => e.id === id ? { ...e, [field]: value } : e));
   };
 
   const addBullet = (id: string) => {
     if (!resume) return;
     const exp = resume.experience.find((e: ResumeExperience) => e.id === id);
     if (!exp) return;
-    updateExperience(id, "bullets", [...exp.bullets, ""]);
+    updateExp(id, "bullets", [...exp.bullets, ""]);
   };
 
-  const updateBullet = (id: string, index: number, value: string) => {
+  const updateBullet = (id: string, idx: number, val: string) => {
     if (!resume) return;
     const exp = resume.experience.find((e: ResumeExperience) => e.id === id);
     if (!exp) return;
-    const bullets = [...exp.bullets];
-    bullets[index] = value;
-    updateExperience(id, "bullets", bullets);
+    const bullets = [...exp.bullets]; bullets[idx] = val;
+    updateExp(id, "bullets", bullets);
   };
 
-  const removeBullet = (id: string, index: number) => {
+  const removeBullet = (id: string, idx: number) => {
     if (!resume) return;
     const exp = resume.experience.find((e: ResumeExperience) => e.id === id);
     if (!exp) return;
-    updateExperience(id, "bullets", exp.bullets.filter((_: string, i: number) => i !== index));
+    updateExp(id, "bullets", exp.bullets.filter((_: string, i: number) => i !== idx));
   };
 
-  const handleSuggestAchievements = async (id: string) => {
+  const handleSuggest = async (id: string) => {
     const exp = resume?.experience.find((e: ResumeExperience) => e.id === id);
-    if (!exp?.title || !exp?.company) {
-      toast.error("Fill in job title and company first");
+    if (!exp?.title && !exp?.company) {
+      toast.error("Fill in job title or company first");
       return;
     }
+    setSuggesting(id);
+    setSuggestedBullets([]);
+    setShowSuggestFor(id);
     try {
-      const res = await resumeApi.suggestAchievements({ jobTitle: exp.title, company: exp.company, bullets: exp.bullets });
-      const suggested = res.data?.data ?? res.data?.achievements ?? [];
-      if (suggested.length > 0) {
-        updateExperience(id, "bullets", [...exp.bullets, ...suggested]);
-        toast.success(`Added ${suggested.length} achievement suggestions`);
+      const res = await resumeApi.suggestAchievements({
+        jobTitle: exp.title,
+        company: exp.company,
+        existingAchievements: exp.bullets,
+      });
+      const bullets: string[] = res.data?.data?.achievements ?? [];
+      if (bullets.length > 0) {
+        setSuggestedBullets(bullets);
+      } else {
+        toast.info("No suggestions available. Add bullets manually.");
       }
-    } catch {
-      toast.error("Failed to suggest achievements");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || "Failed to suggest achievements");
+    } finally {
+      setSuggesting(null);
     }
   };
 
-  const experiences: ResumeExperience[] = resume?.experience ?? [];
+  const applySuggested = (id: string) => {
+    if (!resume) return;
+    const exp = resume.experience.find((e: ResumeExperience) => e.id === id);
+    if (!exp) return;
+    const merged = Array.from(new Set<string>([...exp.bullets, ...suggestedBullets]));
+    updateExp(id, "bullets", merged);
+    setSuggestedBullets([]);
+    setShowSuggestFor(null);
+    toast.success(`Added ${suggestedBullets.length} achievement bullets`);
+  };
 
   return (
     <div className="space-y-6">
@@ -445,7 +606,7 @@ function StepExperience({ store }: { store: ResumeState }) {
         <p className="text-on-surface-variant">Add your professional experience (most recent first)</p>
       </div>
 
-      {experiences.length === 0 && !addingNew && (
+      {experiences.length === 0 && (
         <Card className="p-8 text-center bg-surface-container-highest shadow-ambient-sm">
           <Briefcase className="w-10 h-10 text-on-surface-disabled mx-auto mb-3" />
           <p className="text-on-surface-variant mb-4">No experience added yet</p>
@@ -457,7 +618,7 @@ function StepExperience({ store }: { store: ResumeState }) {
           <Card key={exp.id} className="bg-surface-container-highest shadow-ambient-sm overflow-hidden">
             <button
               className="w-full flex items-center justify-between p-4 hover:bg-surface-container-low surface-shift text-left"
-              onClick={() => setExpanding(expanding === exp.id ? null : exp.id)}
+              onClick={() => setExpanded(expanded === exp.id ? null : exp.id)}
             >
               <div className="flex items-center gap-3 min-w-0">
                 <GripVertical className="w-4 h-4 text-on-surface-disabled shrink-0" />
@@ -468,86 +629,77 @@ function StepExperience({ store }: { store: ResumeState }) {
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <Badge variant="outline" className="text-xs">{exp.bullets.length} bullets</Badge>
-                {expanding === exp.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                {expanded === exp.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </div>
             </button>
 
-            {expanding === exp.id && (
-              <div className="px-4 pb-4 space-y-4 border-t border-outline-variant">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4">
-                  <div className="space-y-1">
-                    <Label>Job Title *</Label>
-                    <Input value={exp.title} onChange={(e) => updateExperience(exp.id, "title", e.target.value)} placeholder="Software Engineer" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Company *</Label>
-                    <Input value={exp.company} onChange={(e) => updateExperience(exp.id, "company", e.target.value)} placeholder="Acme Corp" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Location</Label>
-                    <Input value={exp.location ?? ""} onChange={(e) => updateExperience(exp.id, "location", e.target.value)} placeholder="San Francisco, CA" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Employment Type</Label>
-                    <Select value={exp.employmentType ?? "Full-time"} onValueChange={(v) => updateExperience(exp.id, "employmentType", v)}>
+            {expanded === exp.id && (
+              <div className="px-4 pb-4 space-y-4 border-t border-outline-variant pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1"><Label>Job Title *</Label><Input value={exp.title} onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateExp(exp.id, "title", e.target.value)} placeholder="Software Engineer" /></div>
+                  <div className="space-y-1"><Label>Company *</Label><Input value={exp.company} onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateExp(exp.id, "company", e.target.value)} placeholder="Acme Corp" /></div>
+                  <div className="space-y-1"><Label>Location</Label><Input value={exp.location ?? ""} onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateExp(exp.id, "location", e.target.value)} placeholder="San Francisco, CA" /></div>
+                  <div className="space-y-1"><Label>Employment Type</Label>
+                    <Select value={exp.employmentType ?? "Full-time"} onValueChange={(v: string) => updateExp(exp.id, "employmentType", v)}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {["Full-time", "Part-time", "Contract", "Freelance", "Internship"].map(t => (
-                          <SelectItem key={t} value={t}>{t}</SelectItem>
-                        ))}
+                        {["Full-time", "Part-time", "Contract", "Freelance", "Internship"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-1">
-                    <Label>Start Date</Label>
-                    <Input type="month" value={exp.startDate} onChange={(e) => updateExperience(exp.id, "startDate", e.target.value)} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>End Date</Label>
-                    <Input type="month" value={exp.endDate} onChange={(e) => updateExperience(exp.id, "endDate", e.target.value)} />
-                  </div>
+                  <div className="space-y-1"><Label>Start Date</Label><Input type="month" value={exp.startDate} onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateExp(exp.id, "startDate", e.target.value)} /></div>
+                  <div className="space-y-1"><Label>End Date</Label><Input type="month" value={exp.endDate} onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateExp(exp.id, "endDate", e.target.value)} disabled={exp.isCurrent} /></div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Checkbox
-                    id={`current-${exp.id}`}
-                    checked={exp.isCurrent}
-                    onCheckedChange={(checked) => {
-                      updateExperience(exp.id, "isCurrent", !!checked);
-                      if (checked) updateExperience(exp.id, "endDate", "");
-                    }}
-                  />
+                  <Checkbox id={`current-${exp.id}`} checked={exp.isCurrent} onCheckedChange={(checked: boolean) => { updateExp(exp.id, "isCurrent", !!checked); if (checked) updateExp(exp.id, "endDate", ""); }} />
                   <Label htmlFor={`current-${exp.id}`} className="text-sm cursor-pointer">Currently working here</Label>
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label>Achievements / Bullets</Label>
-                    <Button size="sm" variant="ghost" onClick={() => handleSuggestAchievements(exp.id)}>
-                      <Sparkles className="w-3 h-3 mr-1" /> Suggest with AI
+                    <Button size="sm" variant="ghost" onClick={() => handleSuggest(exp.id)} disabled={suggesting === exp.id}>
+                      {suggesting === exp.id ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <BrainCircuit className="w-3 h-3 mr-1" />}
+                      {suggesting === exp.id ? "Thinking..." : "Suggest with AI"}
                     </Button>
                   </div>
-                  {exp.bullets.map((bullet, bi) => (
+
+                  {/* Suggested bullets */}
+                  {showSuggestFor === exp.id && suggestedBullets.length > 0 && (
+                    <Card className="p-3 bg-primary/5 border border-primary/20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Sparkles className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium text-primary">AI Suggestions</span>
+                      </div>
+                      <div className="space-y-1 mb-3">
+                        {suggestedBullets.map((b, bi) => (
+                          <div key={bi} className="flex items-start gap-2">
+                            <span className="text-primary mt-0.5">•</span>
+                            <p className="text-sm text-on-surface">{b}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={() => applySuggested(exp.id)}>Add All ({suggestedBullets.length})</Button>
+                        <Button size="sm" variant="ghost" onClick={() => { setSuggestedBullets([]); setShowSuggestFor(null); }}>Cancel</Button>
+                      </div>
+                    </Card>
+                  )}
+
+                  {(exp.bullets ?? []).map((bullet: string, bi: number) => (
                     <div key={bi} className="flex gap-2 items-start">
                       <span className="text-primary mt-2.5">•</span>
-                      <Input
-                        value={bullet}
-                        onChange={(e) => updateBullet(exp.id, bi, e.target.value)}
-                        placeholder="e.g., Increased API response time by 40%"
-                        className="flex-1"
-                      />
-                      <Button size="sm" variant="ghost" onClick={() => removeBullet(exp.id, bi)} className="shrink-0">
-                        <X className="w-3 h-3" />
-                      </Button>
+                      <Input value={bullet} onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateBullet(exp.id, bi, e.target.value)}
+                        placeholder="e.g., Increased API response time by 40%" className="flex-1" />
+                      <Button size="sm" variant="ghost" onClick={() => removeBullet(exp.id, bi)} className="shrink-0"><X className="w-3 h-3" /></Button>
                     </div>
                   ))}
-                  <Button size="sm" variant="outline" onClick={() => addBullet(exp.id)}>
-                    <Plus className="w-3 h-3 mr-1" /> Add Bullet
-                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => addBullet(exp.id)}><Plus className="w-3 h-3 mr-1" /> Add Bullet</Button>
                 </div>
 
                 <div className="flex justify-end">
-                  <Button size="sm" variant="ghost" className="text-error hover:bg-error/5" onClick={() => removeExperience(exp.id)}>
+                  <Button size="sm" variant="ghost" className="text-error hover:bg-error/5" onClick={() => { store.removeExperience(exp.id); setExpanded(null); }}>
                     <Trash2 className="w-3 h-3 mr-1" /> Remove
                   </Button>
                 </div>
@@ -556,10 +708,7 @@ function StepExperience({ store }: { store: ResumeState }) {
           </Card>
         ))}
       </div>
-
-      <Button variant="outline" onClick={addExperience} className="w-full">
-        <Plus className="w-4 h-4 mr-2" /> Add Experience
-      </Button>
+      <Button variant="outline" onClick={addExperience} className="w-full"><Plus className="w-4 h-4 mr-2" /> Add Experience</Button>
     </div>
   );
 }
@@ -569,31 +718,18 @@ function StepExperience({ store }: { store: ResumeState }) {
 function StepEducation({ store }: { store: ResumeState }) {
   const resume = store.currentResume;
   const [expanded, setExpanded] = useState<string | null>(null);
+  const education = resume?.education ?? [];
 
   const addEducation = () => {
-    store.addEducation({
-      school: "", degreeType: "", fieldOfStudy: "",
-      graduationDate: "", gpa: "", honors: "", coursework: [], extracurriculars: "",
-    });
+    store.addEducation({ school: "", degreeType: "", fieldOfStudy: "", graduationDate: "", gpa: "", honors: "", coursework: [], extracurriculars: "", location: "" });
     const newId = store.currentResume?.education[store.currentResume.education.length - 1]?.id;
     if (newId) setExpanded(newId);
   };
 
-  const updateEducation = (id: string, field: string, value: any) => {
+  const updateEdu = (id: string, field: string, value: unknown) => {
     if (!resume) return;
-    const updated = resume.education.map(e => e.id === id ? { ...e, [field]: value } : e);
-    store.updateSection("education", updated);
+    store.updateSection("education", resume.education.map((e: ResumeEducation) => e.id === id ? { ...e, [field]: value } : e));
   };
-
-  const handleSuggestCoursework = async (id: string) => {
-    const edu = resume?.education.find(e => e.id === id);
-    if (!edu?.fieldOfStudy) { toast.error("Fill in field of study first"); return; }
-    try {
-      toast.info("Coursework suggestions coming soon");
-    } catch { toast.error("Failed to suggest coursework"); }
-  };
-
-  const education = resume?.education ?? [];
 
   return (
     <div className="space-y-6">
@@ -610,12 +746,10 @@ function StepEducation({ store }: { store: ResumeState }) {
       )}
 
       <div className="space-y-3">
-        {education.map((edu, i) => (
+        {education.map((edu: ResumeEducation, i: number) => (
           <Card key={edu.id} className="bg-surface-container-highest shadow-ambient-sm overflow-hidden">
-            <button
-              className="w-full flex items-center justify-between p-4 hover:bg-surface-container-low surface-shift text-left"
-              onClick={() => setExpanded(expanded === edu.id ? null : edu.id)}
-            >
+            <button className="w-full flex items-center justify-between p-4 hover:bg-surface-container-low surface-shift text-left"
+              onClick={() => setExpanded(expanded === edu.id ? null : edu.id)}>
               <div className="flex items-center gap-3 min-w-0">
                 <GripVertical className="w-4 h-4 text-on-surface-disabled shrink-0" />
                 <div className="min-w-0">
@@ -629,87 +763,49 @@ function StepEducation({ store }: { store: ResumeState }) {
             {expanded === edu.id && (
               <div className="px-4 pb-4 space-y-3 border-t border-outline-variant pt-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label>Degree *</Label>
-                    <Select value={edu.degreeType} onValueChange={(v) => updateEducation(edu.id, "degreeType", v)}>
+                  <div className="space-y-1"><Label>Degree *</Label>
+                    <Select value={edu.degreeType} onValueChange={(v: string) => updateEdu(edu.id, "degreeType", v)}>
                       <SelectTrigger><SelectValue placeholder="Select degree" /></SelectTrigger>
                       <SelectContent>
-                        {["Bachelor's", "Master's", "PhD", "Associate's", "High School", "Certificate", "Diploma"].map(d => (
-                          <SelectItem key={d} value={d}>{d}</SelectItem>
-                        ))}
+                        {["Bachelor's", "Master's", "PhD", "Associate's", "High School", "Certificate", "Diploma"].map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-1">
-                    <Label>Field of Study *</Label>
-                    <Input value={edu.fieldOfStudy} onChange={(e) => updateEducation(edu.id, "fieldOfStudy", e.target.value)} placeholder="Computer Science" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Institution *</Label>
-                    <Input value={edu.school} onChange={(e) => updateEducation(edu.id, "school", e.target.value)} placeholder="MIT" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Location</Label>
-                    <Input value={edu.location ?? ""} onChange={(e) => updateEducation(edu.id, "location" as any, e.target.value)} placeholder="Cambridge, MA" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Graduation Date</Label>
-                    <Input type="month" value={edu.graduationDate} onChange={(e) => updateEducation(edu.id, "graduationDate", e.target.value)} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>GPA (optional)</Label>
-                    <Input value={edu.gpa ?? ""} onChange={(e) => updateEducation(edu.id, "gpa", e.target.value)} placeholder="3.8/4.0" />
-                  </div>
+                  <div className="space-y-1"><Label>Field of Study *</Label><Input value={edu.fieldOfStudy} onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateEdu(edu.id, "fieldOfStudy", e.target.value)} placeholder="Computer Science" /></div>
+                  <div className="space-y-1"><Label>Institution *</Label><Input value={edu.school} onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateEdu(edu.id, "school", e.target.value)} placeholder="MIT" /></div>
+                  <div className="space-y-1"><Label>Location</Label><Input value={edu.location ?? ""} onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateEdu(edu.id, "location", e.target.value)} placeholder="Cambridge, MA" /></div>
+                  <div className="space-y-1"><Label>Graduation Date</Label><Input type="month" value={edu.graduationDate} onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateEdu(edu.id, "graduationDate", e.target.value)} /></div>
+                  <div className="space-y-1"><Label>GPA (optional)</Label><Input value={edu.gpa ?? ""} onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateEdu(edu.id, "gpa", e.target.value)} placeholder="3.8/4.0" /></div>
                 </div>
-                <div className="space-y-1">
-                  <Label>Honors / Awards</Label>
-                  <Input value={edu.honors ?? ""} onChange={(e) => updateEducation(edu.id, "honors", e.target.value)} placeholder="Magna Cum Laude, Dean's List" />
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <Label>Relevant Coursework</Label>
-                    <Button size="sm" variant="ghost" onClick={() => handleSuggestCoursework(edu.id)}>
-                      <Sparkles className="w-3 h-3 mr-1" /> Suggest
-                    </Button>
-                  </div>
-                  <Input
-                    value={edu.coursework.join(", ")}
-                    onChange={(e) => updateEducation(edu.id, "coursework", e.target.value.split(",").map(s => s.trim()).filter(Boolean))}
-                    placeholder="Data Structures, Algorithms, ML (comma-separated)"
-                  />
-                </div>
+                <div className="space-y-1"><Label>Honors</Label><Input value={edu.honors ?? ""} onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateEdu(edu.id, "honors", e.target.value)} placeholder="Magna Cum Laude, Dean's List" /></div>
+                <div className="space-y-1"><Label>Relevant Coursework</Label><Input value={(edu.coursework ?? []).join(", ")} onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateEdu(edu.id, "coursework", e.target.value.split(",").map((s: string) => s.trim()).filter(Boolean))} placeholder="Data Structures, Algorithms (comma-separated)" /></div>
                 <div className="flex justify-end">
-                  <Button size="sm" variant="ghost" className="text-error hover:bg-error/5" onClick={() => { store.removeEducation(edu.id); setExpanded(null); }}>
-                    <Trash2 className="w-3 h-3 mr-1" /> Remove
-                  </Button>
+                  <Button size="sm" variant="ghost" className="text-error" onClick={() => { store.removeEducation(edu.id); setExpanded(null); }}><Trash2 className="w-3 h-3 mr-1" /> Remove</Button>
                 </div>
               </div>
             )}
           </Card>
         ))}
       </div>
-
-      <Button variant="outline" onClick={addEducation} className="w-full">
-        <Plus className="w-4 h-4 mr-2" /> Add Education
-      </Button>
+      <Button variant="outline" onClick={addEducation} className="w-full"><Plus className="w-4 h-4 mr-2" /> Add Education</Button>
     </div>
   );
 }
 
-// ─── Step 5: Skills ─────────────────────────────────────────────────────────
+// ─── Step 5: Skills ──────────────────────────────────────────────────────────
 
 function StepSkills({ store }: { store: ResumeState }) {
   const resume = store.currentResume;
   const [activeCategory, setActiveCategory] = useState<SkillCategory>("technical");
   const [skillInput, setSkillInput] = useState("");
-
+  const [matching, setMatching] = useState(false);
+  const [matchResult, setMatchResult] = useState<{ score: number; suggested: string[]; missing: string[] } | null>(null);
   const categories: SkillCategory[] = ["technical", "soft", "tools", "languages"];
-
   const skills = resume?.skills ?? [];
 
-  const handleAddSkill = (name: string, category: SkillCategory, proficiency: 1 | 2 | 3 | 4 = 2) => {
+  const handleAddSkill = (name: string, category: SkillCategory, proficiency: 1|2|3|4 = 2) => {
     if (!name.trim()) return;
-    if (skills.some(s => s.name.toLowerCase() === name.toLowerCase().trim())) {
+    if (skills.some((s: any) => (s.name || s).toLowerCase() === name.toLowerCase().trim())) {
       toast.error("Skill already added");
       return;
     }
@@ -717,54 +813,52 @@ function StepSkills({ store }: { store: ResumeState }) {
     setSkillInput("");
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault();
-      handleAddSkill(skillInput, activeCategory);
-    }
-  };
-
-  const handleMatchSkills = async () => {
+  const handleMatch = async () => {
     const title = resume?.title;
-    if (!title) { toast.error("Set your professional title first"); return; }
+    if (!title) { toast.error("Set your professional title in the Profile step first"); return; }
+    setMatching(true);
+    setMatchResult(null);
     try {
-      const res = await resumeApi.matchSkills({ jobTitle: title });
-      const suggested: string[] = res.data?.data ?? res.data?.skills ?? [];
+      const res = await resumeApi.matchSkills({
+        jobTitle: title,
+        skills: skills.map((s: any) => s.name || s),
+      });
+      const result = res.data?.data ?? res.data ?? {};
+      setMatchResult(result);
+      // Auto-add suggested skills
+      const suggested: string[] = result.suggestedSkills ?? [];
       if (suggested.length > 0) {
-        suggested.forEach(s => {
-          if (!skills.some(ex => ex.name.toLowerCase() === s.toLowerCase())) {
+        suggested.forEach((s: string) => {
+          if (!skills.some((ex: any) => (ex.name || ex).toLowerCase() === s.toLowerCase())) {
             store.addSkill(s, activeCategory, 2);
           }
         });
         toast.success(`Added ${suggested.length} suggested skills`);
       }
-    } catch {
-      toast.error("Failed to match skills");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || "Failed to match skills");
+    } finally {
+      setMatching(false);
     }
   };
 
-  const getCategorySkills = (cat: SkillCategory) => skills.filter(s => s.category === cat);
+  const getCategorySkills = (cat: SkillCategory) => skills.filter((s: any) => s.category === cat);
 
   return (
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="font-display text-2xl font-bold text-on-surface mb-2">Skills</h2>
-        <p className="text-on-surface-variant">Add your technical and soft skills</p>
+        <p className="text-on-surface-variant">Add your skills — AI can suggest relevant skills for your target role</p>
       </div>
 
       <div className="flex flex-wrap gap-2 bg-surface-container-low rounded-xl p-1">
         {categories.map(cat => {
           const catDef = SKILL_CATEGORIES.find(c => c.id === cat)!;
           return (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
+            <button key={cat} onClick={() => setActiveCategory(cat)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                activeCategory === cat
-                  ? "bg-surface-container-highest text-primary shadow-ambient-sm"
-                  : "text-on-surface-variant hover:text-on-surface"
-              }`}
-            >
+                activeCategory === cat ? "bg-surface-container-highest text-primary shadow-ambient-sm" : "text-on-surface-variant hover:text-on-surface"
+              }`}>
               {catDef.icon} {catDef.label}
             </button>
           );
@@ -772,56 +866,71 @@ function StepSkills({ store }: { store: ResumeState }) {
       </div>
 
       <div className="flex gap-2">
-        <Input
-          value={skillInput}
-          onChange={(e) => setSkillInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={`Type a skill and press Enter (category: ${SKILL_CATEGORIES.find(c => c.id === activeCategory)?.label})`}
-          className="flex-1"
-        />
-        <Button variant="outline" onClick={() => handleAddSkill(skillInput, activeCategory)}>
-          <Plus className="w-4 h-4 mr-1" /> Add
-        </Button>
-        <Button variant="outline" onClick={handleMatchSkills}>
-          <Sparkles className="w-4 h-4 mr-1" /> Match
+        <Input value={skillInput} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSkillInput(e.target.value)}
+          onKeyDown={(e: React.KeyboardEvent) => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); handleAddSkill(skillInput, activeCategory); } }}
+          placeholder="Type a skill and press Enter" className="flex-1" />
+        <Button variant="outline" onClick={() => handleAddSkill(skillInput, activeCategory)}><Plus className="w-4 h-4 mr-1" /> Add</Button>
+        <Button variant="outline" onClick={handleMatch} disabled={matching}>
+          {matching ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Sparkles className="w-4 h-4 mr-1" />}
+          {matching ? "Matching..." : "Match to Role"}
         </Button>
       </div>
+
+      {/* Match result */}
+      {matchResult && (
+        <Card className="p-4 bg-surface-container-high shadow-ambient-sm">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-2">
+              <Zap className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-on-surface">Role Match: {matchResult.score}%</span>
+            </div>
+            <div className="flex-1 h-2 bg-surface-container-low rounded-full overflow-hidden">
+              <div className={`h-full rounded-full transition-all ${matchResult.score >= 80 ? "bg-success" : matchResult.score >= 60 ? "bg-warning" : "bg-error"}`}
+                style={{ width: `${matchResult.score}%` }} />
+            </div>
+          </div>
+          {matchResult.missing.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              <span className="text-xs text-on-surface-variant">Missing:</span>
+              {matchResult.missing.slice(0, 8).map((m: string) => (
+                <Badge key={m} variant="warning" className="text-xs">{m}</Badge>
+              ))}
+            </div>
+          )}
+        </Card>
+      )}
 
       <div className="space-y-4">
         {categories.map(cat => {
           const catSkills = getCategorySkills(cat);
-          if (catSkills.length === 0) return null;
+          if (catSkills.length === 0 && activeCategory !== cat) return null;
           return (
             <div key={cat} className="space-y-2">
-              <h4 className="text-sm font-medium text-on-surface-variant flex items-center gap-1.5">
-                {SKILL_CATEGORIES.find(c => c.id === cat)?.icon}
-                {SKILL_CATEGORIES.find(c => c.id === cat)?.label}
-                <Badge variant="outline" className="text-xs ml-1">{catSkills.length}</Badge>
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                {catSkills.map(skill => (
-                  <Badge key={skill.id} variant="default" className="pl-2 pr-1 py-1.5 gap-1.5 text-sm">
-                    {skill.name}
-                    <div className="flex gap-0.5 ml-1">
-                      {[1, 2, 3, 4].map(p => (
-                        <button
-                          key={p}
-                          onClick={() => store.setSkillProficiency(skill.id, p as 1|2|3|4)}
-                          className={`w-2 h-2 rounded-full transition-all ${
-                            p <= skill.proficiency ? "bg-primary" : "bg-surface-container-low"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <button
-                      onClick={() => store.removeSkill(skill.id)}
-                      className="ml-1 text-on-surface-disabled hover:text-error"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
+              {catSkills.length > 0 && (
+                <>
+                  <h4 className="text-sm font-medium text-on-surface-variant flex items-center gap-1.5">
+                    {SKILL_CATEGORIES.find(c => c.id === cat)?.icon}
+                    {SKILL_CATEGORIES.find(c => c.id === cat)?.label}
+                    <Badge variant="outline" className="text-xs ml-1">{catSkills.length}</Badge>
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {catSkills.map((skill: any) => (
+                      <Badge key={skill.id} variant="default" className="pl-2 pr-1 py-1.5 gap-1.5 text-sm">
+                        {skill.name}
+                        <div className="flex gap-0.5 ml-1">
+                          {[1, 2, 3, 4].map(p => (
+                            <button key={p} onClick={() => store.setSkillProficiency(skill.id, p as 1|2|3|4)}
+                              className={`w-2 h-2 rounded-full transition-all ${p <= skill.proficiency ? "bg-primary" : "bg-surface-container-low"}`} />
+                          ))}
+                        </div>
+                        <button onClick={() => store.removeSkill(skill.id)} className="ml-1 text-on-surface-disabled hover:text-error">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           );
         })}
@@ -838,18 +947,16 @@ function StepSkills({ store }: { store: ResumeState }) {
   );
 }
 
-// ─── Step 6: Additional Sections ──────────────────────────────────────────
+// ─── Step 6: Additional ───────────────────────────────────────────────────────
 
 function StepAdditional({ store }: { store: ResumeState }) {
   const resume = store.currentResume;
   const [activeSection, setActiveSection] = useState<string | null>(null);
 
-  type AdditionalSection = "certifications" | "projects" | "publications" | "volunteer" | "awards" | "interests";
-
+  type AdditionalSection = "certifications" | "projects" | "volunteer" | "awards" | "interests";
   const sections: Array<{ id: AdditionalSection; label: string; icon: React.ReactNode; count: number }> = [
     { id: "certifications", label: "Certifications", icon: <Award className="w-4 h-4" />, count: resume?.certifications.length ?? 0 },
     { id: "projects", label: "Projects", icon: <Code2 className="w-4 h-4" />, count: resume?.projects.length ?? 0 },
-    { id: "publications", label: "Publications", icon: <BookOpen className="w-4 h-4" />, count: resume?.publications.length ?? 0 },
     { id: "volunteer", label: "Volunteer", icon: <Heart className="w-4 h-4" />, count: resume?.volunteer.length ?? 0 },
     { id: "awards", label: "Awards", icon: <Star className="w-4 h-4" />, count: resume?.awards.length ?? 0 },
     { id: "interests", label: "Interests", icon: <Globe className="w-4 h-4" />, count: resume?.interests.length ?? 0 },
@@ -857,118 +964,120 @@ function StepAdditional({ store }: { store: ResumeState }) {
 
   const renderCertifications = () => {
     const certs = resume?.certifications ?? [];
-    const add = () => {
-      store.addCertification({ name: "", issuer: "", date: "" });
-    };
-    const update = (id: string, field: string, value: string) => {
-      if (!resume) return;
-      store.updateSection("certifications", certs.map(c => c.id === id ? { ...c, [field]: value } : c));
-    };
     return (
       <div className="space-y-3">
         {certs.map(cert => (
           <Card key={cert.id} className="p-4 bg-surface-container-high shadow-ambient-sm space-y-2">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <Input value={cert.name} onChange={(e) => update(cert.id, "name", e.target.value)} placeholder="AWS Solutions Architect" />
-              <Input value={cert.issuer} onChange={(e) => update(cert.id, "issuer", e.target.value)} placeholder="Amazon Web Services" />
-              <Input type="month" value={cert.date} onChange={(e) => update(cert.id, "date", e.target.value)} />
+              <Input value={cert.name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                if (!resume) return;
+                store.updateSection("certifications", certs.map((c: any) => c.id === cert.id ? { ...c, name: e.target.value } : c));
+              }} placeholder="AWS Solutions Architect" />
+              <Input value={cert.issuer} onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                if (!resume) return;
+                store.updateSection("certifications", certs.map((c: any) => c.id === cert.id ? { ...c, issuer: e.target.value } : c));
+              }} placeholder="Amazon Web Services" />
+              <Input type="month" value={cert.date} onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                if (!resume) return;
+                store.updateSection("certifications", certs.map((c: any) => c.id === cert.id ? { ...c, date: e.target.value } : c));
+              }} />
             </div>
-            <div className="flex justify-end">
-              <Button size="sm" variant="ghost" className="text-error" onClick={() => store.removeCertification(cert.id)}>
-                <Trash2 className="w-3 h-3 mr-1" /> Remove
-              </Button>
-            </div>
+            <div className="flex justify-end"><Button size="sm" variant="ghost" className="text-error" onClick={() => store.removeCertification(cert.id)}><Trash2 className="w-3 h-3 mr-1" /> Remove</Button></div>
           </Card>
         ))}
-        <Button variant="outline" onClick={add} className="w-full"><Plus className="w-4 h-4 mr-2" /> Add Certification</Button>
+        <Button variant="outline" onClick={() => store.addCertification({ name: "", issuer: "", date: "" })} className="w-full"><Plus className="w-4 h-4 mr-2" /> Add Certification</Button>
       </div>
     );
   };
 
   const renderProjects = () => {
     const projects = resume?.projects ?? [];
-    const add = () => {
-      store.addProject({ name: "", description: "", technologies: [] });
-    };
-    const update = (id: string, field: string, value: any) => {
-      if (!resume) return;
-      store.updateSection("projects", projects.map(p => p.id === id ? { ...p, [field]: value } : p));
-    };
     return (
       <div className="space-y-3">
         {projects.map(proj => (
           <Card key={proj.id} className="p-4 bg-surface-container-high shadow-ambient-sm space-y-2">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <Input value={proj.name} onChange={(e) => update(proj.id, "name", e.target.value)} placeholder="Project Name" />
-              <Input value={proj.technologies.join(", ")} onChange={(e) => update(proj.id, "technologies", e.target.value.split(",").map(s => s.trim()).filter(Boolean))} placeholder="React, Node.js, MongoDB" />
+              <Input value={proj.name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                if (!resume) return;
+                store.updateSection("projects", projects.map((p: any) => p.id === proj.id ? { ...p, name: e.target.value } : p));
+              }} placeholder="Project Name" />
+              <Input value={(proj.technologies ?? []).join(", ")} onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                if (!resume) return;
+                store.updateSection("projects", projects.map((p: any) => p.id === proj.id ? { ...p, technologies: e.target.value.split(",").map((s: string) => s.trim()).filter(Boolean) } : p));
+              }} placeholder="React, Node.js" />
             </div>
-            <Textarea value={proj.description} onChange={(e) => update(proj.id, "description", e.target.value)} placeholder="Brief description of the project..." className="min-h-[80px]" />
-            <div className="flex justify-end">
-              <Button size="sm" variant="ghost" className="text-error" onClick={() => store.removeProject(proj.id)}>
-                <Trash2 className="w-3 h-3 mr-1" /> Remove
-              </Button>
-            </div>
+            <Textarea value={proj.description} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+              if (!resume) return;
+              store.updateSection("projects", projects.map((p: any) => p.id === proj.id ? { ...p, description: e.target.value } : p));
+            }} placeholder="Brief description of the project..." className="min-h-[80px]" />
+            <div className="flex justify-end"><Button size="sm" variant="ghost" className="text-error" onClick={() => store.removeProject(proj.id)}><Trash2 className="w-3 h-3 mr-1" /> Remove</Button></div>
           </Card>
         ))}
-        <Button variant="outline" onClick={add} className="w-full"><Plus className="w-4 h-4 mr-2" /> Add Project</Button>
+        <Button variant="outline" onClick={() => store.addProject({ name: "", description: "", technologies: [] })} className="w-full"><Plus className="w-4 h-4 mr-2" /> Add Project</Button>
       </div>
     );
   };
 
   const renderVolunteer = () => {
     const vols = resume?.volunteer ?? [];
-    const add = () => { store.addVolunteer({ organization: "", role: "", period: "", description: "" }); };
-    const update = (id: string, field: string, value: string) => {
-      if (!resume) return;
-      store.updateSection("volunteer", vols.map(v => v.id === id ? { ...v, [field]: value } : v));
-    };
     return (
       <div className="space-y-3">
         {vols.map(vol => (
           <Card key={vol.id} className="p-4 bg-surface-container-high shadow-ambient-sm space-y-2">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <Input value={vol.organization} onChange={(e) => update(vol.id, "organization", e.target.value)} placeholder="Organization" />
-              <Input value={vol.role} onChange={(e) => update(vol.id, "role", e.target.value)} placeholder="Your Role" />
+              <Input value={vol.organization} onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                if (!resume) return;
+                store.updateSection("volunteer", vols.map((v: any) => v.id === vol.id ? { ...v, organization: e.target.value } : v));
+              }} placeholder="Organization" />
+              <Input value={vol.role} onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                if (!resume) return;
+                store.updateSection("volunteer", vols.map((v: any) => v.id === vol.id ? { ...v, role: e.target.value } : v));
+              }} placeholder="Your Role" />
             </div>
-            <Input value={vol.period} onChange={(e) => update(vol.id, "period", e.target.value)} placeholder="Jan 2020 – Dec 2021" />
-            <Textarea value={vol.description} onChange={(e) => update(vol.id, "description", e.target.value)} placeholder="Description..." className="min-h-[60px]" />
-            <div className="flex justify-end">
-              <Button size="sm" variant="ghost" className="text-error" onClick={() => store.removeVolunteer(vol.id)}>
-                <Trash2 className="w-3 h-3 mr-1" /> Remove
-              </Button>
-            </div>
+            <Input value={vol.period} onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              if (!resume) return;
+              store.updateSection("volunteer", vols.map((v: any) => v.id === vol.id ? { ...v, period: e.target.value } : v));
+            }} placeholder="Jan 2020 – Dec 2021" />
+            <Textarea value={vol.description} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+              if (!resume) return;
+              store.updateSection("volunteer", vols.map((v: any) => v.id === vol.id ? { ...v, description: e.target.value } : v));
+            }} placeholder="Description..." className="min-h-[60px]" />
+            <div className="flex justify-end"><Button size="sm" variant="ghost" className="text-error" onClick={() => store.removeVolunteer(vol.id)}><Trash2 className="w-3 h-3 mr-1" /> Remove</Button></div>
           </Card>
         ))}
-        <Button variant="outline" onClick={add} className="w-full"><Plus className="w-4 h-4 mr-2" /> Add Volunteer</Button>
+        <Button variant="outline" onClick={() => store.addVolunteer({ organization: "", role: "", period: "", description: "" })} className="w-full"><Plus className="w-4 h-4 mr-2" /> Add Volunteer</Button>
       </div>
     );
   };
 
   const renderAwards = () => {
     const awards = resume?.awards ?? [];
-    const add = () => { store.addAward({ name: "", issuer: "", date: "", description: "" }); };
-    const update = (id: string, field: string, value: string) => {
-      if (!resume) return;
-      store.updateSection("awards", awards.map(a => a.id === id ? { ...a, [field]: value } : a));
-    };
     return (
       <div className="space-y-3">
         {awards.map(award => (
           <Card key={award.id} className="p-4 bg-surface-container-high shadow-ambient-sm space-y-2">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <Input value={award.name} onChange={(e) => update(award.id, "name", e.target.value)} placeholder="Award Name" />
-              <Input value={award.issuer} onChange={(e) => update(award.id, "issuer", e.target.value)} placeholder="Issuer" />
-              <Input type="month" value={award.date} onChange={(e) => update(award.id, "date", e.target.value)} />
+              <Input value={award.name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                if (!resume) return;
+                store.updateSection("awards", awards.map((a: any) => a.id === award.id ? { ...a, name: e.target.value } : a));
+              }} placeholder="Award Name" />
+              <Input value={award.issuer} onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                if (!resume) return;
+                store.updateSection("awards", awards.map((a: any) => a.id === award.id ? { ...a, issuer: e.target.value } : a));
+              }} placeholder="Issuer" />
+              <Input type="month" value={award.date} onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                if (!resume) return;
+                store.updateSection("awards", awards.map((a: any) => a.id === award.id ? { ...a, date: e.target.value } : a));
+              }} />
             </div>
-            <Textarea value={award.description} onChange={(e) => update(award.id, "description", e.target.value)} placeholder="Description..." className="min-h-[60px]" />
-            <div className="flex justify-end">
-              <Button size="sm" variant="ghost" className="text-error" onClick={() => store.removeAward(award.id)}>
-                <Trash2 className="w-3 h-3 mr-1" /> Remove
-              </Button>
-            </div>
+            <Textarea value={award.description} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+              if (!resume) return;
+              store.updateSection("awards", awards.map((a: any) => a.id === award.id ? { ...a, description: e.target.value } : a));
+            }} placeholder="Description..." className="min-h-[60px]" />
+            <div className="flex justify-end"><Button size="sm" variant="ghost" className="text-error" onClick={() => store.removeAward(award.id)}><Trash2 className="w-3 h-3 mr-1" /> Remove</Button></div>
           </Card>
         ))}
-        <Button variant="outline" onClick={add} className="w-full"><Plus className="w-4 h-4 mr-2" /> Add Award</Button>
+        <Button variant="outline" onClick={() => store.addAward({ name: "", issuer: "", date: "", description: "" })} className="w-full"><Plus className="w-4 h-4 mr-2" /> Add Award</Button>
       </div>
     );
   };
@@ -976,25 +1085,19 @@ function StepAdditional({ store }: { store: ResumeState }) {
   const renderInterests = () => {
     const interests = resume?.interests ?? [];
     const [input, setInput] = useState("");
-
-    const add = (name: string) => {
-      if (!name.trim()) return;
-      store.addInterest(name.trim());
-      setInput("");
-    };
     return (
       <div className="space-y-3">
         <div className="flex gap-2">
-          <Input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(input); } }} placeholder="Add an interest..." className="flex-1" />
-          <Button variant="outline" onClick={() => add(input)}><Plus className="w-4 h-4" /></Button>
+          <Input value={input} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
+            onKeyDown={(e: React.KeyboardEvent) => { if (e.key === "Enter") { e.preventDefault(); if (input.trim()) { store.addInterest(input.trim()); setInput(""); } } }}
+            placeholder="Add an interest..." className="flex-1" />
+          <Button variant="outline" onClick={() => { if (input.trim()) { store.addInterest(input.trim()); setInput(""); } }}><Plus className="w-4 h-4" /></Button>
         </div>
         <div className="flex flex-wrap gap-2">
           {interests.map(interest => (
             <Badge key={interest} variant="default" className="pl-2 pr-1 py-1.5 gap-1">
               {interest}
-              <button onClick={() => store.removeInterest(interest)} className="text-on-surface-disabled hover:text-error ml-1">
-                <X className="w-3 h-3" />
-              </button>
+              <button onClick={() => store.removeInterest(interest)} className="text-on-surface-disabled hover:text-error ml-1"><X className="w-3 h-3" /></button>
             </Badge>
           ))}
         </div>
@@ -1006,27 +1109,15 @@ function StepAdditional({ store }: { store: ResumeState }) {
     switch (activeSection) {
       case "certifications": return renderCertifications();
       case "projects": return renderProjects();
-      case "publications": return (
-        <div className="text-center py-8 text-on-surface-variant">
-          <BookOpen className="w-8 h-8 mx-auto mb-2 text-on-surface-disabled" />
-          <p>Add publications when editing a published work</p>
-          <p className="text-xs text-on-surface-disabled mt-1">Supports academic papers, articles, conference talks</p>
-        </div>
-      );
       case "volunteer": return renderVolunteer();
       case "awards": return renderAwards();
       case "interests": return renderInterests();
       default: return (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {sections.map(s => (
-            <button
-              key={s.id}
-              onClick={() => setActiveSection(s.id)}
-              className="flex items-center gap-3 p-4 rounded-xl bg-surface-container-highest shadow-ambient-sm hover:shadow-ambient-md hover:bg-surface-container-low surface-shift transition-all text-left"
-            >
-              <div className="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-on-surface-variant">
-                {s.icon}
-              </div>
+            <button key={s.id} onClick={() => setActiveSection(s.id)}
+              className="flex items-center gap-3 p-4 rounded-xl bg-surface-container-highest shadow-ambient-sm hover:shadow-ambient-md hover:bg-surface-container-low surface-shift transition-all text-left">
+              <div className="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-on-surface-variant">{s.icon}</div>
               <div>
                 <p className="font-medium text-on-surface text-sm">{s.label}</p>
                 <p className="text-xs text-on-surface-variant">{s.count} added</p>
@@ -1046,12 +1137,8 @@ function StepAdditional({ store }: { store: ResumeState }) {
       </div>
       {activeSection && (
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="ghost" onClick={() => setActiveSection(null)}>
-            <ArrowLeft className="w-3 h-3 mr-1" /> Back
-          </Button>
-          <span className="text-sm text-on-surface-variant">
-            {sections.find(s => s.id === activeSection)?.label}
-          </span>
+          <Button size="sm" variant="ghost" onClick={() => setActiveSection(null)}><ArrowLeft className="w-3 h-3 mr-1" /> Back</Button>
+          <span className="text-sm text-on-surface-variant">{sections.find(s => s.id === activeSection)?.label}</span>
         </div>
       )}
       {renderContent()}
@@ -1059,7 +1146,7 @@ function StepAdditional({ store }: { store: ResumeState }) {
   );
 }
 
-// ─── Step 7: ATS Optimization ────────────────────────────────────────────────
+// ─── Step 7: ATS Score ───────────────────────────────────────────────────────
 
 function StepATS({ store }: { store: ResumeState }) {
   const resume = store.currentResume;
@@ -1068,26 +1155,29 @@ function StepATS({ store }: { store: ResumeState }) {
   const [optimizing, setOptimizing] = useState(false);
   const [atsScore, setAtsScore] = useState(resume?.atsScore ?? 72);
   const [missingKeywords, setMissingKeywords] = useState<string[]>(resume?.missingKeywords ?? []);
-  const [linkedRoleId, setLinkedRoleId] = useState<string | null>(resume?.linkedJobId ?? null);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
 
   const handleScore = async () => {
-    if (!jobDescription.trim()) {
-      toast.error("Paste a job description first");
-      return;
-    }
+    if (!jobDescription.trim()) { toast.error("Paste a job description first"); return; }
     setScoring(true);
+    setSuggestions([]);
     try {
-      const res = await resumeApi.getAtsScore({ resumeId: resume?.id, jobDescription });
+      const res = await resumeApi.getAtsScore({
+        resumeId: resume?.id,
+        jobDescription,
+        resumeData: resume,
+      });
       const result = res.data?.data ?? res.data ?? {};
-      setAtsScore(result.score ?? 0);
+      setAtsScore(result.score ?? 72);
       setMissingKeywords(result.missingKeywords ?? []);
+      setSuggestions(result.suggestions ?? []);
       if (result.score !== undefined) {
         store.updateSection("atsScore", result.score);
         store.updateSection("missingKeywords", result.missingKeywords ?? []);
       }
-      toast.success(`ATS Score: ${result.score ?? 0}%`);
-    } catch {
-      toast.error("Failed to calculate ATS score");
+      toast.success(`ATS Score: ${result.score ?? 72}%`);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || "Failed to calculate ATS score");
     } finally {
       setScoring(false);
     }
@@ -1097,11 +1187,22 @@ function StepATS({ store }: { store: ResumeState }) {
     if (!jobDescription.trim()) { toast.error("Paste a job description first"); return; }
     setOptimizing(true);
     try {
-      await resumeApi.autoOptimize({ resumeId: resume?.id, roleId: linkedRoleId ?? undefined });
-      toast.success("Resume optimized for ATS!");
-      setAtsScore(Math.min(100, atsScore + 5));
-    } catch {
-      toast.error("Failed to optimize");
+      const res = await resumeApi.autoOptimize({
+        resumeId: resume?.id,
+        resumeData: resume,
+        jobDescription,
+      });
+      const result = res.data?.data ?? {};
+      if (result.optimized) {
+        const opt = result.optimized;
+        if (opt.summary) store.updateSection("summary", opt.summary);
+        if (opt.experience) store.updateSection("experience", opt.experience);
+        if (opt.skills) store.updateSection("skills", opt.skills);
+        toast.success(`Resume optimized! Score improved from ${result.originalScore ?? atsScore}% to ${result.optimizedScore ?? atsScore + 5}%`);
+        setAtsScore(result.optimizedScore ?? atsScore + 5);
+      }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || "Failed to optimize");
     } finally {
       setOptimizing(false);
     }
@@ -1111,22 +1212,15 @@ function StepATS({ store }: { store: ResumeState }) {
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="font-display text-2xl font-bold text-on-surface mb-2">ATS Optimization</h2>
-        <p className="text-on-surface-variant">Analyze and optimize your resume for applicant tracking systems</p>
+        <p className="text-on-surface-variant">Paste a job description to score and optimize your resume</p>
       </div>
 
-      <Card className="p-6 bg-surface-container-highest shadow-ambient-sm">
-        <ATSScoreMeter score={atsScore} showZones />
-      </Card>
+      <Card className="p-6 bg-surface-container-highest shadow-ambient-sm"><ATSScoreMeter score={atsScore} showZones /></Card>
 
       <div className="space-y-2">
-        <Label htmlFor="jd">Paste Job Description</Label>
-        <Textarea
-          id="jd"
-          value={jobDescription}
-          onChange={(e) => setJobDescription(e.target.value)}
-          placeholder="Paste the job description here to analyze your resume against it..."
-          className="min-h-[150px]"
-        />
+        <Label htmlFor="ats-jd">Job Description</Label>
+        <Textarea id="ats-jd" value={jobDescription} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setJobDescription(e.target.value)}
+          placeholder="Paste the job description here to analyze your resume against it..." className="min-h-[150px]" />
         <div className="flex gap-2">
           <Button onClick={handleScore} disabled={scoring || !jobDescription.trim()}>
             {scoring ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Zap className="w-4 h-4 mr-2" />}
@@ -1134,7 +1228,7 @@ function StepATS({ store }: { store: ResumeState }) {
           </Button>
           <Button variant="outline" onClick={handleAutoOptimize} disabled={optimizing || !jobDescription.trim()}>
             {optimizing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
-            {optimizing ? "Optimizing..." : "Auto-Optimize"}
+            {optimizing ? "Optimizing..." : "Auto-Optimize with AI"}
           </Button>
         </div>
       </div>
@@ -1146,13 +1240,25 @@ function StepATS({ store }: { store: ResumeState }) {
             <h4 className="font-medium text-on-surface">Missing Keywords</h4>
           </div>
           <div className="flex flex-wrap gap-2">
-            {missingKeywords.map((kw, i) => (
-              <Badge key={i} variant="warning" className="text-xs">{kw}</Badge>
-            ))}
+            {missingKeywords.map((kw, i) => <Badge key={i} variant="warning" className="text-xs">{kw}</Badge>)}
           </div>
-          <p className="text-xs text-on-surface-variant mt-2">
-            Add these keywords to your resume to improve your ATS match score
-          </p>
+          <p className="text-xs text-on-surface-variant mt-2">Add these keywords to your resume to improve ATS compatibility</p>
+        </Card>
+      )}
+
+      {suggestions.length > 0 && (
+        <Card className="p-4 bg-surface-container-highest shadow-ambient-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <Wand2 className="w-4 h-4 text-primary" />
+            <h4 className="font-medium text-on-surface">Improvement Suggestions</h4>
+          </div>
+          <ul className="space-y-1.5">
+            {suggestions.map((s, i) => (
+              <li key={i} className="flex items-start gap-2 text-sm text-on-surface-variant">
+                <span className="text-primary mt-0.5">•</span>{s}
+              </li>
+            ))}
+          </ul>
         </Card>
       )}
 
@@ -1182,13 +1288,12 @@ function StepPreview({ store }: { store: ResumeState }) {
   const resume = store.currentResume;
   const [downloading, setDownloading] = useState(false);
   const [format, setFormat] = useState<"pdf" | "docx">("pdf");
+  const template = TEMPLATES.find(t => t.id === (resume?.template ?? "MODERN")) ?? TEMPLATES[0];
 
   const handleDownload = async () => {
     setDownloading(true);
     try {
-      const res = format === "pdf"
-        ? await resumeApi.downloadPdf()
-        : await resumeApi.downloadDocx();
+      const res = format === "pdf" ? await resumeApi.downloadPdf() : await resumeApi.downloadDocx();
       const blob = new Blob([res.data], {
         type: format === "pdf" ? "application/pdf" : "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       });
@@ -1205,12 +1310,12 @@ function StepPreview({ store }: { store: ResumeState }) {
     }
   };
 
-  const resumeData = resume ?? {
-    name: "Untitled Resume", title: "", template: "MODERN",
+  const data = resume ?? {
+    name: "Your Name", title: "", template: "MODERN",
     header: { name: "", email: "", phone: "", location: "", linkedin: "", github: "", website: "" },
     summary: "", experience: [], education: [], skills: [], certifications: [], projects: [],
     publications: [], volunteer: [], awards: [], interests: [], sections: [],
-    status: "draft", tags: [], visibility: "private" as const,
+    status: "draft" as const, tags: [], visibility: "private" as const,
     atsScore: 72, missingKeywords: [],
     createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), versions: [],
   };
@@ -1219,10 +1324,9 @@ function StepPreview({ store }: { store: ResumeState }) {
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="font-display text-2xl font-bold text-on-surface mb-2">Preview</h2>
-        <p className="text-on-surface-variant">Review your resume before saving</p>
+        <p className="text-on-surface-variant">Review your resume — download when ready</p>
       </div>
 
-      {/* Download bar */}
       <Card className="p-4 bg-surface-container-highest shadow-ambient-sm">
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-sm text-on-surface-variant">Download:</span>
@@ -1237,72 +1341,71 @@ function StepPreview({ store }: { store: ResumeState }) {
         </div>
       </Card>
 
-      {/* Resume preview */}
+      {/* Live preview */}
       <div className="transform scale-[0.65] origin-top-left" style={{ width: "154%", height: "154%" }}>
         <div className="bg-white rounded-xl shadow-ambient-lg p-8 min-h-[700px] font-sans border border-outline-variant">
-          {/* Header */}
           <div className="text-center mb-4">
-            <h1 className="text-2xl font-bold text-on-surface">{resumeData.header.name || "Your Name"}</h1>
-            <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-on-surface-variant mt-1">
-              {resumeData.header.email && <span>{resumeData.header.email}</span>}
-              {resumeData.header.phone && <><span>·</span><span>{resumeData.header.phone}</span></>}
-              {resumeData.header.location && <><span>·</span><span>{resumeData.header.location}</span></>}
+            <h1 className="text-2xl font-bold" style={{ color: template.accentColor }}>{data.header?.name || "Your Name"}</h1>
+            <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-gray-600 mt-1">
+              {data.header?.email && <span>{data.header.email}</span>}
+              {data.header?.phone && <><span>·</span><span>{data.header.phone}</span></>}
+              {data.header?.location && <><span>·</span><span>{data.header.location}</span></>}
             </div>
-            <div className="flex flex-wrap justify-center gap-x-3 text-xs text-on-surface-variant mt-0.5">
-              {resumeData.header.linkedin && <span>linkedin.com/in/{resumeData.header.linkedin}</span>}
-              {resumeData.header.github && <span>github.com/{resumeData.header.github}</span>}
-            </div>
+            {(data.header?.linkedin || data.header?.github) && (
+              <div className="flex flex-wrap justify-center gap-x-3 text-xs text-gray-500 mt-0.5">
+                {data.header?.linkedin && <span>{data.header.linkedin}</span>}
+                {data.header?.github && <span>{data.header.github}</span>}
+              </div>
+            )}
           </div>
 
-          {resumeData.summary && (
+          {data.summary && (
             <div className="mb-4">
-              <h3 className="text-sm font-bold text-primary uppercase tracking-wider border-b border-primary/20 pb-1 mb-2">Professional Summary</h3>
-              <p className="text-xs text-on-surface-variant">{resumeData.summary}</p>
+              <h3 className="text-sm font-bold uppercase tracking-wider border-b pb-1 mb-2" style={{ color: template.accentColor, borderColor: template.accentColor + "30" }}>Professional Summary</h3>
+              <p className="text-xs text-gray-600">{data.summary}</p>
             </div>
           )}
 
-          {resumeData.experience.length > 0 && (
+          {data.experience.length > 0 && (
             <div className="mb-4">
-              <h3 className="text-sm font-bold text-primary uppercase tracking-wider border-b border-primary/20 pb-1 mb-2">Experience</h3>
-              {resumeData.experience.map((exp, i) => (
+              <h3 className="text-sm font-bold uppercase tracking-wider border-b pb-1 mb-2" style={{ color: template.accentColor, borderColor: template.accentColor + "30" }}>Experience</h3>
+              {data.experience.map((exp: any, i: number) => (
                 <div key={i} className="mb-3">
                   <div className="flex justify-between items-baseline">
-                    <p className="text-xs font-semibold text-on-surface">{exp.title}</p>
-                    <p className="text-xs text-on-surface-variant">{exp.period || `${exp.startDate} – ${exp.endDate || "Present"}`}</p>
+                    <p className="text-xs font-semibold text-gray-900">{exp.title}</p>
+                    <p className="text-xs text-gray-500">{exp.period || `${exp.startDate} – ${exp.endDate || "Present"}`}</p>
                   </div>
-                  <p className="text-xs text-on-surface-variant italic">{exp.company}{exp.location ? `, ${exp.location}` : ""}</p>
-                  {exp.bullets.filter(Boolean).map((b, bi) => (
-                    <p key={bi} className="text-xs text-on-surface-variant pl-3 mt-0.5">• {b}</p>
+                  <p className="text-xs text-gray-500 italic">{exp.company}{exp.location ? `, ${exp.location}` : ""}</p>
+                  {(exp.bullets ?? []).filter(Boolean).map((b: string, bi: number) => (
+                    <p key={bi} className="text-xs text-gray-600 pl-3 mt-0.5">• {b}</p>
                   ))}
                 </div>
               ))}
             </div>
           )}
 
-          {resumeData.education.length > 0 && (
+          {data.education.length > 0 && (
             <div className="mb-4">
-              <h3 className="text-sm font-bold text-primary uppercase tracking-wider border-b border-primary/20 pb-1 mb-2">Education</h3>
-              {resumeData.education.map((edu, i) => (
+              <h3 className="text-sm font-bold uppercase tracking-wider border-b pb-1 mb-2" style={{ color: template.accentColor, borderColor: template.accentColor + "30" }}>Education</h3>
+              {data.education.map((edu: any, i: number) => (
                 <div key={i} className="mb-2">
                   <div className="flex justify-between items-baseline">
-                    <p className="text-xs font-semibold text-on-surface">{edu.degreeType} {edu.fieldOfStudy && `in ${edu.fieldOfStudy}`}</p>
-                    <p className="text-xs text-on-surface-variant">{edu.graduationDate}</p>
+                    <p className="text-xs font-semibold text-gray-900">{edu.degreeType} {edu.fieldOfStudy && `in ${edu.fieldOfStudy}`}</p>
+                    <p className="text-xs text-gray-500">{edu.graduationDate}</p>
                   </div>
-                  <p className="text-xs text-on-surface-variant">{edu.school}{edu.gpa ? `, GPA: ${edu.gpa}` : ""}</p>
+                  <p className="text-xs text-gray-500">{edu.school}{edu.gpa ? `, GPA: ${edu.gpa}` : ""}</p>
                 </div>
               ))}
             </div>
           )}
 
-          {resumeData.skills.length > 0 && (
+          {data.skills.length > 0 && (
             <div>
-              <h3 className="text-sm font-bold text-primary uppercase tracking-wider border-b border-primary/20 pb-1 mb-2">Skills</h3>
+              <h3 className="text-sm font-bold uppercase tracking-wider border-b pb-1 mb-2" style={{ color: template.accentColor, borderColor: template.accentColor + "30" }}>Skills</h3>
               <div className="flex flex-wrap gap-x-4 gap-y-1">
-                {resumeData.skills.map((skill, i) => (
-                  <span key={i} className="text-xs text-on-surface">
-                    {skill.name} <span className="text-on-surface-variant">
-                      {PROFICIENCY_LABELS[skill.proficiency] ? `(${PROFICIENCY_LABELS[skill.proficiency]})` : ""}
-                    </span>
+                {data.skills.map((skill: any, i: number) => (
+                  <span key={i} className="text-xs text-gray-700">
+                    {skill.name || skill} {PROFICIENCY_LABELS[skill.proficiency] ? `(${PROFICIENCY_LABELS[skill.proficiency]})` : ""}
                   </span>
                 ))}
               </div>
@@ -1316,12 +1419,8 @@ function StepPreview({ store }: { store: ResumeState }) {
 
 // ─── Step 9: Save ───────────────────────────────────────────────────────────
 
-function StepSave({ store, resumeId, onComplete }: {
-  store: ResumeState;
-  resumeId: string | null;
-  onComplete: () => void;
-}) {
-  const [name, setName] = useState(store.currentResume?.name ?? "Untitled Resume");
+function StepSave({ store, onComplete }: { store: ResumeState; onComplete: () => void }) {
+  const [name, setName] = useState(store.currentResume?.name ?? "My Resume");
   const [title, setTitle] = useState(store.currentResume?.title ?? "");
   const [saving, setSaving] = useState(false);
 
@@ -1333,19 +1432,14 @@ function StepSave({ store, resumeId, onComplete }: {
       if (title) store.setResumeTitle(title);
       store.setStatus("complete");
 
-      if (resumeId) {
-        await resumeApi.updateById(resumeId, store.currentResume! as unknown as Record<string, unknown>);
-      } else {
-        const res = await resumeApi.create(store.currentResume! as unknown as Record<string, unknown>);
-        const created = res.data?.data ?? res.data;
-        if (created?.id) {
-          store.setCurrentResume({ ...store.currentResume!, id: created.id });
-        }
-      }
+      const res = await resumeApi.create(store.currentResume as unknown as Record<string, unknown>);
+      const created = res.data?.data ?? res.data;
+      if (created?.id) store.setCurrentResume({ ...store.currentResume!, id: created.id });
+
       toast.success("Resume saved!");
       onComplete();
-    } catch {
-      toast.error("Failed to save resume");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || "Failed to save resume");
     } finally {
       setSaving(false);
     }
@@ -1358,31 +1452,23 @@ function StepSave({ store, resumeId, onComplete }: {
           <CheckCircle2 className="w-8 h-8 text-success" />
         </div>
         <h2 className="font-display text-2xl font-bold text-on-surface mb-2">Save Your Resume</h2>
-        <p className="text-on-surface-variant">Give your resume a name and you're done!</p>
+        <p className="text-on-surface-variant">Give your resume a name and you're all set!</p>
       </div>
 
       <Card className="p-6 bg-surface-container-highest shadow-ambient-sm max-w-md mx-auto space-y-4">
         <div className="space-y-1.5">
-          <Label htmlFor="resume-name">Resume Name *</Label>
-          <Input
-            id="resume-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g., Senior Frontend Dev — TechCorp Application"
-          />
+          <Label htmlFor="save-name">Resume Name *</Label>
+          <Input id="save-name" value={name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
+            placeholder="e.g., Senior Frontend Dev — TechCorp Application" />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="resume-title">Target Role</Label>
-          <Input
-            id="resume-title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g., Senior Frontend Engineer"
-          />
+          <Label htmlFor="save-title">Target Role</Label>
+          <Input id="save-title" value={title} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
+            placeholder="e.g., Senior Frontend Engineer" />
         </div>
         <div className="flex items-center gap-2">
-          <Checkbox id="draft" checked={store.currentResume?.status === "draft"} onCheckedChange={(checked) => store.setStatus(checked ? "draft" : "complete")} />
-          <Label htmlFor="draft" className="text-sm cursor-pointer">Save as draft</Label>
+          <Checkbox id="save-draft" checked={store.currentResume?.status === "draft"} onCheckedChange={(checked: boolean) => store.setStatus(checked ? "draft" : "complete")} />
+          <Label htmlFor="save-draft" className="text-sm cursor-pointer">Save as draft</Label>
         </div>
         <Button className="w-full" size="lg" onClick={handleSave} disabled={saving || !name.trim()}>
           {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
@@ -1393,55 +1479,33 @@ function StepSave({ store, resumeId, onComplete }: {
   );
 }
 
-// ─── Main Builder ───────────────────────────────────────────────────────────
+// ─── Main Builder Page ───────────────────────────────────────────────────────
 
 export default function ResumeBuilderPage() {
   const store = useResumeStore();
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState<StepId>(0);
-  const [resumeId] = useState<string | null>(null); // null = new resume
-  const { saveStatus } = useAutoSave(store, resumeId);
+  const [resumeId] = useState<string | null>(null);
+  const { saveStatus } = useAutoSave(store, resumeId, currentStep);
 
-  // Initialize blank resume on mount
   useEffect(() => {
     if (!store.currentResume) {
-      const blank = {
-        id: "",
-        name: "Untitled Resume",
-        title: "",
-        template: "MODERN" as TemplateType,
-        status: "draft" as const,
-        tags: [],
-        visibility: "private" as const,
+      store.setCurrentResume({
+        id: "", name: "Untitled Resume", title: "", template: "MODERN", status: "draft",
+        tags: [], visibility: "private",
         header: { name: "", email: "", phone: "", location: "", linkedin: "", github: "", website: "" },
-        summary: "",
-        experience: [],
-        education: [],
-        skills: [],
-        certifications: [],
-        projects: [],
-        publications: [],
-        volunteer: [],
-        awards: [],
-        interests: [],
-        sections: [],
-        atsScore: undefined,
-        missingKeywords: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        versions: [],
-      };
-      store.setCurrentResume(blank);
+        summary: "", experience: [], education: [], skills: [], certifications: [], projects: [],
+        publications: [], volunteer: [], awards: [], interests: [], sections: [],
+        atsScore: undefined, missingKeywords: [],
+        createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), versions: [],
+      });
     }
   }, [store]);
 
-  const handleStep0Next = (method: string) => {
-    if (method === "template") setCurrentStep(1);
-    else if (method === "import") {
-      toast.info("Import feature — upload PDF coming soon");
-      setCurrentStep(2);
-    }
-    else setCurrentStep(2);
+  const handleStart = (method: string) => {
+    if (method === "scratch") setCurrentStep(2);
+    else if (method === "import") setCurrentStep(2);
+    else if (method === "template") setCurrentStep(1);
   };
 
   const handleComplete = () => {
@@ -1449,14 +1513,11 @@ export default function ResumeBuilderPage() {
     router.push("/resume");
   };
 
-  const progress = Math.round(((currentStep) / (STEPS.length - 1)) * 100);
-
-  const canGoBack = currentStep > 0;
-  const canGoForward = currentStep < STEPS.length - 1;
+  const progress = Math.round((currentStep / (STEPS.length - 1)) * 100);
 
   const renderStep = () => {
     switch (currentStep) {
-      case 0: return <StepStart onNext={handleStep0Next} />;
+      case 0: return <StepStart onScratch={() => handleStart("scratch")} onImport={() => handleStart("import")} onTemplate={() => handleStart("template")} />;
       case 1: return <StepTemplate store={store} />;
       case 2: return <StepProfile store={store} />;
       case 3: return <StepExperience store={store} />;
@@ -1465,7 +1526,7 @@ export default function ResumeBuilderPage() {
       case 6: return <StepAdditional store={store} />;
       case 7: return <StepATS store={store} />;
       case 8: return <StepPreview store={store} />;
-      case 9: return <StepSave store={store} resumeId={resumeId} onComplete={handleComplete} />;
+      case 9: return <StepSave store={store} onComplete={handleComplete} />;
       default: return null;
     }
   };
@@ -1488,46 +1549,35 @@ export default function ResumeBuilderPage() {
             <div className="flex items-center gap-3">
               {/* Save status */}
               <div className="flex items-center gap-1.5 text-xs">
-                {saveStatus === "saving" && <><Loader2 className="w-3 h-3 animate-spin text-on-surface-variant" /> <span className="text-on-surface-variant">Saving...</span></>}
-                {saveStatus === "saved" && <><CheckCircle2 className="w-3 h-3 text-success" /> <span className="text-success">Saved</span></>}
-                {saveStatus === "error" && <><AlertCircle className="w-3 h-3 text-error" /> <span className="text-error">Save failed</span></>}
+                {saveStatus === "saving" && <><Loader2 className="w-3 h-3 animate-spin text-on-surface-variant" /> <span className="text-on-surface-variant hidden sm:inline">Saving...</span></>}
+                {saveStatus === "saved" && <><CheckCircle2 className="w-3 h-3 text-success" /> <span className="text-success hidden sm:inline">Saved</span></>}
+                {saveStatus === "error" && <><AlertCircle className="w-3 h-3 text-error" /> <span className="text-error hidden sm:inline">Save failed</span></>}
+                {saveStatus === "idle" && <><Clock className="w-3 h-3 text-on-surface-disabled" /> <span className="text-on-surface-disabled hidden sm:inline">Ready</span></>}
               </div>
               <Button size="sm" variant="outline" onClick={() => router.push("/resume")}>Exit Builder</Button>
             </div>
           </div>
-          {/* Progress bar */}
+
           <Progress value={progress} className="h-1" />
-          {/* Step indicators */}
+
           <div className="flex items-center justify-between mt-2 overflow-x-auto pb-1">
             {STEPS.map((step, i) => (
-              <button
-                key={step.id}
-                onClick={() => i <= currentStep && setCurrentStep(step.id)}
+              <button key={step.id} onClick={() => i <= currentStep && setCurrentStep(step.id)}
                 className={`flex items-center gap-1 shrink-0 transition-all ${
-                  i === currentStep
-                    ? "text-primary"
-                    : i < currentStep
-                    ? "text-on-surface-variant hover:text-on-surface"
-                    : "text-on-surface-disabled"
-                }`}
-              >
+                  i === currentStep ? "text-primary" : i < currentStep ? "text-on-surface-variant hover:text-on-surface" : "text-on-surface-disabled"
+                }`}>
                 <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                  i === currentStep
-                    ? "bg-primary text-white"
-                    : i < currentStep
-                    ? "bg-success/16 text-success"
-                    : "bg-surface-container-low text-on-surface-disabled"
+                  i === currentStep ? "bg-primary text-white" : i < currentStep ? "bg-success/16 text-success" : "bg-surface-container-low text-on-surface-disabled"
                 }`}>
                   {i < currentStep ? <Check className="w-2.5 h-2.5" /> : i + 1}
                 </div>
-                <span className="text-[10px] hidden sm:inline">{step.label}</span>
+                <span className="text-[10px] hidden md:inline">{step.label}</span>
               </button>
             ))}
           </div>
         </div>
       </header>
 
-      {/* Step content */}
       <main className="max-w-4xl mx-auto px-4 py-8">
         {store.currentResume ? renderStep() : (
           <div className="flex items-center justify-center py-20">
@@ -1535,20 +1585,12 @@ export default function ResumeBuilderPage() {
           </div>
         )}
 
-        {/* Navigation */}
         <div className="flex items-center justify-between mt-8 pt-6 border-t border-outline-variant">
-          <Button
-            variant="outline"
-            onClick={() => setCurrentStep((s) => (s - 1) as StepId)}
-            disabled={!canGoBack}
-          >
+          <Button variant="outline" onClick={() => setCurrentStep((s) => (s - 1) as StepId)} disabled={currentStep === 0}>
             <ArrowLeft className="w-4 h-4 mr-2" /> Previous
           </Button>
-
-          {canGoForward && currentStep < 9 && (
-            <Button
-              onClick={() => setCurrentStep((s) => (s + 1) as StepId)}
-            >
+          {currentStep < STEPS.length - 1 && (
+            <Button onClick={() => setCurrentStep((s) => (s + 1) as StepId)}>
               Next <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           )}
