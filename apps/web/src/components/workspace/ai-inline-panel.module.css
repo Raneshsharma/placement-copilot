@@ -1,0 +1,109 @@
+.panel {
+  background: var(--ws-amber-light);
+  border: 1px solid var(--ws-amber-border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 16px;
+  animation: scale-in 0.2s ease-out;
+}
+
+.loadingState {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.spinnerIcon {
+  animation: spin 0.8s linear infinite;
+  color: var(--ws-primary);
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.loadingText {
+  font-size: 14px;
+  color: var(--ws-primary);
+  font-weight: 500;
+}
+
+.outputSection {
+  position: relative;
+}
+.outputLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ws-primary);
+  margin-bottom: 8px;
+}
+.outputText {
+  font-size: 14px;
+  color: var(--ws-text-primary);
+  line-height: 1.65;
+  white-space: pre-wrap;
+  margin: 0;
+  font-family: var(--font-inter), sans-serif;
+  background: white;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--ws-amber-border);
+}
+.copyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: none;
+  border: 1px solid var(--ws-border);
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--ws-text-secondary);
+  margin-top: 8px;
+  transition: border-color 0.15s ease;
+}
+.copyBtn:hover {
+  border-color: var(--ws-primary);
+  color: var(--ws-primary);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+.applyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  background: var(--ws-success);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background-color 0.15s ease;
+}
+.applyBtn:hover {
+  background: var(--ws-success-hover);
+}
+.discardBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ws-text-secondary);
+  border: 1px solid var(--ws-border);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.discardBtn:hover {
+  border-color: var(--ws-text-secondary);
+  color: var(--ws-text-primary);
+}
