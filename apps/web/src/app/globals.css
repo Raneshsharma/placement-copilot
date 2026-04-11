@@ -30,9 +30,30 @@
     --ws-text-muted: #A8A29E;
     --ws-border: #E7E5E4;
     --ws-healthy: #22c55e;
+    --ws-success: #22c55e;
+    --ws-success-hover: #16a34a;
     --ws-needs-work: #f59e0b;
     --ws-critical: #ef4444;
     --ws-incomplete: #a8a29e;
+    --ws-amber-light: #fef3c7;
+    --ws-amber-border: #fde68a;
+
+    /* Landing page color system */
+    --lp-navy: #003178;
+    --lp-navy-dark: #00215c;
+    --lp-cyan: #006879;
+    --lp-cyan-light: #008aa3;
+    --lp-amber: #D97706;
+    --lp-amber-hover: #B45309;
+    --lp-emerald: #059669;
+    --lp-emerald-light: #10b981;
+    --lp-surface: #ffffff;
+    --lp-bg: #f9f9ff;
+    --lp-bg-alt: #f0f0f8;
+    --lp-text-primary: #111827;
+    --lp-text-secondary: #6b7280;
+    --lp-text-muted: #9ca3af;
+    --lp-border: #e5e7eb;
   }
 
   html {
