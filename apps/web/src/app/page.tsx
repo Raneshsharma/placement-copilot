@@ -362,6 +362,8 @@ export default function HomePage() {
       <Navbar />
       <main>
         <HeroSection />
+        <HowItWorks />
+        <FeaturesGrid />
         <Testimonials />
         {/* more sections will be added by other tasks */}
       </main>
