@@ -45,7 +45,7 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
   ...initialState,
   setMethod: (method) => set({ method }),
   setStatus: (status) => set({ status }),
-  setError: (error) => set({ error, status: error ? "error" : "status" }),
+  setError: (error) => set({ error }),
   setParsedProfile: (parsedProfile) => set({ parsedProfile }),
   setFileName: (fileName) => set({ fileName }),
   reset: () => set(initialState),
