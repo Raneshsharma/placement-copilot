@@ -591,7 +591,6 @@ export default function HomePage() {
         <Pricing />
         <FAQ />
         <FinalCTA />
-        {/* more sections will be added by other tasks */}
       </main>
       <Footer />
     </>
