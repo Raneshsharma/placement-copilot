@@ -18,6 +18,7 @@ import {
   Kanban,
   BarChart2,
   Users,
+  Check,
 } from "lucide-react";
 import styles from "./landing.module.css";
 
@@ -419,6 +420,78 @@ function Testimonials() {
   );
 }
 
+// ── Pricing ──
+const freeFeatures = [
+  "Build your first resume",
+  "ATS keyword scanning (3 jobs/month)",
+  "Basic templates",
+  "LinkedIn import",
+];
+
+const premiumFeatures = [
+  "Unlimited AI resume builder",
+  "Role-based tailoring (unlimited)",
+  "Unlimited ATS scans",
+  "Application tracker",
+  "Interview prep questions",
+  "Priority support",
+];
+
+function Pricing() {
+  return (
+    <section id="pricing" className={styles.section}>
+      <div className={styles.sectionInner}>
+        <div className={styles.sectionHeader} style={{ textAlign: "center" }}>
+          <p className={styles.sectionEyebrow}>Pricing</p>
+          <h2 className={styles.sectionTitle}>Start free. Upgrade when you&apos;re ready.</h2>
+          <p className={styles.sectionSubtitle} style={{ margin: "0 auto" }}>
+            No contracts. No commitment. Your first resume is always free.
+          </p>
+        </div>
+        <div className={styles.pricingGrid}>
+          {/* Free tier */}
+          <div className={styles.pricingCard}>
+            <h3 className={styles.pricingTitle}>Free</h3>
+            <p className={styles.pricingPrice}>$0</p>
+            <p className={styles.pricingPriceSub}>per month</p>
+            <ul className={styles.pricingFeatures}>
+              {freeFeatures.map(f => (
+                <li key={f} className={styles.pricingFeature}>
+                  <span className={styles.pricingFeatureIcon}><Check size={10} color="#059669" /></span>
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <Link href="/register" className={`${styles.pricingCta} ${styles.pricingCtaOutline}`}>
+              Get started free
+            </Link>
+          </div>
+
+          {/* Premium tier */}
+          <div className={`${styles.pricingCard} ${styles.pricingCardHighlight}`}>
+            <span className={styles.pricingBadge}>Most Popular</span>
+            <h3 className={styles.pricingTitle}>Premium</h3>
+            <p className={styles.pricingPrice}>$12</p>
+            <p className={styles.pricingPriceSub}>per month</p>
+            <ul className={styles.pricingFeatures}>
+              {premiumFeatures.map(f => (
+                <li key={f} className={styles.pricingFeature}>
+                  <span className={styles.pricingFeatureIcon}><Check size={10} color="#059669" /></span>
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <Link href="/register" className={`${styles.pricingCta} ${styles.pricingCtaPrimary}`}>
+              Start Premium
+            </Link>
+          </div>
+        </div>
+        <p className={styles.pricingNote}>Cancel anytime. No contracts, no cancellation fees.</p>
+      </div>
+    </section>
+  );
+}
+
 // ── Page Export ──
 export default function HomePage() {
   return (
@@ -429,6 +502,7 @@ export default function HomePage() {
         <HowItWorks />
         <FeaturesGrid />
         <Testimonials />
+        <Pricing />
         <FAQ />
         {/* more sections will be added by other tasks */}
       </main>
