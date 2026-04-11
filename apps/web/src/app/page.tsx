@@ -19,11 +19,15 @@ import {
   BarChart2,
   Users,
   Check,
+  Menu,
+  X,
 } from "lucide-react";
 import styles from "./landing.module.css";
 
 // ── Navbar ──
 function Navbar() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
     <nav className={styles.navbar}>
       <div className={styles.navbarInner}>
@@ -40,7 +44,25 @@ function Navbar() {
           <Link href="/login" className={styles.navbarLink}>Sign In</Link>
           <Link href="/register" className={styles.navbarCta}>Get Started Free</Link>
         </div>
+        <button
+          className={styles.mobileMenuBtn}
+          onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          aria-expanded={mobileOpen}
+        >
+          {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
       </div>
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <div className={styles.mobileMenu}>
+          <a href="#features" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Features</a>
+          <a href="#how-it-works" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>How It Works</a>
+          <a href="#pricing" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Pricing</a>
+          <Link href="/login" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>Sign In</Link>
+          <Link href="/register" className={styles.mobileCta} onClick={() => setMobileOpen(false)}>Get Started Free</Link>
+        </div>
+      )}
     </nav>
   );
 }
@@ -367,12 +389,14 @@ function FAQ() {
                 <button
                   className={styles.faqQuestion}
                   onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                  aria-expanded={openIndex === i}
+                  aria-controls={`faq-answer-${i}`}
                 >
                   {faq.q}
                   <ChevronDown className={styles.faqChevron} size={20} />
                 </button>
                 {openIndex === i && (
-                  <div className={styles.faqAnswer}>{faq.a}</div>
+                  <div className={styles.faqAnswer} id={`faq-answer-${i}`}>{faq.a}</div>
                 )}
               </div>
             ))}
@@ -512,7 +536,7 @@ function Pricing() {
             <ul className={styles.pricingFeatures}>
               {freeFeatures.map(f => (
                 <li key={f} className={styles.pricingFeature}>
-                  <span className={styles.pricingFeatureIcon}><Check size={10} color="#059669" /></span>
+                  <span className={styles.pricingFeatureIcon}><Check size={12} color="var(--lp-emerald)" /></span>
                   {f}
                 </li>
               ))}
@@ -531,7 +555,7 @@ function Pricing() {
             <ul className={styles.pricingFeatures}>
               {premiumFeatures.map(f => (
                 <li key={f} className={styles.pricingFeature}>
-                  <span className={styles.pricingFeatureIcon}><Check size={10} color="#059669" /></span>
+                  <span className={styles.pricingFeatureIcon}><Check size={12} color="var(--lp-emerald)" /></span>
                   {f}
                 </li>
               ))}
