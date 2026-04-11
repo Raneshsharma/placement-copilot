@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, Sparkles, RefreshCw } from "lucide-react";
+import { Eye, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ProfileStrength } from "@/types/analysis";
 import styles from "./readiness-band.module.css";
@@ -15,6 +15,18 @@ interface ReadinessBandProps {
   onGetAiHelp?: () => void;
 }
 
+type HealthStatus = "healthy" | "needs-work" | "critical" | "analyzing";
+
+const HEALTH_COLORS: Record<HealthStatus, string> = {
+  healthy: "#22c55e",
+  "needs-work": "#f59e0b",
+  critical: "#ef4444",
+  analyzing: "#D97706",
+};
+
+const getScoreColor = (score: number) =>
+  score >= 80 ? "#22c55e" : score >= 60 ? "#f59e0b" : "#ef4444";
+
 export function ReadinessBand({
   profileStrength,
   selectedCategoryId,
@@ -26,10 +38,9 @@ export function ReadinessBand({
 }: ReadinessBandProps) {
   const score = profileStrength?.score ?? 0;
   const label = profileStrength?.label ?? "Analyzing...";
-  const overallHealth = profileStrength?.overallHealth ?? "analyzing";
   const categories = profileStrength?.categories ?? [];
 
-  const scoreColor = score >= 80 ? "#22c55e" : score >= 60 ? "#f59e0b" : "#ef4444";
+  const scoreColor = getScoreColor(score);
 
   return (
     <div className={styles.band}>
@@ -58,14 +69,12 @@ export function ReadinessBand({
           ) : (
             categories.map((cat) => {
               const isActive = selectedCategoryId === cat.id;
-              const dotColor = cat.health === "healthy" ? "#22c55e"
-                : cat.health === "needs-work" ? "#f59e0b"
-                : cat.health === "critical" ? "#ef4444"
-                : cat.health === "analyzing" ? "#D97706"
-                : "#a8a29e";
+              const catHealth = cat.health as HealthStatus;
+              const dotColor = HEALTH_COLORS[catHealth] ?? "#a8a29e";
 
               return (
                 <button
+                  type="button"
                   key={cat.id}
                   className={cn(styles.pill, isActive && styles.pillActive)}
                   onClick={() => onCategoryClick(cat.id)}
@@ -90,6 +99,7 @@ export function ReadinessBand({
       {/* Right: Actions */}
       <div className={styles.actions}>
         <button
+          type="button"
           className={cn(styles.actionBtn, previewVisible && styles.actionBtnActive)}
           onClick={onTogglePreview}
           aria-label="Toggle resume preview"
@@ -98,6 +108,7 @@ export function ReadinessBand({
           <span>Preview</span>
         </button>
         <button
+          type="button"
           className={styles.primaryActionBtn}
           onClick={onGetAiHelp}
           aria-label="Get AI help"
