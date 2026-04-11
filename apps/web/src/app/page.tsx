@@ -154,6 +154,61 @@ function HeroSection() {
   );
 }
 
+// ── Metrics Strip ──
+function MetricsStrip() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  const [counts, setCounts] = useState([0, 0, 0]);
+
+  const targets = [47, 10000, 6];
+  const suffix = ["%", "+", " min"];
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !visible) {
+          setVisible(true);
+          targets.forEach((target, i) => {
+            const duration = 1500;
+            const steps = 40;
+            const increment = target / steps;
+            let current = 0;
+            const interval = setInterval(() => {
+              current = Math.min(current + increment, target);
+              setCounts(prev => {
+                const next = [...prev];
+                next[i] = Math.round(current);
+                return next;
+              });
+              if (current >= target) clearInterval(interval);
+            }, duration / steps);
+          });
+        }
+      },
+      { threshold: 0.5 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [visible]);
+
+  const labels = ["average callback increase", "resumes optimized", "average build time"];
+
+  return (
+    <div className={styles.metrics} ref={ref}>
+      <div className={styles.metricsInner}>
+        {counts.map((count, i) => (
+          <div key={i} className={styles.metricItem}>
+            <div className={styles.metricValue}>
+              {i === 1 ? count.toLocaleString() + "+" : count + suffix[i]}
+            </div>
+            <div className={styles.metricLabel}>{labels[i]}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── How It Works ──
 const steps = [
   {
@@ -499,6 +554,7 @@ export default function HomePage() {
       <Navbar />
       <main>
         <HeroSection />
+        <MetricsStrip />
         <HowItWorks />
         <FeaturesGrid />
         <Testimonials />
