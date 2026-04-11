@@ -1,0 +1,199 @@
+.band {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--ws-surface);
+  border-bottom: 1px solid var(--ws-border);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 24px;
+  height: 80px;
+  width: 100%;
+}
+
+/* Left — Profile Strength */
+.strengthSection {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  min-width: 180px;
+}
+.strengthLabel {
+  font-size: 13px;
+  color: var(--ws-text-muted);
+  white-space: nowrap;
+}
+.strengthScore {
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1;
+}
+.strengthBar {
+  width: 80px;
+  height: 4px;
+  background: var(--ws-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.strengthBarFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.6s ease;
+}
+.strengthSublabel {
+  font-size: 12px;
+  color: var(--ws-text-muted);
+  white-space: nowrap;
+}
+
+/* Center — Category pills */
+.pillsContainer {
+  flex: 1;
+  overflow: hidden;
+}
+.pillsScroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 4px 0;
+}
+.pillsScroll::-webkit-scrollbar {
+  display: none;
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 9999px;
+  border: 1px solid var(--ws-border);
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ws-text-secondary);
+  white-space: nowrap;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+.pill:hover {
+  border-color: var(--ws-primary);
+  background: var(--ws-primary-light);
+  color: var(--ws-primary);
+}
+.pillActive {
+  border-color: var(--ws-primary);
+  background: var(--ws-primary-light);
+  color: var(--ws-primary);
+}
+.pillDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.pillName {
+  font-family: var(--font-inter), sans-serif;
+}
+.pillBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: var(--ws-primary);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 0 5px;
+}
+.pillSkeleton {
+  width: 80px;
+  height: 36px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  flex-shrink: 0;
+}
+
+/* Right — Actions */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--ws-border);
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ws-text-secondary);
+  transition: all 0.2s ease;
+}
+.actionBtn:hover {
+  border-color: var(--ws-primary);
+  color: var(--ws-primary);
+}
+.actionBtnActive {
+  border-color: var(--ws-primary);
+  background: var(--ws-primary-light);
+  color: var(--ws-primary);
+}
+.primaryActionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  background: var(--ws-primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+.primaryActionBtn:hover {
+  background: var(--ws-primary-hover);
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .band {
+    height: 64px;
+    padding: 0 16px;
+    gap: 12px;
+  }
+  .strengthSection {
+    min-width: auto;
+  }
+  .strengthLabel,
+  .strengthSublabel {
+    display: none;
+  }
+  .strengthBar {
+    display: none;
+  }
+  .strengthScore {
+    font-size: 22px;
+  }
+  .primaryActionBtn span {
+    display: none;
+  }
+  .actionBtn span {
+    display: none;
+  }
+}
