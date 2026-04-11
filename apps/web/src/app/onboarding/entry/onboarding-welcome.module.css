@@ -304,3 +304,9 @@
 .errorRetry:hover {
   background-color: var(--warm-primary-light);
 }
+
+/* Upload container wrapper */
+.uploadContainer {
+  width: 100%;
+  max-width: 420px;
+}

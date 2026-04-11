@@ -106,7 +106,13 @@ export default function OnboardingEntryPage() {
         {(screenState === "choose" || screenState === "upload") && (
           <div className={styles.cardsGrid}>
             {/* Resume Card */}
-            <div className={styles.card} onClick={screenState === "choose" ? handleResumeStart : undefined}>
+            <div
+              className={styles.card}
+              onClick={screenState === "choose" ? handleResumeStart : undefined}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleResumeStart(); }}
+            >
               <div className={styles.cardIcon}>
                 <Upload size={24} color="#D97706" />
               </div>
@@ -126,7 +132,13 @@ export default function OnboardingEntryPage() {
             </div>
 
             {/* LinkedIn Card */}
-            <div className={styles.card} onClick={screenState === "choose" ? handleLinkedInStart : undefined}>
+            <div
+              className={styles.card}
+              onClick={screenState === "choose" ? handleLinkedInStart : undefined}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleLinkedInStart(); }}
+            >
               <div className={styles.cardIcon}>
                 <Linkedin size={24} color="#D97706" />
               </div>
@@ -149,7 +161,7 @@ export default function OnboardingEntryPage() {
 
         {/* State: File upload area */}
         {screenState === "upload" && selectedMethod === "resume" && (
-          <div style={{ width: "100%", maxWidth: "420px" }}>
+          <div className={styles.uploadContainer}>
             <div className={styles.uploadArea} onClick={handleDropClick}>
               <input
                 ref={fileInputRef}
@@ -169,7 +181,7 @@ export default function OnboardingEntryPage() {
             <button
               className={styles.skipLink}
               onClick={handleSkip}
-              style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+              aria-label="Skip for now and go to dashboard"
             >
               I&apos;ll do this later
             </button>
@@ -205,14 +217,14 @@ export default function OnboardingEntryPage() {
           <div className={styles.errorState}>
             <p className={styles.errorText}>{errorMessage}</p>
             {selectedMethod === "resume" && (
-              <button className={styles.errorRetry} onClick={handleRetry}>
+              <button className={styles.errorRetry} onClick={handleRetry} aria-label="Try uploading again">
                 Try again
               </button>
             )}
             <button
               className={styles.skipLink}
               onClick={handleSkip}
-              style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+              aria-label="Skip for now and go to dashboard"
             >
               I&apos;ll do this later
             </button>
@@ -224,7 +236,7 @@ export default function OnboardingEntryPage() {
           <button
             className={styles.skipLink}
             onClick={handleSkip}
-            style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+            aria-label="Skip for now and go to dashboard"
           >
             I&apos;ll do this later
           </button>
