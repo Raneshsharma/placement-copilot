@@ -83,6 +83,22 @@ const config: Config = {
           DEFAULT: "rgba(121,122,134,0.15)",
           variant: "rgba(121,122,134,0.15)",
         },
+        // Warm Onboarding Palette
+        warm: {
+          bg: "#FAFAF5",
+          surface: "#FFFFFF",
+          primary: "#D97706",
+          "primary-hover": "#B45309",
+          "primary-light": "#FEF3C7",
+          text: {
+            primary: "#1C1917",
+            secondary: "#57534E",
+            muted: "#A8A29E",
+          },
+          border: "#E7E5E4",
+          "border-hover": "#D97706",
+          error: "#D97706",
+        },
       },
       fontFamily: {
         sans: ["var(--font-inter)", ...fontFamily.sans],
@@ -115,6 +131,9 @@ const config: Config = {
         "glow-secondary": "0 0 20px rgba(0,104,121,0.20)",
         // Hero gradient background
         "hero-gradient": "linear-gradient(135deg, #003178 0%, #004a9e 50%, #006879 100%)",
+        // Warm card shadows
+        "warm-card": "0 4px 24px rgba(0,0,0,0.06)",
+        "warm-card-hover": "0 8px 32px rgba(0,0,0,0.10)",
       },
       keyframes: {
         float: {
