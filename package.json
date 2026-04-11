@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "packageManager": "npm@10.0.0",
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
@@ -12,8 +15,9 @@
     "clean": "turbo clean"
   },
   "devDependencies": {
+    "@types/multer": "^2.1.0",
+    "@types/node": "^20.0.0",
     "turbo": "^2.0.0",
-    "typescript": "^5.4.0",
-    "@types/node": "^20.0.0"
+    "typescript": "^5.4.0"
   }
 }

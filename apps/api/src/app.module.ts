@@ -13,6 +13,9 @@ import { ProgressModule } from './progress/progress.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AiModule } from './ai/ai.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { MilestonesModule } from './milestones/milestones.module';
+import { SavedJobsModule } from './saved-jobs/saved-jobs.module';
+import { SkillsModule } from './skills/skills.module';
 
 @Module({
   imports: [
@@ -21,7 +24,7 @@ import { PrismaModule } from './prisma/prisma.module';
     PrismaModule,
     AuthModule, UsersModule, ProfilesModule, ResumesModule, JobsModule,
     ApplicationsModule, InterviewsModule, SkillGapsModule, ProgressModule,
-    NotificationsModule, AiModule,
+    NotificationsModule, AiModule, MilestonesModule, SavedJobsModule, SkillsModule,
   ],
 })
 export class AppModule {}

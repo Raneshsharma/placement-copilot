@@ -31,29 +31,47 @@ type RegisterForm = z.infer<typeof registerSchema>;
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
   });
 
   const onSubmit = async (data: RegisterForm) => {
+    setLoading(true);
+    setError(null);
     try {
-      setError(null);
       const { confirmPassword, ...rest } = data;
       const res = await authApi.register(rest);
-      const { user, token } = res.data;
-      login(user, token);
-      localStorage.setItem("accessToken", token);
+      const payload = res.data?.data ?? res.data;
+      const { user, accessToken, refreshToken } = payload;
+      login(user, accessToken, refreshToken);
+      localStorage.setItem("accessToken", accessToken);
+      if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
       localStorage.setItem("user", JSON.stringify(user));
-      router.push("/onboarding");
+      // Set cookie for middleware auth check
+      document.cookie = `auth-token=${accessToken}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+      router.push("/dashboard");
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Registration failed. Please try again.");
+      const axiosErr = err as any;
+      const status = axiosErr?.response?.status;
+      const errorObj = axiosErr?.response?.data?.error;
+
+      if (status === 409) {
+        setError(errorObj?.message || "Email already exists.");
+      } else if (status === 400) {
+        setError(errorObj?.message || "Invalid input. Please check your details.");
+      } else {
+        setError(errorObj?.message || errorObj?.code || axiosErr?.message || "Registration failed. Please try again.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -159,8 +177,8 @@ export default function RegisterPage() {
               )}
             </div>
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Creating account..." : "Create Account"}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Creating account..." : "Create Account"}
             </Button>
           </form>
 

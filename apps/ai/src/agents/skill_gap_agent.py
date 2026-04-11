@@ -3,7 +3,10 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_anthropic import ChatAnthropic
 
 from src.prompts.skill_gap_agent import system_prompt as skill_gap_system_prompt
-from src.tools.skill_gap_tools import detect_gaps, rank_gaps, find_resources
+from src.tools.skill_gap_tools import (
+    detect_gaps, rank_gaps, find_resources,
+    prioritize_gaps, generate_roadmap_step, estimate_learning_time,
+)
 
 llm = ChatAnthropic(model="claude-3-5-sonnet-20241022", anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"))
 

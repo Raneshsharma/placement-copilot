@@ -1,30 +1,33 @@
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime
 
 
-class TrackingInput(BaseModel):
+class TrackingDashboardRequest(BaseModel):
     user_id: str
-    events: list[dict]
-    time_range_days: int = 30
-    engagement_level: str = "medium"
+
+
+class WeeklyActivity(BaseModel):
+    date: str
+    count: int
 
 
 class Milestone(BaseModel):
-    milestone_type: str
-    achieved_at: str
+    name: str
+    achieved: bool
+    date: Optional[str] = None
+
+
+class RecentEvent(BaseModel):
+    type: str
     description: str
+    date: str
 
 
-class Analytics(BaseModel):
-    applications_count: int
-    interviews_count: int
-    offers_count: int
+class TrackingDashboardResponse(BaseModel):
+    total_applications: int
     response_rate: float
-    avg_time_to_interview_days: float
-
-
-class TrackingOutput(BaseModel):
+    interview_rate: float
+    offer_rate: float
+    weekly_activity: list[WeeklyActivity]
     milestones: list[Milestone]
-    analytics: Analytics
-    motivational_message: str
+    recent_events: list[RecentEvent]

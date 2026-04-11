@@ -10,15 +10,21 @@ export interface User {
   avatar?: string;
   headline?: string;
   linkedIn?: string;
+  phone?: string;
+  location?: string;
+  targetRoles?: string[];
 }
 
 interface AuthState {
   user: User | null;
   token: string | null;
+  refreshToken: string | null;
   isAuthenticated: boolean;
-  login: (user: User, token: string) => void;
+  login: (user: User, token: string, refreshToken?: string) => void;
   logout: () => void;
   updateUser: (data: Partial<User>) => void;
+  setToken: (token: string) => void;
+  setRefreshToken: (token: string) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -26,18 +32,19 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       token: null,
+      refreshToken: null,
       isAuthenticated: false,
-      login: (user, token) =>
-        set({ user, token, isAuthenticated: true }),
+      login: (user, token, refreshToken) =>
+        set({ user, token, refreshToken: refreshToken || null, isAuthenticated: true }),
       logout: () =>
-        set({ user: null, token: null, isAuthenticated: false }),
+        set({ user: null, token: null, refreshToken: null, isAuthenticated: false }),
       updateUser: (data) =>
         set((state) => ({
           user: state.user ? { ...state.user, ...data } : null,
         })),
+      setToken: (token) => set({ token }),
+      setRefreshToken: (refreshToken) => set({ refreshToken }),
     }),
-    {
-      name: "auth-storage",
-    }
+    { name: "auth-storage" }
   )
 );

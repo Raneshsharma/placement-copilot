@@ -2,38 +2,28 @@ from pydantic import BaseModel
 from typing import Optional
 
 
-class InterviewInput(BaseModel):
+class InterviewStartRequest(BaseModel):
     user_id: str
-    session_id: str
     interview_type: str
-    role: str
-    difficulty: str
-    question: Optional[str] = None
-    answer: Optional[str] = None
+    target_role: str
+    difficulty: str = "MEDIUM"
 
 
-class STARScores(BaseModel):
-    situation: int
-    task: int
-    action: int
-    result: int
+class InterviewStartResponse(BaseModel):
+    session_id: str
+    first_question: str
+    question_count: int
+    estimated_duration: int
 
 
-class InterviewQuestion(BaseModel):
-    question: str
-    type: str
-    difficulty: str
+class InterviewAnswerRequest(BaseModel):
+    session_id: str
+    question_id: str
+    answer: str
 
 
-class InterviewFeedback(BaseModel):
-    score: int
-    star_scores: STARScores
+class InterviewAnswerResponse(BaseModel):
     feedback: str
-
-
-class InterviewOutput(BaseModel):
-    questions: list[InterviewQuestion] = []
-    feedback: Optional[InterviewFeedback] = None
-    overall_score: Optional[float] = None
-    grade: Optional[str] = None
-    recommendations: list[str] = []
+    score: float
+    next_question: Optional[str] = None
+    is_complete: bool = False

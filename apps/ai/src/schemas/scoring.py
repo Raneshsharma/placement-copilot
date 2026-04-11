@@ -2,21 +2,21 @@ from pydantic import BaseModel
 from typing import Optional
 
 
-class ScoringInput(BaseModel):
+class ScoringRequest(BaseModel):
     user_id: str
-    profile: dict
-    role_requirements: dict
-    market_data: Optional[dict] = None
+    profile_data: dict
+    job_target: dict
 
 
-class GapAnalysis(BaseModel):
-    skill: str
-    gap_type: str
-    severity: str
+class ScoringBreakdown(BaseModel):
+    skills_match: float
+    experience_relevance: float
+    education_fit: float
+    market_demand: float
+    location_factor: float
 
 
-class ScoringOutput(BaseModel):
+class ScoringResponse(BaseModel):
     pps_score: float
-    breakdown: dict
-    confidence: float
-    gaps: list[GapAnalysis]
+    breakdown: ScoringBreakdown
+    percentile: Optional[float] = None

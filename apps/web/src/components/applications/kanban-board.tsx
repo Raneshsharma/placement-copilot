@@ -1,40 +1,68 @@
 "use client";
 
-import { ReactNode } from "react";
-import { Card } from "@/components/ui/card";
+import { DragDropContext, Droppable, DropResult } from "@hello-pangea/dnd";
+import { StatusColumn } from "./status-column";
+import { KANBAN_COLUMNS } from "@/stores/application-store";
+import { useApplicationStore } from "@/stores/application-store";
+import { applicationApi } from "@/lib/api";
+import { toast } from "sonner";
 
-interface KanbanColumnProps {
-  id: string;
-  label: string;
-  color: string;
-  children: ReactNode;
-  count: number;
-  isDragOver?: boolean;
-  onDrop?: () => void;
+interface KanbanBoardProps {
+  initialColumns?: typeof KANBAN_COLUMNS;
+  onCardClick?: (id: string) => void;
+  onAddClick?: () => void;
 }
 
-export function KanbanColumn({ id, label, color, children, count, isDragOver, onDrop }: KanbanColumnProps) {
+export function KanbanBoard({ initialColumns, onCardClick, onAddClick }: KanbanBoardProps) {
+  const columns = initialColumns || KANBAN_COLUMNS;
+  const { columns: storeColumns, moveApplication } = useApplicationStore();
+
+  const displayColumns = storeColumns.length > 0 ? storeColumns : columns.map((col) => ({ ...col, apps: [] as any[] }));
+
+  const handleDragStart = (result: any) => {
+    // drag started — visual feedback handled by react-beautiful-dnd
+  };
+
+  const handleDragEnd = (result: DropResult) => {
+    const { source, destination, draggableId } = result;
+    if (!destination) return;
+    if (source.droppableId === destination.droppableId && source.index === destination.index) return;
+
+    const fromCol = displayColumns.find((c) => c.id === source.droppableId);
+    const toCol = displayColumns.find((c) => c.id === destination.droppableId);
+    if (!fromCol || !toCol) return;
+
+    const app = fromCol.apps.find((a) => a.id === draggableId);
+    if (!app) return;
+
+    moveApplication(draggableId, source.droppableId as any, destination.droppableId as any);
+
+    applicationApi.update(app.id, { status: destination.droppableId })
+      .catch(() => {
+        toast.error("Couldn't update — tap to retry");
+      });
+  };
+
   return (
-    <div
-      className={`flex-shrink-0 w-72 rounded-xl p-3 transition-all ${
-        isDragOver ? "ring-2 ring-[#0D7377]/30 bg-[#0D7377]/5" : ""
-      }`}
-      onDragOver={(e) => e.preventDefault()}
-      onDrop={onDrop}
-    >
-      <div className="flex items-center gap-2 mb-3">
-        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
-        <span className="text-sm font-semibold text-[#1A1A2E]">{label}</span>
-        <span className="text-xs px-1.5 py-0.5 rounded-full bg-[#F4F4F2] text-[#5C5C6D]">{count}</span>
+    <DragDropContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      <div className="flex gap-3 overflow-x-auto pb-6">
+        {displayColumns.map((col) => (
+          <Droppable key={col.id} droppableId={col.id}>
+            {(provided, snapshot) => (
+              <StatusColumn
+                id={col.id}
+                label={col.label}
+                color={col.color}
+                apps={col.apps}
+                isDragOver={snapshot.isDraggingOver}
+                onDrop={() => {}}
+                onAdd={onAddClick}
+                onCardClick={onCardClick}
+              />
+            )}
+          </Droppable>
+        ))}
       </div>
-      <div className="space-y-2 min-h-[100px]">
-        {children}
-        {count === 0 && (
-          <div className="h-24 border-2 border-dashed border-[#E8E8E6] rounded-lg flex items-center justify-center">
-            <p className="text-xs text-[#9B9BAA]">Drop here</p>
-          </div>
-        )}
-      </div>
-    </div>
+    </DragDropContext>
   );
 }

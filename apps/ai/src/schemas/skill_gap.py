@@ -1,29 +1,37 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Literal
 
 
-class SkillGapInput(BaseModel):
+class SkillGapStep(BaseModel):
+    title: str
+    duration: str
+    resources: list[str]
+
+
+class SkillGapRoadmapItem(BaseModel):
+    skill: str
+    steps: list[SkillGapStep]
+
+
+GapType = Literal["MISSING", "WEAK", "STALE"]
+Severity = Literal["CRITICAL", "HIGH", "MEDIUM", "LOW"]
+
+
+class SkillGapItem(BaseModel):
+    skill: str
+    gap_type: GapType
+    severity: Severity
+    gap_percent: float
+    priority_score: float
+
+
+class SkillGapAnalyzeRequest(BaseModel):
     user_id: str
     current_skills: list[str]
-    required_skills: list[str]
-    weekly_hours: float = 10.0
+    target_role: str
 
 
-class Gap(BaseModel):
-    skill: str
-    gap_type: str
-    severity: str
-    priority: int
-
-
-class LearningResource(BaseModel):
-    skill: str
-    title: str
-    url: str
-    duration_hours: float
-
-
-class SkillGapOutput(BaseModel):
-    gaps: list[Gap]
-    resources: list[LearningResource]
-    roadmap: list[str]
+class SkillGapAnalyzeResponse(BaseModel):
+    gaps: list[SkillGapItem]
+    roadmap: list[SkillGapRoadmapItem]
+    overall_priority_score: float

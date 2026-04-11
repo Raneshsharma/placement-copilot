@@ -12,7 +12,7 @@ interface SearchBarProps {
 export function SearchBar({ value, onChange, placeholder = "Search roles, companies, skills..." }: SearchBarProps) {
   return (
     <div className="relative">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9B9BAA]" />
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-on-surface-variant" />
       <Input
         placeholder={placeholder}
         value={value}

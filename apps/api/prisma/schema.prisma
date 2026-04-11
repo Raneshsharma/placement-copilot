@@ -197,17 +197,17 @@ model MockInterview {
 }
 
 model SkillGapAnalysis {
-  id            String   @id @default(uuid())
-  userId        String
-  targetRole    String
-  currentSkills Json     @default("[]")
-  gaps          Json     @default("[]")
-  recommendations Json   @default("[]")
-  roadmap       Json     @default("[]")
-  priorityScore Float?
-  data          Json     @default("{}")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id             String   @id @default(uuid())
+  userId         String
+  targetRole     String
+  currentSkills  Json     @default("[]")
+  gaps           Json     @default("[]")
+  recommendations Json    @default("[]")
+  roadmap        Json     @default("[]")
+  priorityScore  Float?
+  data           Json     @default("{}")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@map("skill_gap_analyses")
 }
@@ -237,4 +237,24 @@ model AnalyticsEvent {
   createdAt   DateTime @default(now())
 
   @@map("analytics_events")
+}
+
+model SavedJob {
+  id         String   @id @default(uuid())
+  userId     String
+  jobId      String
+  savedAt    DateTime @default(now())
+
+  @@unique([userId, jobId])
+  @@map("saved_jobs")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("refresh_tokens")
 }

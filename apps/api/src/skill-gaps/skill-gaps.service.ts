@@ -1,34 +1,66 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AiService } from '../ai/ai.service';
+import { AnalyzeSkillGapDto } from './dto/analyze-skill-gap.dto';
 
 @Injectable()
 export class SkillGapsService {
   constructor(private prisma: PrismaService, private aiService: AiService) {}
 
-  async analyze(userId: string, dto: { targetRole: string; currentSkills?: string[] }) {
-    // Get AI analysis
-    const aiResult = await this.aiService.analyzeSkillGap({
-      targetRole: dto.targetRole,
-      currentSkills: dto.currentSkills || [],
-    });
+  async analyze(userId: string, dto: AnalyzeSkillGapDto) {
+    const profile = await this.prisma.profile.findUnique({ where: { userId } });
+    const currentSkills = dto.currentSkills || (profile?.skills as string[]) || [];
+
+    let aiResult: any;
+    try {
+      aiResult = await this.aiService.analyzeSkillGap({
+        targetRole: dto.targetRole,
+        currentSkills,
+      });
+    } catch {
+      aiResult = {
+        data: {
+          gaps: [
+            { skill: 'Unknown', gap: 30, priority: 'Medium', current: 50, target: 80 },
+          ],
+          recommendations: [],
+          roadmap: [],
+          priorityScore: 50,
+        },
+      };
+    }
 
     const data = aiResult.data || {};
 
-    // Persist to database
     const analysis = await this.prisma.skillGapAnalysis.create({
       data: {
         userId,
         targetRole: dto.targetRole,
-        currentSkills: dto.currentSkills || [],
+        currentSkills,
         gaps: data.gaps || [],
-        recommendations: data.recommendations || [],
         roadmap: data.roadmap || [],
+        recommendations: data.recommendations || [],
         priorityScore: data.priorityScore || 0,
       },
     });
 
-    return analysis;
+    return { ...analysis, recommendations: data.recommendations || [] };
+  }
+
+  async getCurrent(userId: string) {
+    const latest = await this.prisma.skillGapAnalysis.findFirst({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (!latest) {
+      const profile = await this.prisma.profile.findUnique({ where: { userId } });
+      return {
+        analysis: null,
+        profileCompleteness: profile?.completeness || 0,
+        message: 'No analysis found. Run /api/skill-gaps/analyze to generate one.',
+      };
+    }
+    return latest;
   }
 
   async getRecommendations(userId: string) {
@@ -36,34 +68,21 @@ export class SkillGapsService {
       where: { userId },
       orderBy: { createdAt: 'desc' },
     });
-    return latest?.recommendations || [];
+    return {
+      recommendations: latest?.recommendations || [],
+      gaps: latest?.gaps || [],
+      roadmap: latest?.roadmap || [],
+      priorityScore: latest?.priorityScore || 0,
+    };
   }
 
-  async getRoadmap(userId: string, targetRole: string) {
-    const latest = await this.prisma.skillGapAnalysis.findFirst({
-      where: { userId, targetRole },
+  async getHistory(userId: string, targetRole?: string) {
+    const where: any = { userId };
+    if (targetRole) where.targetRole = targetRole;
+    return this.prisma.skillGapAnalysis.findMany({
+      where,
       orderBy: { createdAt: 'desc' },
+      take: 10,
     });
-
-    if (latest?.roadmap) {
-      return latest.roadmap;
-    }
-
-    // Default roadmap for common roles
-    const defaultRoadmaps: Record<string, any[]> = {
-      'Software Engineer': [
-        { week: '1-2', title: 'JavaScript/TypeScript Fundamentals', skills: ['ES6+', 'TypeScript', 'Node.js'] },
-        { week: '3-4', title: 'React & Frontend', skills: ['React', 'Next.js', 'CSS'] },
-        { week: '5-6', title: 'Backend & APIs', skills: ['REST', 'GraphQL', 'Databases'] },
-        { week: '7-8', title: 'System Design', skills: ['Architecture', 'Scaling', 'Caching'] },
-      ],
-      'default': [
-        { week: '1-2', title: 'Foundation Building', skills: ['Core concepts', 'Fundamentals'] },
-        { week: '3-4', title: 'Skill Development', skills: ['Practical application', 'Projects'] },
-        { week: '5-6', title: 'Advanced Topics', skills: ['Real-world scenarios', 'System design'] },
-      ]
-    };
-
-    return defaultRoadmaps[targetRole] || defaultRoadmaps['default'];
   }
 }

@@ -1,30 +1,75 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import { Search, MapPin, DollarSign, Clock, Grid, List, Heart, Zap, Building2, Globe, Briefcase } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import {
+  Search,
+  MapPin,
+  DollarSign,
+  Grid,
+  List,
+  Heart,
+  Zap,
+  Globe,
+  Briefcase,
+  Building2,
+  X,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import { jobApi } from "@/lib/api";
 import { toast } from "sonner";
+import { useJobStore } from "@/stores/job-store";
+import { motion } from "framer-motion";
 
-const MOCK_ROLES = [
-  { id: "r1", company: "Google", logo: "G", role: "Software Engineer", location: "Mountain View, CA", salary: "$120k - $180k", postedAt: "2 days ago", match: 92, skills: ["Python", "Go", "Distributed Systems"], type: "Full-time" },
-  { id: "r2", company: "Stripe", logo: "S", role: "Product Manager", location: "San Francisco, CA", salary: "$130k - $190k", postedAt: "1 day ago", match: 88, skills: ["Product Strategy", "Data Analysis", "SQL"], type: "Full-time" },
-  { id: "r3", company: "Notion", logo: "N", role: "Senior Designer", location: "Remote", salary: "$100k - $150k", postedAt: "3 days ago", match: 85, skills: ["Figma", "Design Systems", "Prototyping"], type: "Full-time" },
-  { id: "r4", company: "Meta", logo: "M", role: "Frontend Engineer", location: "Menlo Park, CA", salary: "$110k - $160k", postedAt: "5 days ago", match: 91, skills: ["React", "TypeScript", "CSS"], type: "Full-time" },
-  { id: "r5", company: "Airbnb", logo: "A", role: "Data Scientist", location: "Remote", salary: "$115k - $165k", postedAt: "1 week ago", match: 82, skills: ["Python", "Machine Learning", "SQL"], type: "Full-time" },
-  { id: "r6", company: "Spotify", logo: "Sp", role: "Backend Engineer", location: "New York, NY", salary: "$105k - $155k", postedAt: "4 days ago", match: 79, skills: ["Java", "Kubernetes", "AWS"], type: "Full-time" },
-  { id: "r7", company: "Figma", logo: "F", role: "Full Stack Engineer", location: "San Francisco, CA", salary: "$125k - $175k", postedAt: "6 days ago", match: 87, skills: ["React", "Node.js", "GraphQL"], type: "Full-time" },
-  { id: "r8", company: "Linear", logo: "L", role: "iOS Engineer", location: "Remote", salary: "$115k - $160k", postedAt: "2 weeks ago", match: 76, skills: ["Swift", "SwiftUI", "Combine"], type: "Full-time" },
-  { id: "r9", company: "Vercel", logo: "V", role: "DevOps Engineer", location: "Remote", salary: "$120k - $170k", postedAt: "3 days ago", match: 83, skills: ["Next.js", "Docker", "Terraform"], type: "Full-time" },
-  { id: "r10", company: "Anthropic", logo: "An", role: "ML Engineer", location: "San Francisco, CA", salary: "$150k - $220k", postedAt: "1 day ago", match: 90, skills: ["PyTorch", "LLMs", "Python"], type: "Full-time" },
-];
+interface JobRecord {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  locationType?: string;
+  salaryMin?: number;
+  salaryMax?: number;
+  postedAt?: string;
+  keywords?: string[];
+  matchScore?: number;
+  match?: number;
+}
 
-const FILTERS = [
+interface SavedJobRecord {
+  id: string;
+  jobId: string;
+  savedAt: string;
+  job?: JobRecord | null;
+}
+
+function timeAgo(dateStr?: string): string {
+  if (!dateStr) return "Recently posted";
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "1 day ago";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays < 14) return "1 week ago";
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+  if (diffDays < 60) return "1 month ago";
+  return `${Math.floor(diffDays / 30)} months ago`;
+}
+
+function formatSalary(min?: number, max?: number): string {
+  if (!min && !max) return "";
+  const fmt = (n: number) => `$${Math.round(n / 1000)}k`;
+  if (min && max) return `${fmt(min)} - ${fmt(max)}`;
+  if (min) return `${fmt(min)}+`;
+  return `Up to ${fmt(max!)}`;
+}
+
+type FilterLabel = "90%+ Match" | "Remote" | "Student" | "Entry Level" | ">$80k";
+
+const FILTER_CONFIG: { label: FilterLabel; icon: React.ComponentType<{ className?: string }> }[] = [
   { label: "90%+ Match", icon: Zap },
   { label: "Remote", icon: Globe },
   { label: "Student", icon: Briefcase },
@@ -32,175 +77,449 @@ const FILTERS = [
   { label: ">$80k", icon: DollarSign },
 ];
 
+function getMatchScore(job: JobRecord): number {
+  return job.matchScore ?? job.match ?? 0;
+}
+
+function getMatchBadgeVariant(score: number): "success" | "warning" | "default" | "tonal" {
+  if (score >= 90) return "success";
+  if (score >= 70) return "warning";
+  return "default";
+}
+
+function getLeftBorderColor(score: number): string {
+  if (score >= 90) return "border-l-success";
+  if (score >= 70) return "border-l-warning";
+  return "border-l-secondary";
+}
+
 export default function RolesPage() {
+  const { viewMode, setViewMode, savedJobIds } = useJobStore();
+
+  const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilters, setActiveFilters] = useState<string[]>([]);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [savedRoles, setSavedRoles] = useState<string[]>([]);
-  const [roles, setRoles] = useState<typeof MOCK_ROLES>([]);
+  const [activeFilters, setActiveFilters] = useState<FilterLabel[]>([]);
+  const [jobs, setJobs] = useState<JobRecord[]>([]);
+  const [savedJobs, setSavedJobs] = useState<SavedJobRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    jobApi.list()
-      .then((res) => setRoles(res.data.data ?? res.data))
-      .catch(() => {
-        setRoles(MOCK_ROLES);
-        toast.error("Failed to load roles. Showing cached data.");
-      })
-      .finally(() => setLoading(false));
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchInput(value);
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      setSearchQuery(value);
+    }, 300);
   }, []);
 
-  const toggleFilter = (label: string) => {
-    setActiveFilters((prev) => prev.includes(label) ? prev.filter((f) => f !== label) : [...prev, label]);
-  };
+  const handleSearchKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        if (debounceTimer.current) clearTimeout(debounceTimer.current);
+        setSearchQuery(searchInput);
+      }
+    },
+    [searchInput]
+  );
 
-  const toggleSave = (id: string) => {
-    setSavedRoles((prev) => prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]);
-  };
+  const clearSearch = useCallback(() => {
+    setSearchInput("");
+    setSearchQuery("");
+  }, []);
 
-  const filteredRoles = roles.filter((role) => {
-    if (searchQuery && !role.role.toLowerCase().includes(searchQuery.toLowerCase()) && !role.company.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+  useEffect(() => {
+    jobApi
+      .getSaved()
+      .then((res) => setSavedJobs(res.data?.data ?? res.data ?? []))
+      .catch(() => setSavedJobs([]));
+  }, []);
+
+  useEffect(() => {
+    setLoading(true);
+    const params: Record<string, unknown> = {};
+    if (searchQuery) params.query = searchQuery;
+    jobApi
+      .list(params)
+      .then((res) => {
+        const items = res.data?.items ?? res.data?.data ?? res.data ?? [];
+        setJobs(items);
+      })
+      .catch(() => {
+        setJobs([]);
+        toast.error("Failed to load roles");
+      })
+      .finally(() => setLoading(false));
+  }, [searchQuery]);
+
+  const toggleFilter = useCallback((label: FilterLabel) => {
+    setActiveFilters((prev) =>
+      prev.includes(label) ? prev.filter((f) => f !== label) : ([...prev, label] as FilterLabel[])
+    );
+  }, []);
+
+  const clearFilters = useCallback(() => setActiveFilters([]), []);
+
+  const handleToggleSave = useCallback(
+    async (jobId: string) => {
+      const isSaved = savedJobIds.includes(jobId);
+      const newSavedIds = isSaved
+        ? savedJobIds.filter((id) => id !== jobId)
+        : [...savedJobIds, jobId];
+      useJobStore.setState({ savedJobIds: newSavedIds });
+
+      try {
+        if (isSaved) {
+          const saved = savedJobs.find((s) => s.jobId === jobId);
+          if (saved) await jobApi.unsave(saved.id);
+          setSavedJobs((prev) => prev.filter((s) => s.jobId !== jobId));
+        } else {
+          const res = await jobApi.save(jobId);
+          const newSaved = (res.data as SavedJobRecord) ?? {
+            jobId,
+            savedAt: new Date().toISOString(),
+          };
+          setSavedJobs((prev) => [{ ...newSaved, jobId }, ...prev.filter((s) => s.jobId !== jobId)]);
+        }
+      } catch {
+        useJobStore.setState({ savedJobIds });
+        toast.error("Couldn't save — try again");
+      }
+    },
+    [savedJobIds, savedJobs]
+  );
+
+  const filteredJobs = jobs.filter((job) => {
+    const score = getMatchScore(job);
+    if (activeFilters.includes("90%+ Match") && score < 90) return false;
+    if (activeFilters.includes("Remote")) {
+      const remote =
+        job.locationType === "REMOTE" || job.location?.toLowerCase().includes("remote");
+      if (!remote) return false;
+    }
+    if (activeFilters.includes("Entry Level") || activeFilters.includes("Student")) {
+      const keywords = (job.keywords ?? []).map((k) => k.toLowerCase());
+      const entryKeywords = [
+        "entry",
+        "junior",
+        "intern",
+        "new grad",
+        "graduate",
+        "entry-level",
+      ];
+      const isEntry = entryKeywords.some(
+        (k) =>
+          job.title.toLowerCase().includes(k) ||
+          keywords.some((j) => j.includes(k))
+      );
+      if (!isEntry) return false;
+    }
+    if (activeFilters.includes(">$80k")) {
+      if (!job.salaryMin || job.salaryMin < 80000) return false;
+    }
     return true;
   });
+
+  const hasActiveFilters = activeFilters.length > 0;
 
   return (
     <div className="p-6 lg:p-8">
       <div className="mb-6">
-        <h1 className="font-display text-2xl font-bold text-text-primary">Discover Roles</h1>
-        <p className="text-text-secondary mt-1">Find opportunities that match your skills and goals</p>
+        <h1 className="font-display text-2xl font-bold text-on-surface">Discover Roles</h1>
+        <p className="text-sm text-on-surface-variant mt-1">
+          Find opportunities that match your skills and goals
+        </p>
       </div>
 
-      {/* Search */}
+      {/* Search Bar */}
       <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-tertiary" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-on-surface-variant pointer-events-none" />
         <Input
           placeholder="Search roles, companies..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 h-11"
+          value={searchInput}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          onKeyDown={handleSearchKeyDown}
+          className="pl-10 h-11 pr-10"
         />
+        {searchInput && (
+          <button
+            onClick={clearSearch}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
-      {/* Filters */}
+      {/* Filter Pills + View Toggle */}
       <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
-        {FILTERS.map((filter) => (
+        {FILTER_CONFIG.map((filter) => {
+          const active = activeFilters.includes(filter.label);
+          const Icon = filter.icon;
+          return (
+            <button
+              key={filter.label}
+              onClick={() => toggleFilter(filter.label)}
+              className={`rounded-full px-3 py-1.5 text-sm font-medium whitespace-nowrap surface-shift flex items-center gap-1.5 transition-all ${
+                active
+                  ? "bg-primary text-white shadow-ambient-sm"
+                  : "bg-white border border-outline-variant text-on-surface-variant hover:bg-surface-container-low"
+              }`}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              {filter.label}
+            </button>
+          );
+        })}
+
+        {hasActiveFilters && (
           <button
-            key={filter.label}
-            onClick={() => toggleFilter(filter.label)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-              activeFilters.includes(filter.label)
-                ? "bg-[#0D7377] text-white"
-                : "bg-white border border-[#E8E8E6] text-text-secondary hover:border-[#0D7377]/30"
-            }`}
+            onClick={clearFilters}
+            className="flex items-center gap-1 px-2 py-1.5 text-sm text-on-surface-variant hover:text-on-surface whitespace-nowrap surface-shift rounded-full hover:bg-surface-container-low"
           >
-            <filter.icon className="w-3.5 h-3.5" />
-            {filter.label}
+            <X className="w-3.5 h-3.5" />
+            Clear all
           </button>
-        ))}
-        <div className="ml-auto flex items-center gap-1 bg-[#F4F4F2] rounded-lg p-1">
-          <button
-            onClick={() => setViewMode("grid")}
-            className={`p-1.5 rounded-md transition-colors ${viewMode === "grid" ? "bg-white shadow-sm text-[#0D7377]" : "text-text-tertiary"}`}
-          >
-            <Grid className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setViewMode("list")}
-            className={`p-1.5 rounded-md transition-colors ${viewMode === "list" ? "bg-white shadow-sm text-[#0D7377]" : "text-text-tertiary"}`}
-          >
-            <List className="w-4 h-4" />
-          </button>
+        )}
+
+        <div className="ml-auto flex-shrink-0">
+          <div className="bg-surface-container-low rounded-lg p-1 flex gap-1">
+            <button
+              onClick={() => setViewMode("grid")}
+              className={`p-1.5 rounded-md transition-all ${
+                viewMode === "grid"
+                  ? "bg-surface-container-highest shadow-ambient-sm text-primary"
+                  : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-mid"
+              }`}
+            >
+              <Grid className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode("list")}
+              className={`p-1.5 rounded-md transition-all ${
+                viewMode === "list"
+                  ? "bg-surface-container-highest shadow-ambient-sm text-primary"
+                  : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container-mid"
+              }`}
+            >
+              <List className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Results count */}
-      <p className="text-sm text-text-tertiary mb-4">{loading ? "Loading..." : `${filteredRoles.length} roles found`}</p>
+      {/* Result Count */}
+      <p className="text-sm text-on-surface-variant mb-4">
+        {loading
+          ? "Loading..."
+          : `${filteredJobs.length} role${filteredJobs.length !== 1 ? "s" : ""} found`}
+      </p>
 
-      {/* Role Cards */}
-      <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : "space-y-3"}>
-        {loading ? (
-          Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i} className={`p-4 ${viewMode === "list" ? "flex items-center gap-4" : ""}`}>
-              <div className="flex items-start justify-between mb-3">
-                <Skeleton className="w-10 h-10 rounded-lg" />
-                <Skeleton className="w-10 h-4 rounded" />
+      {/* Job Grid / List */}
+      {loading ? (
+        <div
+          className={
+            viewMode === "grid"
+              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+              : "space-y-3"
+          }
+        >
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className={`bg-surface-container-highest rounded-xl shadow-ambient-sm overflow-hidden ${
+                viewMode === "grid" ? "" : "p-4 flex items-center gap-4"
+              }`}
+            >
+              <div
+                className={`animate-shimmer h-10 w-10 rounded-lg bg-surface-container-high ${
+                  viewMode === "list" ? "flex-shrink-0" : ""
+                }`}
+              />
+              <div className="flex-1 space-y-2 p-4">
+                <div className="animate-shimmer h-4 w-3/4 rounded bg-surface-container-high" />
+                <div className="animate-shimmer h-3 w-1/2 rounded bg-surface-container-high" />
+                <div className="flex gap-1.5 mt-2">
+                  <div className="animate-shimmer h-5 w-12 rounded-full bg-surface-container-high" />
+                  <div className="animate-shimmer h-5 w-16 rounded-full bg-surface-container-high" />
+                </div>
+                <div className="animate-shimmer h-9 w-full rounded-lg mt-2 bg-surface-container-high" />
               </div>
-              <Skeleton className="w-3/4 h-4 rounded mb-1" />
-              <Skeleton className="w-1/2 h-3 rounded mb-2" />
-              <Skeleton className="w-full h-3 rounded mb-3" />
-              <div className="flex gap-1.5 mb-3">
-                <Skeleton className="w-12 h-5 rounded-full" />
-                <Skeleton className="w-16 h-5 rounded-full" />
-              </div>
-              <Skeleton className="w-full h-8 rounded" />
-            </Card>
-          ))
-        ) : filteredRoles.length === 0 ? (
-          <div className="col-span-full text-center py-12 text-text-tertiary">
-            <p>No roles found matching your search.</p>
-          </div>
-        ) : filteredRoles.map((role) => (
-          <Card key={role.id} className={`p-4 hover:shadow-md transition-shadow ${viewMode === "list" ? "flex items-center gap-4" : ""}`}>
-            {viewMode === "grid" ? (
-              <>
-                <div className="flex items-start justify-between mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-[#E8F6F6] flex items-center justify-center text-[#0D7377] font-bold text-sm">
-                    {role.logo}
+            </div>
+          ))}
+        </div>
+      ) : filteredJobs.length === 0 ? (
+        <div className="text-center py-16">
+          <Briefcase className="w-12 h-12 text-on-surface-disabled mx-auto mb-3" />
+          <p className="text-on-surface-variant mb-3">
+            {searchQuery
+              ? `No roles match "${searchQuery}"`
+              : "No roles found matching your filters."}
+          </p>
+          {(hasActiveFilters || searchQuery) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                clearFilters();
+                clearSearch();
+              }}
+            >
+              Clear filters
+            </Button>
+          )}
+        </div>
+      ) : viewMode === "grid" ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredJobs.map((job) => {
+            const score = getMatchScore(job);
+            const badgeVariant = getMatchBadgeVariant(score);
+            const borderColor = getLeftBorderColor(score);
+            const logo = job.company?.charAt(0).toUpperCase() ?? "?";
+            const salary = formatSalary(job.salaryMin, job.salaryMax);
+            const isSaved = savedJobIds.includes(job.id);
+            const skills = (job.keywords ?? []).slice(0, 3);
+
+            return (
+              <motion.div
+                key={job.id}
+                className={`bg-surface-container-highest rounded-xl shadow-ambient-sm surface-shift hover:shadow-ambient-md relative border-l-4 ${borderColor}`}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-secondary-container flex items-center justify-center text-secondary font-bold text-sm">
+                      {logo}
+                    </div>
+                    {score > 0 && (
+                      <Badge variant={badgeVariant} className="text-xs">
+                        {score}%
+                      </Badge>
+                    )}
                   </div>
-                  <Badge variant="success" className="text-xs">{role.match}%</Badge>
+
+                  <h3 className="font-semibold text-on-surface mb-1">{job.title}</h3>
+                  <p className="text-sm text-on-surface-variant mb-2">{job.company}</p>
+
+                  <div className="flex items-center gap-1 text-xs text-on-surface-variant mb-1">
+                    <MapPin className="w-3 h-3 flex-shrink-0" />
+                    {job.location || "Location not specified"}
+                  </div>
+
+                  {salary && (
+                    <div className="flex items-center gap-1 text-sm text-success font-medium mb-3">
+                      <DollarSign className="w-3 h-3" />
+                      {salary}
+                    </div>
+                  )}
+
+                  {skills.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-4">
+                      {skills.map((skill) => (
+                        <span
+                          key={skill}
+                          className="px-2 py-0.5 rounded-full text-xs bg-surface-dim text-on-surface-variant"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleToggleSave(job.id)}
+                      className="p-1.5 rounded-md hover:bg-surface-container-low surface-shift text-on-surface-disabled hover:text-error"
+                      title={isSaved ? "Unsave" : "Save"}
+                    >
+                      <Heart
+                        className={`w-4 h-4 ${isSaved ? "fill-error text-error" : ""}`}
+                      />
+                    </button>
+                    <Link href={`/roles/${job.id}`} className="flex-1">
+                      <Button variant="secondary" size="sm" className="w-full h-9 text-sm">
+                        View Role
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
-                <h3 className="font-semibold text-text-primary mb-1">{role.role}</h3>
-                <p className="text-sm text-text-secondary mb-2">{role.company}</p>
-                <div className="flex items-center gap-1 text-xs text-text-tertiary mb-1">
-                  <MapPin className="w-3 h-3" />
-                  {role.location}
+              </motion.div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {filteredJobs.map((job) => {
+            const score = getMatchScore(job);
+            const badgeVariant = getMatchBadgeVariant(score);
+            const logo = job.company?.charAt(0).toUpperCase() ?? "?";
+            const salary = formatSalary(job.salaryMin, job.salaryMax);
+            const isSaved = savedJobIds.includes(job.id);
+            const skills = (job.keywords ?? []).slice(0, 3);
+
+            return (
+              <motion.div
+                key={job.id}
+                className="bg-surface-container-highest rounded-xl shadow-ambient-sm surface-shift hover:shadow-ambient-md p-4 flex items-center gap-4"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="w-10 h-10 rounded-lg bg-secondary-container flex items-center justify-center text-secondary font-bold text-sm flex-shrink-0">
+                  {logo}
                 </div>
-                {role.salary && (
-                  <div className="flex items-center gap-1 text-xs text-[#22C55E] font-medium mb-3">
-                    <DollarSign className="w-3 h-3" />
-                    {role.salary}
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-semibold text-on-surface">{job.title}</h3>
+                    {score > 0 && (
+                      <Badge variant={badgeVariant} className="text-xs">
+                        {score}%
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-sm text-on-surface-variant">
+                    {job.company} &bull; {job.location || "Location not specified"}
+                  </p>
+                  {salary && (
+                    <p className="text-sm text-success font-medium">{salary}</p>
+                  )}
+                </div>
+
+                {skills.length > 0 && (
+                  <div className="hidden xl:flex flex-wrap gap-1 flex-shrink-0">
+                    {skills.map((skill) => (
+                      <span
+                        key={skill}
+                        className="px-2 py-0.5 rounded-full text-xs bg-surface-dim text-on-surface-variant"
+                      >
+                        {skill}
+                      </span>
+                    ))}
                   </div>
                 )}
-                <div className="flex flex-wrap gap-1.5 mb-3">
-                  {role.skills.slice(0, 3).map((skill) => (
-                    <span key={skill} className="px-2 py-0.5 rounded-full text-xs bg-[#F4F4F2] text-text-secondary">{skill}</span>
-                  ))}
-                </div>
-                <div className="flex items-center justify-between">
+
+                <div className="flex items-center gap-2 flex-shrink-0">
                   <button
-                    onClick={() => toggleSave(role.id)}
-                    className="p-1.5 rounded-md hover:bg-[#F4F4F2] transition-colors"
+                    onClick={() => handleToggleSave(job.id)}
+                    className="p-1.5 rounded-md hover:bg-surface-container-low surface-shift text-on-surface-disabled hover:text-error"
+                    title={isSaved ? "Unsave" : "Save"}
                   >
-                    <Heart className={`w-4 h-4 ${savedRoles.includes(role.id) ? "fill-[#EF4444] text-[#EF4444]" : "text-text-tertiary"}`} />
+                    <Heart className={`w-4 h-4 ${isSaved ? "fill-error text-error" : ""}`} />
                   </button>
-                  <Link href={`/roles/${role.id}`}>
-                    <Button variant="accent" size="sm">Quick Apply</Button>
+                  <Link href={`/roles/${job.id}`}>
+                    <Button variant="secondary" size="sm" className="h-9 text-sm">
+                      View Role
+                    </Button>
                   </Link>
                 </div>
-              </>
-            ) : (
-              <>
-                <div className="w-10 h-10 rounded-lg bg-[#E8F6F6] flex items-center justify-center text-[#0D7377] font-bold text-sm flex-shrink-0">
-                  {role.logo}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-text-primary">{role.role}</h3>
-                    <Badge variant="success" className="text-xs">{role.match}%</Badge>
-                  </div>
-                  <p className="text-sm text-text-secondary">{role.company} &bull; {role.location}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => toggleSave(role.id)} className="p-1.5 rounded-md hover:bg-[#F4F4F2]">
-                    <Heart className={`w-4 h-4 ${savedRoles.includes(role.id) ? "fill-[#EF4444] text-[#EF4444]" : "text-text-tertiary"}`} />
-                  </button>
-                  <Link href={`/roles/${role.id}`}><Button variant="accent" size="sm">Apply</Button></Link>
-                </div>
-              </>
-            )}
-          </Card>
-        ))}
-      </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

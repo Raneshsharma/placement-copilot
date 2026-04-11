@@ -1,21 +1,55 @@
 services:
-  # --- Infrastructure ---
+  # =============================================
+  # Infrastructure Services
+  # =============================================
+
   postgres:
     image: postgres:16-alpine
-    ports: [5432:5432]
+    ports: ["5433:5432"]
     environment:
-      POSTGRES_USER: placementcopilot
-      POSTGRES_PASSWORD: devpassword
-      POSTGRES_DB: placementcopilot
-    volumes: [postgres_data:/var/lib/postgresql/data]
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: placement_copilot
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./apps/api/prisma/migrations:/docker-entrypoint-initdb.d/migrations:ro
     restart: unless-stopped
-    healthcheck: { test: ["CMD-SHELL", "pg_isready -U placementcopilot"], interval: 10s, timeout: 5s, retries: 5 }
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d placement_copilot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+        reservations:
+          cpus: "0.25"
+          memory: 256M
 
   redis:
     image: redis:7-alpine
-    ports: [6379:6379]
+    ports: ["6379:6379"]
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru --appendonly yes
+    volumes:
+      - redis_data:/data
     restart: unless-stopped
-    healthcheck: { test: ["CMD", "redis-cli", "ping"], interval: 10s, timeout: 5s, retries: 5 }
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.1"
+          memory: 64M
 
   elasticsearch:
     image: elasticsearch:8.12.0
@@ -23,65 +57,124 @@ services:
       discovery.type: single-node
       xpack.security.enabled: false
       ES_JAVA_OPTS: -Xms512m -Xmx512m
-    ports: [9200:9200]
-    volumes: [es_data:/usr/share/elasticsearch/data]
+      cluster.name: placement-copilot
+      node.name: placement-copilot-node-1
+    ports: ["9200:9200"]
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
     restart: unless-stopped
-    healthcheck: { test: ["CMD-SHELL", "curl -f http://localhost:9200 || exit 1"], interval: 30s, timeout: 10s, retries: 5 }
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
 
   weaviate:
-    image: semitechnologies/weaviate:1.23.0
+    image: semitechnologies/weaviate:1.24.0
     environment:
       QUERY_DEFAULTS_LIMIT: 25
       AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: true
       PERSISTENCE_DATA_PATH: /var/lib/weaviate
-      ENABLE_MODULES: text2vec-openai
-      CLUSTER_HOSTNAME: node_1
-    ports: [8080:8080]
-    volumes: [weaviate_data:/var/lib/weaviate]
+      ENABLE_MODULES: text2vec-openai,text2vec-cohere
+      CLUSTER_HOSTNAME: "node1"
+    ports: ["8081:8080"]
+    volumes:
+      - weaviate_data:/var/lib/weaviate
     restart: unless-stopped
-    healthcheck: { test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"], interval: 30s, timeout: 10s, retries: 5 }
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/.well-known/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+        reservations:
+          cpus: "0.25"
+          memory: 256M
 
-  # --- Apps ---
+  # =============================================
+  # Application Services
+  # =============================================
+
   api:
     build:
       context: ./apps/api
       dockerfile: Dockerfile
-    ports: [4000:4000]
+    ports: ["4000:3001"]
     restart: unless-stopped
     environment:
-      NODE_ENV: development
-      DATABASE_URL: postgresql://placementcopilot:devpassword@postgres:5432/placementcopilot
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3001
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/placement_copilot
+      DIRECT_URL: postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/placement_copilot
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET:-devsecretchangeinprod}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-devrefreshsecretchangeinprod}
       JWT_EXPIRES_IN: 15m
       JWT_REFRESH_EXPIRES_IN: 7d
       AI_SERVICE_URL: http://ai:8000
       AI_SERVICE_SECRET: ${AI_SERVICE_SECRET:-devai_secret}
-      CORS_ORIGIN: http://localhost:3000
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      SENTRY_DSN: ${SENTRY_DSN}
+      SENTRY_TRACES_SAMPLE_RATE: "0.1"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4000/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+        reservations:
+          cpus: "0.25"
+          memory: 256M
 
   ai:
     build:
       context: ./apps/ai
       dockerfile: Dockerfile
-    ports: [8000:8000]
+    ports: ["8000:8000"]
     restart: unless-stopped
     environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 8000
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
-      DATABASE_URL: postgresql://placementcopilot:devpassword@postgres:5432/placementcopilot
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/placement_copilot
       REDIS_URL: redis://redis:6379
       ELASTICSEARCH_URL: http://elasticsearch:9200
       WEAVIATE_URL: http://weaviate:8080
-      LOG_LEVEL: INFO
+      WEAVIATE_API_KEY: ${WEAVIATE_API_KEY:-}
+      NESTJS_API_URL: http://api:3001
+      CORS_ORIGINS: ${CORS_ORIGIN:-http://localhost:3000},http://localhost:4000
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      DEBUG: "false"
     depends_on:
       postgres:
         condition: service_healthy
@@ -96,18 +189,35 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
 
   web:
     build:
       context: ./apps/web
       dockerfile: Dockerfile
-    ports: [3000:3000]
+    ports: ["3000:3000"]
     restart: unless-stopped
     environment:
-      NODE_ENV: production
-      NEXT_PUBLIC_API_URL: http://localhost:4000
-      NEXT_PUBLIC_AI_URL: http://localhost:8000
+      NODE_ENV: ${NODE_ENV:-production}
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_API_URL: http://api:3001
+      NEXT_PUBLIC_AI_URL: http://ai:8000
       NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_FIREBASE_API_KEY: ${NEXT_PUBLIC_FIREBASE_API_KEY}
+      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN}
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${NEXT_PUBLIC_FIREBASE_PROJECT_ID}
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}
+      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID}
+      NEXT_PUBLIC_FIREBASE_APP_ID: ${NEXT_PUBLIC_FIREBASE_APP_ID}
+      NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN}
     depends_on:
       api:
         condition: service_healthy
@@ -116,8 +226,21 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+        reservations:
+          cpus: "0.25"
+          memory: 256M
 
+# =============================================
+# Volumes
+# =============================================
 volumes:
   postgres_data:
+  redis_data:
   es_data:
   weaviate_data:

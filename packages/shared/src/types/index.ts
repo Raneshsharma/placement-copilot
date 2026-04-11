@@ -1,185 +1,182 @@
 // ============================================================
-// User & Authentication Types
+// Enums — must match Prisma schema exactly
 // ============================================================
 
 export enum UserRole {
-  JOB_SEEKER = 'JOB_SEEKER',
-  RECRUITER = 'RECRUITER',
+  USER = 'USER',
+  PREMIUM = 'PREMIUM',
   ADMIN = 'ADMIN',
 }
+
+export enum LocationType {
+  ONSITE = 'ONSITE',
+  REMOTE = 'REMOTE',
+  HYBRID = 'HYBRID',
+}
+
+export enum JobSource {
+  LINKEDIN = 'LINKEDIN',
+  INDEED = 'INDEED',
+  INTERNAL = 'INTERNAL',
+  SCRAPED = 'SCRAPED',
+}
+
+export enum ApplicationStatus {
+  DRAFT = 'DRAFT',
+  SUBMITTED = 'SUBMITTED',
+  UNDER_REVIEW = 'UNDER_REVIEW',
+  INTERVIEW = 'INTERVIEW',
+  OFFERED = 'OFFERED',
+  REJECTED = 'REJECTED',
+  WITHDRAWN = 'WITHDRAWN',
+}
+
+export enum InterviewType {
+  BEHAVIORAL = 'BEHAVIORAL',
+  TECHNICAL = 'TECHNICAL',
+  CASE_STUDY = 'CASE_STUDY',
+  SYSTEM_DESIGN = 'SYSTEM_DESIGN',
+  HYBRID = 'HYBRID',
+}
+
+export enum InterviewStatus {
+  SETUP = 'SETUP',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  FEEDBACK_READY = 'FEEDBACK_READY',
+}
+
+export enum NotificationType {
+  APPLICATION_STATUS = 'APPLICATION_STATUS',
+  INTERVIEW_READY = 'INTERVIEW_READY',
+  SKILL_ALERT = 'SKILL_ALERT',
+  SYSTEM = 'SYSTEM',
+}
+
+// ============================================================
+// User
+// ============================================================
 
 export interface User {
   id: string;
   email: string;
-  passwordHash?: string;
+  password?: string;
+  firstName: string;
+  lastName: string;
   role: UserRole;
-  emailVerified: boolean;
+  isActive: boolean;
+  deletedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
 
 // ============================================================
-// Profile Types
+// Profile
 // ============================================================
-
-export interface Skill {
-  name: string;
-  level: 'beginner' | 'intermediate' | 'advanced' | 'expert';
-  yearsOfExperience?: number;
-  certifications?: string[];
-}
-
-export interface Experience {
-  company: string;
-  title: string;
-  location?: string;
-  startDate: string;
-  endDate?: string;
-  current: boolean;
-  description: string;
-  highlights?: string[];
-}
-
-export interface Education {
-  institution: string;
-  degree: string;
-  field: string;
-  startDate: string;
-  endDate?: string;
-  gpa?: string;
-  honors?: string[];
-}
 
 export interface Profile {
   id: string;
   userId: string;
   headline?: string;
   summary?: string;
-  location?: string;
-  phone?: string;
-  linkedinUrl?: string;
-  githubUrl?: string;
-  portfolioUrl?: string;
-  skills: Skill[];
   experience: Experience[];
   education: Education[];
-  targetRoles: string[];
-  targetLocations: string[];
-  preferredWorkType: ('remote' | 'hybrid' | 'onsite')[];
-  salaryExpectation?: {
-    min: number;
-    max: number;
-    currency: string;
-  };
-  completenessScore: number;
+  skills: string[];
+  certifications: string[];
+  languages: string[];
+  projects: Project[];
+  portfolioUrl?: string;
+  linkedinUrl?: string;
+  githubUrl?: string;
+  websiteUrl?: string;
+  location?: string;
+  phone?: string;
+  ppsScore?: number;
+  completeness: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
-// ============================================================
-// Resume Types
-// ============================================================
-
-export interface ParsedResumeData {
-  rawText: string;
-  skills: string[];
-  experience: Experience[];
-  education: Education[];
-  contactInfo?: {
-    email?: string;
-    phone?: string;
-    linkedin?: string;
-  };
-  summary?: string;
+export interface Experience {
+  id?: string;
+  title: string;
+  company: string;
+  location?: string;
+  startDate: string;
+  endDate?: string;
+  isCurrent: boolean;
+  description: string;
 }
 
-export interface ResumeVersion {
-  versionNumber: number;
-  s3Key: string;
-  atsScore?: number;
-  keywordMatchScore?: number;
-  createdAt: Date;
+export interface Education {
+  id?: string;
+  institution: string;
+  degree: string;
+  field: string;
+  startYear: number;
+  endYear?: number;
 }
+
+export interface Project {
+  name: string;
+  description: string;
+  url?: string;
+  technologies: string[];
+}
+
+// ============================================================
+// Resume
+// ============================================================
 
 export interface Resume {
   id: string;
   userId: string;
-  name: string;
-  currentS3Key: string;
-  parsedData: ParsedResumeData;
+  title: string;
+  fileUrl?: string;
+  fileKey?: string;
+  parsedData: Record<string, unknown>;
   atsScore?: number;
-  keywordMatchScore?: number;
-  versions: ResumeVersion[];
+  version: number;
   isPrimary: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
 // ============================================================
-// Job Listing Types
+// Job Listing
 // ============================================================
-
-export enum LocationType {
-  REMOTE = 'REMOTE',
-  HYBRID = 'HYBRID',
-  ONSITE = 'ONSITE',
-  ANY = 'ANY',
-}
-
-export enum JobSource {
-  LINKEDIN = 'LINKEDIN',
-  INDEED = 'INDEED',
-  GLASSDOOR = 'GLASSDOOR',
-  COMPANY_CAREERS = 'COMPANY_CAREERS',
-  OTHER = 'OTHER',
-}
 
 export interface JobListing {
   id: string;
-  externalId?: string;
-  source: JobSource;
   title: string;
   company: string;
-  companyLogo?: string;
   location: string;
   locationType: LocationType;
-  salary?: {
-    min: number;
-    max: number;
-    currency: string;
-    interval: 'yearly' | 'monthly' | 'hourly';
-  };
+  salaryMin?: number;
+  salaryMax?: number;
+  currency: string;
   description: string;
   requirements: string[];
-  responsibilities: string[];
-  benefits?: string[];
+  benefits: string[];
   keywords: string[];
-  embedding?: number[];
-  applicationUrl?: string;
-  postedAt: Date;
+  source: JobSource;
+  sourceUrl?: string;
+  applyUrl?: string;
+  status: string;
+  postedAt?: Date;
   expiresAt?: Date;
-  isActive: boolean;
+  data: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
 }
 
 // ============================================================
-// Application Types
+// Application
 // ============================================================
 
-export enum ApplicationStatus {
-  SAVED = 'SAVED',
-  APPLIED = 'APPLIED',
-  SCREENING = 'SCREENING',
-  INTERVIEW = 'INTERVIEW',
-  OFFER = 'OFFER',
-  REJECTED = 'REJECTED',
-  WITHDRAWN = 'WITHDRAWN',
-}
-
-export interface ApplicationTimelineEvent {
-  date: Date;
+export interface TimelineEntry {
   status: ApplicationStatus;
+  timestamp: Date;
   note?: string;
 }
 
@@ -187,46 +184,22 @@ export interface Application {
   id: string;
   userId: string;
   jobListingId?: string;
-  jobTitle: string;
+  resumeId?: string;
   company: string;
-  companyLogo?: string;
+  position: string;
   status: ApplicationStatus;
   appliedAt?: Date;
+  timeline: TimelineEntry[];
+  coverLetterUrl?: string;
   notes?: string;
-  coverLetterS3Key?: string;
-  resumeId?: string;
-  interviewDate?: Date;
-  offerDetails?: {
-    salary: number;
-    currency: string;
-    startDate: Date;
-    bonuses?: string[];
-  };
-  timeline: ApplicationTimelineEvent[];
+  data: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
 }
 
 // ============================================================
-// Mock Interview Types
+// Mock Interview
 // ============================================================
-
-export enum InterviewType {
-  TECHNICAL = 'TECHNICAL',
-  BEHAVIORAL = 'BEHAVIORAL',
-  SYSTEM_DESIGN = 'SYSTEM_DESIGN',
-  CASE_STUDY = 'CASE_STUDY',
-  CULTURE_FIT = 'CULTURE_FIT',
-  LEETCODE = 'LEETCODE',
-  MIXED = 'MIXED',
-}
-
-export enum InterviewStatus {
-  SCHEDULED = 'SCHEDULED',
-  IN_PROGRESS = 'IN_PROGRESS',
-  COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED',
-}
 
 export interface InterviewQuestion {
   id: string;
@@ -244,39 +217,30 @@ export interface InterviewAnswer {
   answeredAt: Date;
 }
 
-export interface InterviewScore {
-  overall: number;
-  clarity: number;
-  depth: number;
-  relevance: number;
-  confidence: number;
-  categoryScores: Record<string, number>;
-  strengths: string[];
-  improvements: string[];
-  aiFeedback: string;
-}
-
 export interface MockInterview {
   id: string;
+  applicationId?: string;
   userId: string;
   type: InterviewType;
   status: InterviewStatus;
-  targetRole?: string;
   questions: InterviewQuestion[];
   answers: InterviewAnswer[];
-  scores?: InterviewScore;
-  transcript?: string;
+  scores: Record<string, number>;
+  feedback?: string;
+  transcript: unknown[];
+  duration?: number;
   startedAt?: Date;
   completedAt?: Date;
+  data: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
 }
 
 // ============================================================
-// Skill Gap Analysis Types
+// Skill Gap Analysis
 // ============================================================
 
-export enum GapSeverity {
+export enum SkillGapSeverity {
   CRITICAL = 'CRITICAL',
   HIGH = 'HIGH',
   MEDIUM = 'MEDIUM',
@@ -284,53 +248,55 @@ export enum GapSeverity {
 }
 
 export enum GapType {
-  TECHNICAL_SKILL = 'TECHNICAL_SKILL',
-  SOFT_SKILL = 'SOFT_SKILL',
-  CERTIFICATION = 'CERTIFICATION',
-  EXPERIENCE = 'EXPERIENCE',
-  TOOL = 'TOOL',
+  MISSING = 'MISSING',
+  WEAK = 'WEAK',
+  STALE = 'STALE',
 }
 
 export interface SkillGap {
-  skillName: string;
+  skill: string;
   gapType: GapType;
-  severity: GapSeverity;
-  currentLevel: string;
-  requiredLevel: string;
-  description: string;
-  learningResources?: {
-    title: string;
-    url: string;
-    type: 'course' | 'article' | 'video' | 'book' | 'project';
-    duration?: string;
-    cost?: 'free' | 'paid';
-  }[];
+  severity: SkillGapSeverity;
+  currentLevel?: string;
+  requiredLevel?: string;
+  description?: string;
+  gapPercent: number;
+  learningResources?: LearningResource[];
   estimatedTimeToAcquire?: string;
+}
+
+export interface LearningResource {
+  title: string;
+  url: string;
+  type: 'course' | 'article' | 'video' | 'book' | 'project';
+  duration?: string;
+  cost?: 'free' | 'paid';
+}
+
+export interface RoadmapStep {
+  title: string;
+  duration: string;
+  resources: string[];
+  completed?: boolean;
 }
 
 export interface SkillGapAnalysis {
   id: string;
   userId: string;
   targetRole: string;
+  currentSkills: string[];
   gaps: SkillGap[];
-  overallScore: number;
+  recommendations: string[];
+  roadmap: RoadmapStep[];
+  priorityScore?: number;
+  data: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
 }
 
 // ============================================================
-// Notification Types
+// Notification
 // ============================================================
-
-export enum NotificationType {
-  APPLICATION_UPDATE = 'APPLICATION_UPDATE',
-  INTERVIEW_REMINDER = 'INTERVIEW_REMINDER',
-  SKILL_GAP_ALERT = 'SKILL_GAP_ALERT',
-  RESUME_FEEDBACK = 'RESUME_FEEDBACK',
-  JOB_RECOMMENDATION = 'JOB_RECOMMENDATION',
-  ONBOARDING = 'ONBOARDING',
-  SYSTEM = 'SYSTEM',
-}
 
 export interface Notification {
   id: string;
@@ -338,86 +304,46 @@ export interface Notification {
   type: NotificationType;
   title: string;
   message: string;
-  payload?: Record<string, unknown>;
+  payload: Record<string, unknown>;
   isRead: boolean;
+  data: Record<string, unknown>;
   createdAt: Date;
 }
 
 // ============================================================
-// Analytics Types
+// Analytics
 // ============================================================
 
 export interface AnalyticsEvent {
   id: string;
   userId: string;
-  eventName: string;
+  eventType: string;
   eventData: Record<string, unknown>;
   sessionId?: string;
-  ipAddress?: string;
-  userAgent?: string;
   createdAt: Date;
 }
 
 // ============================================================
-// PPS Score Types
-// ============================================================
-
-export interface PPSScore {
-  overall: number;
-  technicalSkills: number;
-  softSkills: number;
-  experience: number;
-  education: number;
-  marketAlignment: number;
-  breakdown: {
-    component: string;
-    score: number;
-    maxScore: number;
-  }[];
-  calculatedAt: Date;
-}
-
-// ============================================================
-// Onboarding Types
-// ============================================================
-
-export interface OnboardingProgress {
-  currentStep: number;
-  totalSteps: number;
-  completedSteps: string[];
-  profileCompleteness: number;
-  resumeUploaded: boolean;
-  targetRolesSelected: boolean;
-}
-
-export interface OnboardingData {
-  email: string;
-  password?: string;
-  googleToken?: string;
-  profile?: Partial<Profile>;
-  targetRoles?: string[];
-  resumeData?: ParsedResumeData;
-  preferredWorkType?: ('remote' | 'hybrid' | 'onsite')[];
-  salaryExpectation?: { min: number; max: number; currency: string };
-}
-
-// ============================================================
-// API Response Envelopes
+// API Response Wrappers
 // ============================================================
 
 export interface ApiResponse<T = unknown> {
-  success: boolean;
   data?: T;
-  error?: {
-    code: string;
-    message: string;
-    details?: Record<string, unknown>;
+  error?: ApiError;
+  meta?: {
+    page?: number;
+    limit?: number;
+    total?: number;
   };
-  timestamp: string;
+}
+
+export interface ApiError {
+  statusCode: number;
+  message: string;
+  error: string;
 }
 
 export interface PaginatedResponse<T = unknown> {
-  success: boolean;
   data: T[];
   pagination: {
     page: number;
@@ -427,12 +353,28 @@ export interface PaginatedResponse<T = unknown> {
     hasNext: boolean;
     hasPrev: boolean;
   };
-  timestamp: string;
 }
 
-export interface PaginatedQuery {
-  page?: number;
-  pageSize?: number;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+// ============================================================
+// Dashboard
+// ============================================================
+
+export interface DashboardStats {
+  totalApplications: number;
+  activeApplications: number;
+  interviewsScheduled: number;
+  offersReceived: number;
+  avgResponseRate: number;
+  ppsScore: number;
+}
+
+export interface WeeklyActivity {
+  date: string;
+  count: number;
+}
+
+export interface Milestone {
+  name: string;
+  achieved: boolean;
+  date?: Date;
 }

@@ -1,8 +1,8 @@
 import os
 from typing import Literal
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage
+from langchain_anthropic import ChatAnthropic
 from langgraph.graph import StateGraph, END
 
 from src.state.agent_state import AgentState
@@ -25,20 +25,33 @@ def _classify_intent(input_text: str) -> str:
     ])
     chain = prompt | llm
     result = chain.invoke({"input": input_text})
-    return result.content.strip().upper()
+    content = result.content if hasattr(result, "content") else str(result)
+    return content.strip().upper()
 
 
 def router_node(state: AgentState) -> dict:
     """Classify user intent from the input message."""
     messages = state.get("messages", [])
     if not messages:
-        return {"intent": "GENERAL"}
+        return {"intent": "GENERAL", "agent": "synthesize"}
 
     last_message = messages[-1]
     content = last_message if isinstance(last_message, str) else getattr(last_message, "content", str(last_message))
 
     intent = _classify_intent(content)
-    return {"intent": intent}
+
+    intent_map = {
+        "PROFILE": "profile_agent",
+        "RESUME": "resume_agent",
+        "INTERVIEW": "interview_agent",
+        "APPLICATION": "application_agent",
+        "SKILL_GAP": "skill_gap_agent",
+        "SCORING": "scoring_agent",
+        "RESEARCH": "synthesize",
+    }
+    agent = intent_map.get(intent, "synthesize")
+
+    return {"intent": intent, "agent": agent}
 
 
 def route_based_on_intent(state: AgentState) -> Literal[
@@ -52,80 +65,70 @@ def route_based_on_intent(state: AgentState) -> Literal[
     "synthesize",
 ]:
     """Route to the appropriate agent based on classified intent."""
-    intent_map = {
-        "PROFILE": "profile_agent",
-        "RESUME": "resume_agent",
-        "INTERVIEW": "interview_agent",
-        "APPLICATION": "application_agent",
-        "SKILL_GAP": "skill_gap_agent",
-        "SCORING": "scoring_agent",
-        "RESEARCH": "synthesize",
-        "GENERAL": "synthesize",
-    }
-    return intent_map.get(state.get("intent", "GENERAL"), "synthesize")
+    return state.get("agent", "synthesize")
+
+
+def _call_agent_sync(create_fn, content: str) -> str:
+    """Call an agent synchronously (blocking). For use within async context."""
+    agent = create_fn()
+    result = agent.invoke({"input": content})
+    return result.content if hasattr(result, "content") else str(result)
 
 
 def profile_node(state: AgentState) -> dict:
-    agent = _create_profile_agent()
     messages = state.get("messages", [])
     last_message = messages[-1] if messages else ""
-    content = last_message if isinstance(last_message, str) else getattr(last_message, "content", "")
-    result = agent.invoke({"input": content})
-    return {"agent_results": {**state.get("agent_results", {}), "profile": result.content}}
+    content = last_message if isinstance(last_message, str) else getattr(last_message, "content", str(last_message))
+    result = _call_agent_sync(_create_profile_agent, content)
+    return {"agent_results": {**state.get("agent_results", {}), "profile": result}}
 
 
 def scoring_node(state: AgentState) -> dict:
-    agent = _create_scoring_agent()
     messages = state.get("messages", [])
     last_message = messages[-1] if messages else ""
-    content = last_message if isinstance(last_message, str) else getattr(last_message, "content", "")
-    result = agent.invoke({"input": content})
-    return {"agent_results": {**state.get("agent_results", {}), "scoring": result.content}}
+    content = last_message if isinstance(last_message, str) else getattr(last_message, "content", str(last_message))
+    result = _call_agent_sync(_create_scoring_agent, content)
+    return {"agent_results": {**state.get("agent_results", {}), "scoring": result}}
 
 
 def resume_node(state: AgentState) -> dict:
-    agent = _create_resume_agent()
     messages = state.get("messages", [])
     last_message = messages[-1] if messages else ""
-    content = last_message if isinstance(last_message, str) else getattr(last_message, "content", "")
-    result = agent.invoke({"input": content})
-    return {"agent_results": {**state.get("agent_results", {}), "resume": result.content}}
+    content = last_message if isinstance(last_message, str) else getattr(last_message, "content", str(last_message))
+    result = _call_agent_sync(_create_resume_agent, content)
+    return {"agent_results": {**state.get("agent_results", {}), "resume": result}}
 
 
 def interview_node(state: AgentState) -> dict:
-    agent = _create_interview_agent()
     messages = state.get("messages", [])
     last_message = messages[-1] if messages else ""
-    content = last_message if isinstance(last_message, str) else getattr(last_message, "content", "")
-    result = agent.invoke({"input": content})
-    return {"agent_results": {**state.get("agent_results", {}), "interview": result.content}}
+    content = last_message if isinstance(last_message, str) else getattr(last_message, "content", str(last_message))
+    result = _call_agent_sync(_create_interview_agent, content)
+    return {"agent_results": {**state.get("agent_results", {}), "interview": result}}
 
 
 def skill_gap_node(state: AgentState) -> dict:
-    agent = _create_skill_gap_agent()
     messages = state.get("messages", [])
     last_message = messages[-1] if messages else ""
-    content = last_message if isinstance(last_message, str) else getattr(last_message, "content", "")
-    result = agent.invoke({"input": content})
-    return {"agent_results": {**state.get("agent_results", {}), "skill_gap": result.content}}
+    content = last_message if isinstance(last_message, str) else getattr(last_message, "content", str(last_message))
+    result = _call_agent_sync(_create_skill_gap_agent, content)
+    return {"agent_results": {**state.get("agent_results", {}), "skill_gap": result}}
 
 
 def application_node(state: AgentState) -> dict:
-    agent = _create_application_agent()
     messages = state.get("messages", [])
     last_message = messages[-1] if messages else ""
-    content = last_message if isinstance(last_message, str) else getattr(last_message, "content", "")
-    result = agent.invoke({"input": content})
-    return {"agent_results": {**state.get("agent_results", {}), "application": result.content}}
+    content = last_message if isinstance(last_message, str) else getattr(last_message, "content", str(last_message))
+    result = _call_agent_sync(_create_application_agent, content)
+    return {"agent_results": {**state.get("agent_results", {}), "application": result}}
 
 
 def tracking_node(state: AgentState) -> dict:
-    agent = _create_tracking_agent()
     messages = state.get("messages", [])
     last_message = messages[-1] if messages else ""
-    content = last_message if isinstance(last_message, str) else getattr(last_message, "content", "")
-    result = agent.invoke({"input": content})
-    return {"agent_results": {**state.get("agent_results", {}), "tracking": result.content}}
+    content = last_message if isinstance(last_message, str) else getattr(last_message, "content", str(last_message))
+    result = _call_agent_sync(_create_tracking_agent, content)
+    return {"agent_results": {**state.get("agent_results", {}), "tracking": result}}
 
 
 def synthesize_node(state: AgentState) -> dict:
@@ -137,6 +140,8 @@ def synthesize_node(state: AgentState) -> dict:
             "summary": summary,
             "next_actions": ["PROFILE", "RESUME", "INTERVIEW", "APPLICATION"],
             "results": {},
+            "intent": state.get("intent", "GENERAL"),
+            "agent": "synthesize",
         }
 
     summary_parts = []
@@ -160,6 +165,8 @@ def synthesize_node(state: AgentState) -> dict:
         "summary": summary,
         "next_actions": list(next_actions),
         "results": results,
+        "intent": state.get("intent", "GENERAL"),
+        "agent": "synthesize",
     }
 
 

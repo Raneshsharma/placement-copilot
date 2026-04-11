@@ -6,18 +6,13 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { interviewApi } from "@/lib/api";
 import { toast } from "sonner";
 import {
-  Mic,
-  Video,
   Brain,
   Code,
   Users,
-  ChevronRight,
   Calendar,
   Star,
   Clock,
@@ -26,7 +21,7 @@ import {
 
 const INTERVIEW_TYPES = [
   {
-    id: "behavioral",
+    id: "BEHAVIORAL",
     icon: Users,
     title: "Behavioral",
     description: "STAR-method questions about your past experiences and soft skills",
@@ -37,7 +32,7 @@ const INTERVIEW_TYPES = [
     prompt: "Focus on teamwork, leadership, conflict resolution, and growth mindset",
   },
   {
-    id: "technical",
+    id: "TECHNICAL",
     icon: Code,
     title: "Technical",
     description: "Coding challenges and system design problems relevant to your target role",
@@ -48,7 +43,7 @@ const INTERVIEW_TYPES = [
     prompt: "Algorithms, data structures, and practical coding scenarios",
   },
   {
-    id: "mixed",
+    id: "MIXED",
     icon: Brain,
     title: "Mixed",
     description: "Combination of behavioral and technical questions for comprehensive practice",
@@ -60,16 +55,18 @@ const INTERVIEW_TYPES = [
   },
 ];
 
-const PAST_SESSIONS = [
-  { id: "s1", type: "Behavioral", role: "Product Manager", company: "Stripe", score: 78, date: "2026-04-05", duration: 18 },
-  { id: "s2", type: "Technical", role: "Software Engineer", company: "Google", score: 65, date: "2026-04-02", duration: 42 },
-  { id: "s3", type: "Mixed", role: "Frontend Engineer", company: "Meta", score: 82, date: "2026-03-28", duration: 28 },
-];
-
-const UPCOMING = [
-  { id: "u1", type: "Technical", role: "Backend Engineer", company: "Stripe", date: "April 12, 2026", ready: false },
-  { id: "u2", type: "Behavioral", role: "Product Manager", company: "Google", date: "April 15, 2026", ready: true },
-];
+interface Session {
+  id: string;
+  type: string;
+  status: string;
+  score?: number;
+  completedAt?: string;
+  startedAt?: string;
+  answers?: Array<{ questionId: string; score?: number }>;
+  duration?: number;
+  role?: string;
+  company?: string;
+}
 
 function ScoreRing({ score, size = 48 }: { score: number; size?: number }) {
   const r = size / 2 - 4;
@@ -93,9 +90,18 @@ function ScoreRing({ score, size = 48 }: { score: number; size?: number }) {
   );
 }
 
+function formatDate(dateStr?: string) {
+  if (!dateStr) return "";
+  try {
+    return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  } catch {
+    return dateStr;
+  }
+}
+
 export default function InterviewPage() {
   const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [sessions, setSessions] = useState<typeof PAST_SESSIONS>([]);
+  const [sessions, setSessions] = useState<Session[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
   const [startingSession, setStartingSession] = useState<string | null>(null);
   const router = useRouter();
@@ -103,31 +109,28 @@ export default function InterviewPage() {
   useEffect(() => {
     interviewApi.getSessions()
       .then((res) => {
-        const data = res.data.data ?? res.data ?? [];
-        const completed = Array.isArray(data)
-          ? data.filter((s: any) => s.status === "COMPLETED" || s.status === "completed")
-          : [];
-        setSessions(completed.length > 0 ? completed : PAST_SESSIONS);
+        const data = res.data?.data ?? res.data ?? [];
+        setSessions(Array.isArray(data) ? data : []);
       })
       .catch(() => {
-        setSessions(PAST_SESSIONS);
+        toast.error("Failed to load sessions");
       })
       .finally(() => setLoadingSessions(false));
   }, []);
+
+  const upcoming = sessions.filter(s => s.status === "PENDING" || s.status === "ACTIVE");
+  const past = sessions.filter(s => s.status === "COMPLETED");
 
   const handleStartInterview = async (type: string) => {
     setStartingSession(type);
     try {
       const res = await interviewApi.startSession(type);
-      const sessionId = res.data.data?.id ?? res.data.id;
+      const sessionId = res.data?.data?.id ?? res.data?.id;
       if (sessionId) {
         router.push(`/interview/${sessionId}`);
-      } else {
-        router.push(`/interview/new?type=${type}`);
       }
     } catch {
       toast.error("Failed to start interview session.");
-      router.push(`/interview/new?type=${type}`);
     } finally {
       setStartingSession(null);
     }
@@ -142,26 +145,26 @@ export default function InterviewPage() {
       </div>
 
       {/* Upcoming Interviews */}
-      {UPCOMING.length > 0 && (
+      {upcoming.length > 0 && (
         <div>
           <h2 className="text-base font-semibold text-[#1A1A2E] mb-3">Upcoming Interviews</h2>
           <div className="space-y-3">
-            {UPCOMING.map((u) => (
+            {upcoming.map((u) => (
               <Card key={u.id} className="p-4 flex items-center gap-4">
                 <div className="w-10 h-10 rounded-lg bg-[#0D7377]/10 flex items-center justify-center text-[#0D7377] font-bold text-sm flex-shrink-0">
-                  {u.company[0]}
+                  {(u.company || u.type || "I")[0].toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-[#1A1A2E]">{u.role} at {u.company}</p>
+                  <p className="font-semibold text-[#1A1A2E]">{u.type} Interview</p>
                   <p className="text-xs text-[#5C5C6D] flex items-center gap-1">
-                    <Calendar className="w-3 h-3" /> {u.date}
+                    <Calendar className="w-3 h-3" /> {formatDate(u.startedAt)}
                   </p>
                 </div>
-                <Badge className={u.ready ? "bg-[#22C55E]/10 text-[#22C55E]" : "bg-[#F59E0B]/10 text-[#F59E0B]"}>
-                  {u.ready ? "Ready" : "Prep Needed"}
+                <Badge className="bg-[#F59E0B]/10 text-[#F59E0B]">
+                  Upcoming
                 </Badge>
-                <Link href="/interview">
-                  <Button size="sm" variant="accent">{u.ready ? "Start" : "Prep"}</Button>
+                <Link href={`/interview/${u.id}`}>
+                  <Button size="sm" variant="accent">Resume</Button>
                 </Link>
               </Card>
             ))}
@@ -224,23 +227,29 @@ export default function InterviewPage() {
                 <Skeleton className="w-24 h-8 rounded" />
               </Card>
             ))
-          ) : sessions.length === 0 ? (
+          ) : past.length === 0 ? (
             <Card className="p-6 text-center text-[#5C5C6D]">
               <p className="text-sm">No past sessions yet. Start your first interview above!</p>
             </Card>
-          ) : sessions.map((s) => (
+          ) : past.map((s) => (
             <Card key={s.id} className="p-4 flex items-center gap-4">
-              <ScoreRing score={s.score} />
+              {s.score != null ? <ScoreRing score={s.score} /> : (
+                <div className="w-12 h-12 rounded-full bg-[#E8E8E6] flex items-center justify-center">
+                  <Users className="w-5 h-5 text-[#5C5C6D]" />
+                </div>
+              )}
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-[#1A1A2E]">{s.role}</p>
-                <p className="text-sm text-[#5C5C6D]">{s.type} · {s.company} · {s.date}</p>
+                <p className="font-semibold text-[#1A1A2E]">{s.type} Interview</p>
+                <p className="text-sm text-[#5C5C6D]">{formatDate(s.completedAt)}</p>
               </div>
-              <div className="text-right mr-2">
-                <p className="text-xs text-[#5C5C6D]">Duration</p>
-                <p className="text-sm font-medium text-[#1A1A2E]">{s.duration}m</p>
-              </div>
+              {s.duration != null && (
+                <div className="text-right mr-2">
+                  <p className="text-xs text-[#5C5C6D]">Duration</p>
+                  <p className="text-sm font-medium text-[#1A1A2E]">{s.duration}m</p>
+                </div>
+              )}
               <Link href={`/interview/${s.id}`}>
-                <Button size="sm" variant="outline">View Feedback</Button>
+                <Button size="sm" variant="outline">View Report</Button>
               </Link>
             </Card>
           ))}
@@ -253,10 +262,10 @@ export default function InterviewPage() {
           <Star className="w-4 h-4 text-[#FF6B35]" /> Interview Tips
         </h3>
         <ul className="space-y-1.5 text-sm text-[#5C5C6D]">
-          <li>• Start with Behavioral interviews to build confidence before Technical</li>
-          <li>• For STAR questions, use the format: Situation → Task → Action → Result</li>
-          <li>• Review your past sessions tab for patterns in AI feedback</li>
-          <li>• Practice out loud — speaking your answers helps you think clearly</li>
+          <li>Start with Behavioral interviews to build confidence before Technical</li>
+          <li>For STAR questions, use the format: Situation, Task, Action, Result</li>
+          <li>Review your past sessions for patterns in AI feedback</li>
+          <li>Practice out loud - speaking your answers helps you think clearly</li>
         </ul>
       </Card>
     </div>

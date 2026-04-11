@@ -14,10 +14,10 @@ export function FilterChips({ filters, onToggle }: FilterChipsProps) {
         <button
           key={filter.label}
           onClick={() => onToggle(filter.label)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap surface-shift ${
             filter.active
-              ? "bg-[#0D7377] text-white"
-              : "bg-white border border-[#E8E8E6] text-[#5C5C6D] hover:border-[#0D7377]/30"
+              ? "bg-primary text-white shadow-ambient-sm"
+              : "bg-white border border-outline-variant text-on-surface-variant hover:bg-surface-container-low hover:border-primary/30"
           }`}
         >
           {filter.icon}

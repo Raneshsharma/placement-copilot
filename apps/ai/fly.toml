@@ -2,6 +2,7 @@ app = "placement-copilot-ai"
 primary_region = "nrt"
 
 [build]
+dockerfile = "Dockerfile"
 
 [env]
   PORT = "8000"
@@ -15,7 +16,7 @@ primary_region = "nrt"
   min_machines_running = 1
 
 [[vm]]
-  memory = "256mb"
+  memory = "512mb"
   cpu_kind = "shared"
   count = 1
 

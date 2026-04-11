@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Manrope, Noto_Serif } from "next/font/google";
+import { Manrope, Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -9,9 +9,9 @@ const manrope = Manrope({
   display: "swap",
 });
 
-const notoSerif = Noto_Serif({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-noto-serif",
+  variable: "--font-inter",
   display: "swap",
 });
 
@@ -26,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${manrope.variable} ${notoSerif.variable}`}>
+    <html lang="en" className={`${manrope.variable} ${inter.variable}`}>
       <body>
         {children}
         <Toaster />

@@ -5,7 +5,9 @@
     "strict": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "module": "CommonJS",
+    "moduleResolution": "node"
   },
   "include": ["src"],
   "exclude": ["tests", "dist", "node_modules"]

@@ -2,16 +2,17 @@ app = "placement-copilot-api"
 primary_region = "nrt"
 
 [build]
+dockerfile = "Dockerfile"
 
 [deploy]
   release_command = "npx prisma migrate deploy"
 
 [env]
-  PORT = "4000"
+  PORT = "3001"
   NODE_ENV = "production"
 
 [http_service]
-  internal_port = 4000
+  internal_port = 3001
   force_https = true
   auto_stop_machines = true
   auto_start_machines = true
@@ -19,13 +20,13 @@ primary_region = "nrt"
   processes = ["app"]
 
 [[vm]]
-  memory = "256mb"
+  memory = "512mb"
   cpu_kind = "shared"
   count = 1
 
 [[services]]
   protocol = "tcp"
-  internal_port = 4000
+  internal_port = 3001
   auto_start = true
   auto_stop_machines = true
 
