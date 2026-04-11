@@ -547,6 +547,36 @@ function Pricing() {
   );
 }
 
+// ── Final CTA ──
+function FinalCTA() {
+  return (
+    <section className={styles.finalCta}>
+      <div className={styles.finalCtaBg}>
+        <div className={styles.finalCtaGlow} />
+        <div className={styles.finalCtaFloat} />
+        <div className={styles.finalCtaFloat} />
+      </div>
+      <div className={styles.finalCtaDivider}>
+        <div className={styles.dividerLine} />
+        <div className={styles.dividerIcon}>
+          <Sparkles size={14} color="#D97706" />
+        </div>
+        <div className={styles.dividerLine} />
+      </div>
+      <h2 className={styles.finalCtaTitle}>
+        Your next interview starts with one resume.
+      </h2>
+      <p className={styles.finalCtaSubtitle}>
+        Join 10,000+ job seekers who've stopped guessing and started landing callbacks.
+      </p>
+      <Link href="/register" className={styles.finalCtaBtn}>
+        Build your free resume <ArrowRight size={20} />
+      </Link>
+      <p className={styles.finalCtaNote}>No credit card. Takes 6 minutes.</p>
+    </section>
+  );
+}
+
 // ── Page Export ──
 export default function HomePage() {
   return (
@@ -560,6 +590,7 @@ export default function HomePage() {
         <Testimonials />
         <Pricing />
         <FAQ />
+        <FinalCTA />
         {/* more sections will be added by other tasks */}
       </main>
       <Footer />
