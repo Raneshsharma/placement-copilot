@@ -5,7 +5,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   Flame, TrendingUp, Target, Briefcase, MapPin, DollarSign,
-  Calendar, ChevronRight, Sparkles, Zap, CheckCircle2, ArrowRight, X
+  Calendar, ChevronRight, Sparkles, Zap, CheckCircle2, ArrowRight, X,
+  Linkedin, Upload
 } from "lucide-react";
 import { toast } from "sonner";
 import { progressApi, applicationApi, milestonesApi, recommendedJobsApi } from "@/lib/api";
@@ -240,6 +241,52 @@ function RolesSkeleton() {
   );
 }
 
+// --- Profile Setup Banner ---
+function ProfileSetupBanner() {
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const d = localStorage.getItem("dismissedProfileSetupBanner");
+      if (d === "true") setDismissed(true);
+    }
+  }, []);
+
+  const handleDismiss = () => {
+    setDismissed(true);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("dismissedProfileSetupBanner", "true");
+    }
+  };
+
+  if (dismissed) return null;
+
+  return (
+    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-4">
+      <div>
+        <p className="font-semibold text-sm text-amber-900">Your profile is almost ready</p>
+        <p className="text-xs text-amber-800 mt-1">
+          Import your resume or connect LinkedIn to unlock personalized recommendations and AI-powered optimization.
+        </p>
+      </div>
+      <div className="flex gap-2 ml-auto flex-shrink-0">
+        <Link
+          href="/onboarding/entry"
+          className="px-3 py-1.5 bg-amber-600 text-white text-xs font-semibold rounded-md hover:bg-amber-700 transition-colors"
+        >
+          Import Now →
+        </Link>
+        <button
+          onClick={handleDismiss}
+          className="px-3 py-1.5 text-xs text-amber-700 hover:text-amber-900 transition-colors"
+        >
+          Skip
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // --- Main Component ---
 export default function DashboardPage() {
   const { user } = useAuthStore();
@@ -402,12 +449,14 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {[
           { label: "Build Resume", href: "/resume", icon: Briefcase, color: "#f2ca50", desc: "Optimize with AI" },
           { label: "Mock Interview", href: "/interview", icon: Zap, color: "#f2cc00", desc: "Practice now" },
           { label: "Find Roles", href: "/roles", icon: Target, color: "#e9c349", desc: "Match & apply" },
           { label: "Skill Gap", href: "/skills", icon: TrendingUp, color: "#c6c6c6", desc: "Level up" },
+          { label: "LinkedIn Optimizer", href: "/linkedin", icon: Linkedin, color: "#006879", desc: "AI profile analysis" },
+          { label: "Import Profile", href: "/onboarding/entry", icon: Upload, color: "#D97706", desc: "Resume or LinkedIn" },
         ].map((action) => (
           <Link key={action.label} href={action.href}>
             <MotionCard className="p-4 hover:shadow-glow cursor-pointer group border-border">
@@ -420,6 +469,9 @@ export default function DashboardPage() {
           </Link>
         ))}
       </div>
+
+      {/* Profile Setup Banner */}
+      <ProfileSetupBanner />
 
       {/* PPS Card */}
       <motion.div
