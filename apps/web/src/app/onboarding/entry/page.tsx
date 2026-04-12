@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, Linkedin, Check, ArrowRight } from "lucide-react";
+import { Upload, Linkedin, Check, ArrowRight, FileText } from "lucide-react";
 import { resumeApi } from "@/lib/api";
 import styles from "./onboarding-welcome.module.css";
 
@@ -153,6 +153,32 @@ export default function OnboardingEntryPage() {
                 onClick={(e) => { e.stopPropagation(); handleLinkedInStart(); }}
               >
                 Start with LinkedIn
+                <ArrowRight size={16} />
+              </button>
+            </div>
+
+            {/* Build from Scratch Card */}
+            <div
+              className={styles.card}
+              onClick={() => router.push("/resume/builder")}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") router.push("/resume/builder"); }}
+            >
+              <div className={styles.cardIcon}>
+                <FileText size={24} color="#D97706" />
+              </div>
+              <div>
+                <h2 className={styles.cardTitle}>Build from Scratch</h2>
+                <p className={styles.cardDescription}>
+                  No existing resume? Start fresh with our AI-powered builder — we&apos;ll guide you step by step.
+                </p>
+              </div>
+              <button
+                className={styles.cardButton}
+                onClick={(e) => { e.stopPropagation(); router.push("/resume/builder"); }}
+              >
+                Start from Scratch
                 <ArrowRight size={16} />
               </button>
             </div>
