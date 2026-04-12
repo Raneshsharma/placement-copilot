@@ -8,6 +8,10 @@ Placement Copilot AI is a production-ready, full-stack monorepo platform that gu
 
 ## Architecture
 
+For detailed architecture documentation, see:
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System overview, service responsibilities, data flows, auth architecture, database schema, and API gateway details
+- **[API.md](./API.md)** - Complete API endpoint reference with request/response examples
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                     Placement Copilot AI                      │
@@ -17,7 +21,7 @@ Placement Copilot AI is a production-ready, full-stack monorepo platform that gu
 │  │    Web App    │   │   API Server │   │   AI Service │    │
 │  │   (Next.js)   │◄──│   (NestJS)   │◄──│   (FastAPI)  │    │
 │  │  localhost:   │   │  localhost:  │   │  localhost:  │    │
-│  │    3000       │   │    4000      │   │    8000      │    │
+│  │    3000       │   │    3001      │   │    8000      │    │
 │  └──────────────┘   └──────┬───────┘   └──────┬───────┘    │
 │                            │                  │              │
 │                     ┌──────▼──────────────────▼───────┐     │
@@ -37,6 +41,16 @@ Placement Copilot AI is a production-ready, full-stack monorepo platform that gu
 │                                                              │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## Architecture Decision Records
+
+Key technical decisions are documented in [docs/](docs/README.md):
+- ADR-001: Why JWT for Authentication
+- ADR-002: Why Prisma over Other ORMs
+- ADR-003: Why Turborepo
+- ADR-004: Why Next.js App Router
 
 ---
 
@@ -91,9 +105,9 @@ npm run dev
 | Service | URL |
 |---|---|
 | **Web App** | http://localhost:3000 |
-| **API Server** | http://localhost:4000 |
+| **API Server** | http://localhost:3001 |
 | **AI Service** | http://localhost:8000 |
-| **Swagger API Docs** | http://localhost:4000/api |
+| **Swagger API Docs** | http://localhost:3001/api/docs |
 | **AI Health Check** | http://localhost:8000/health |
 
 ### Production with Docker
@@ -174,10 +188,17 @@ placement-copilot/
 │       │   ├── constants/      # Taxonomies, enums, step configs
 │       │   └── utils/          # Formatting, helpers
 │       └── package.json
-├── docker-compose.yml           # PostgreSQL, Redis, ES, Weaviate
-├── turbo.json                   # Turborepo pipeline config
-├── package.json                 # Root workspace manifest
-└── tsconfig.base.json           # Shared TypeScript config
+├── docs/                         # Architecture Decision Records
+│   ├── ADR-001-Why-JWT-for-Auth.md
+│   ├── ADR-002-Why-Prisma-ORM.md
+│   ├── ADR-003-Why-Turborepo.md
+│   └── ADR-004-Why-Next.js-App-Router.md
+├── ARCHITECTURE.md               # System architecture documentation
+├── API.md                        # API endpoint reference
+├── docker-compose.yml            # PostgreSQL, Redis, ES, Weaviate
+├── turbo.json                    # Turborepo pipeline config
+├── package.json                  # Root workspace manifest
+└── tsconfig.base.json            # Shared TypeScript config
 ```
 
 ---

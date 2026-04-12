@@ -1,0 +1,84 @@
+<h2>Which visual direction feels right?</h2>
+<p class="subtitle">These are three very different moods — pick the one that resonates most</p>
+
+<div class="cards">
+  <div class="card" data-choice="confident-professional" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: linear-gradient(135deg, #003178 0%, #006879 100%); padding: 24px; border-radius: 12px;">
+        <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 8px;">
+          <div style="height: 8px; width: 40%; background: #003178; border-radius: 4px; margin-bottom: 12px;"></div>
+          <div style="height: 6px; background: #e5e7eb; border-radius: 3px; margin-bottom: 8px;"></div>
+          <div style="height: 6px; width: 70%; background: #e5e7eb; border-radius: 3px; margin-bottom: 16px;"></div>
+          <div style="height: 40px; background: linear-gradient(90deg, #003178, #006879); border-radius: 6px;"></div>
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: 12px;">
+          <div style="background: rgba(255,255,255,0.2); border-radius: 20px; padding: 4px 12px; color: white; font-size: 11px;">AI Resume</div>
+          <div style="background: rgba(255,255,255,0.2); border-radius: 20px; padding: 4px 12px; color: white; font-size: 11px;">ATS Score</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Confident &amp; Professional</h3>
+      <p>Deep navy (#003178) as hero color, cyan accents, clean editorial feel. Premium and trustworthy — like Bloomberg or Stripe. Strong contrast, refined whitespace.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="warm-energetic" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: linear-gradient(160deg, #fff7ed 0%, #fef3c7 50%, #f0fdf4 100%); padding: 24px; border-radius: 12px;">
+        <div style="background: white; border-radius: 12px; padding: 16px; box-shadow: 0 4px 24px rgba(217,119,6,0.1); margin-bottom: 8px;">
+          <div style="height: 8px; width: 50%; background: linear-gradient(90deg, #d97706, #059669); border-radius: 4px; margin-bottom: 12px;"></div>
+          <div style="height: 6px; background: #f3f4f6; border-radius: 3px; margin-bottom: 8px;"></div>
+          <div style="height: 6px; width: 60%; background: #f3f4f6; border-radius: 3px; margin-bottom: 16px;"></div>
+          <div style="display: flex; gap: 8px;">
+            <div style="flex: 1; height: 32px; background: #fef3c7; border-radius: 6px;"></div>
+            <div style="flex: 1; height: 32px; background: #dcfce7; border-radius: 6px;"></div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 6px; justify-content: center;">
+          <div style="width: 48px; height: 6px; background: #d97706; border-radius: 3px;"></div>
+          <div style="width: 32px; height: 6px; background: #059669; border-radius: 3px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Warm &amp; Energetic</h3>
+      <p>Amber (#D97706) warmth, emerald growth signals, cream backgrounds. Encouraging and motivating — "you're in good hands." Organic shapes, soft shadows, approachable.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="modern-bold" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: #0a0a0f; padding: 24px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+          <div style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444;"></div>
+          <div style="width: 8px; height: 8px; border-radius: 50%; background: #eab308;"></div>
+          <div style="width: 8px; height: 8px; border-radius: 50%; background: #22c55e;"></div>
+        </div>
+        <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 16px; border: 1px solid rgba(255,255,255,0.1);">
+          <div style="height: 6px; width: 30%; background: linear-gradient(90deg, #a855f7, #3b82f6); border-radius: 3px; margin-bottom: 12px;"></div>
+          <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 8px;"></div>
+          <div style="height: 6px; width: 80%; background: rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 16px;"></div>
+          <div style="display: flex; gap: 8px;">
+            <div style="flex: 1; height: 28px; background: linear-gradient(135deg, #a855f7, #6366f1); border-radius: 6px;"></div>
+            <div style="flex: 1; height: 28px; background: rgba(255,255,255,0.08); border-radius: 6px; border: 1px solid rgba(255,255,255,0.15);"></div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 4px; margin-top: 12px; justify-content: center;">
+          <div style="width: 4px; height: 20px; background: #a855f7; border-radius: 2px;"></div>
+          <div style="width: 4px; height: 28px; background: #3b82f6; border-radius: 2px;"></div>
+          <div style="width: 4px; height: 24px; background: #22c55e; border-radius: 2px;"></div>
+          <div style="width: 4px; height: 16px; background: #eab308; border-radius: 2px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Modern &amp; Bold</h3>
+      <p>Dark base (#0a0a0f) with violet and electric blue accents. Dramatic and cutting-edge — like Linear or Vercel. High contrast glow effects, sharp typography, tech-forward.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <p class="label" style="color: #6b7280; font-size: 12px;">Your current brand uses deep navy + cyan. The warm direction shifts toward amber/emerald (onboarding feel). The bold direction is a dramatic departure. Let me know which direction resonates — or if you want a mix of approaches.</p>
+</div>

@@ -4,8 +4,8 @@ import { useEffect } from "react";
 import { Linkedin } from "lucide-react";
 import { useLinkedInOptimizerStore } from "@/stores/linkedin-optimizer-store";
 import LinkedInRail from "@/components/linkedin-optimizer/linkedin-rail";
-import CoachingPanel from "@/components/linkedin-optimizer/coaching-panel";
-import ProfilePreview from "@/components/linkedin-optimizer/profile-preview";
+import { CoachingPanel } from "@/components/linkedin-optimizer/coaching-panel";
+import { ProfilePreview } from "@/components/linkedin-optimizer/profile-preview";
 import styles from "./linkedin-optimizer.module.css";
 
 export default function LinkedInOptimizerPage() {

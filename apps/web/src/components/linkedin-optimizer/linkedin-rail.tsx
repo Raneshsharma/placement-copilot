@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   User,
   Sparkles,
@@ -25,12 +24,13 @@ import {
   Users,
   Zap,
   ChevronDown,
+  type LucideIcon,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import type { RailGroup, OptimizationSection } from "@/types/linkedin-profile";
+import type { RailGroup } from "@/types/linkedin-profile";
 import styles from "@/app/(dashboard)/linkedin/linkedin-optimizer.module.css";
 
-const iconMap: Record<string, React.ComponentType<{ size?: number }>> = {
+const iconMap: Record<string, LucideIcon> = {
   user: User,
   sparkles: Sparkles,
   briefcase: Briefcase,

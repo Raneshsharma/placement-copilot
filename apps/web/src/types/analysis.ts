@@ -9,7 +9,7 @@ export interface AnalysisIssue {
   context: string;       // "Here's what we found: [resume excerpt]"
   reason: string;       // "Here's why it matters: [explanation]"
   action: string;       // "Here's what to do: [suggestion]"
-  resumeSection: string; // Which section of the resume this relates to
+  resumeSection: SectionType; // Which section of the resume this relates to
   resumeSectionId: string; // ID for highlight targeting
   suggestedFix?: string; // AI-suggested rewrite (optional pre-loaded)
   actionChips: ActionChip[];

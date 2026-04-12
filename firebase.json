@@ -1,0 +1,13 @@
+{
+  "hosting": {
+    "source": "apps/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "predeploy": ["npm run build"],
+    "build": ["npm", "run", "build"],
+    "public": ".next"
+  }
+}

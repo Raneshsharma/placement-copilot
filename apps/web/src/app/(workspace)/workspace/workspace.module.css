@@ -8,9 +8,15 @@
 /* Three-panel layout */
 .layout {
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: 240px 1fr 380px;
   min-height: calc(100vh - 80px);
   align-items: start;
+}
+
+@media (max-width: 1279px) {
+  .layout {
+    grid-template-columns: 240px 1fr;
+  }
 }
 
 @media (max-width: 1023px) {
@@ -30,12 +36,10 @@
   min-height: calc(100vh - 80px);
   overflow-y: auto;
   padding: 32px 32px 60px;
-  max-width: 720px;
 }
 
 @media (max-width: 1023px) {
   .center {
-    max-width: none;
     padding: 24px 20px 60px;
   }
 }

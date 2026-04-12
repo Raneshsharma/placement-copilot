@@ -1,12 +1,11 @@
 "use client";
 
-import React from "react";
-import { CheckCircle, Eye, Search, Sparkles, Target } from "lucide-react";
+import { CheckCircle, Eye, Search, Sparkles, Target, type LucideIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { StatusDimension } from "@/types/linkedin-profile";
 import styles from "@/app/(dashboard)/linkedin/linkedin-optimizer.module.css";
 
-const iconMap: Record<string, React.ComponentType<{ size?: number }>> = {
+const iconMap: Record<string, LucideIcon> = {
   "check-circle": CheckCircle,
   eye: Eye,
   search: Search,

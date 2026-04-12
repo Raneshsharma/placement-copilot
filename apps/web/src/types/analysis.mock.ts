@@ -108,7 +108,7 @@ export const MOCK_PROFILE_STRENGTH: ProfileStrength = {
             "Here's why it matters:\nRecruiters scan in under 6 seconds. Weak verbs like 'helped' and 'worked on' make them skip past your achievements. ATS systems also weigh action verbs heavily — strong verbs signal leadership and measurable results.",
           action:
             "Here's what to do:\nReplace 'helped with' with 'led' or 'built'. Replace 'worked on' with 'improved' or 'delivered'. Focus on the impact, not the task. Turn \"Helped with building microservices\" into \"Led design and implementation of microservices architecture handling 10K+ requests/day.\"",
-          resumeSection: "Experience",
+          resumeSection: "experience",
           resumeSectionId: "exp-1",
           actionChips: [
             { label: "Suggest stronger verbs", action: "suggest-verbs", icon: "Wand2" },
@@ -126,7 +126,7 @@ export const MOCK_PROFILE_STRENGTH: ProfileStrength = {
             "Here's why it matters:\nNumbers and metrics make achievements concrete and believable. A resume with quantified results is 40% more likely to get a callback. ATS tools also flag quantified achievements as high-quality content.",
           action:
             "Here's what to do:\nAdd specific numbers to your achievements. Instead of \"improved API response times\", try \"reduced API response time by 45% (from 800ms to 440ms)\". The more specific, the better.",
-          resumeSection: "Experience",
+          resumeSection: "experience",
           resumeSectionId: "exp-1",
           actionChips: [
             { label: "Add impact metrics", action: "add-metrics", icon: "TrendingUp" },
@@ -164,7 +164,7 @@ export const MOCK_PROFILE_STRENGTH: ProfileStrength = {
             "Here's why it matters:\nRecruiters read top-to-bottom. Your most impressive achievements should appear first in each section — they often stop reading after the first few bullets.",
           action:
             "Here's what to do:\nReorder your bullets in each role so the strongest achievements come first. Use the 'PAR' method: Problem → Action → Result.",
-          resumeSection: "Experience",
+          resumeSection: "experience",
           resumeSectionId: "exp-1",
           actionChips: [
             { label: "Optimize order", action: "optimize-order", icon: "ArrowUpDown" },
@@ -202,7 +202,7 @@ export const MOCK_PROFILE_STRENGTH: ProfileStrength = {
             "Here's why it matters:\nA generic summary doesn't differentiate you from hundreds of other candidates. Recruiters spend an average of 6 seconds on a resume — your summary needs to make an immediate, specific impression.",
           action:
             "Here's what to do:\nAdd specifics about what you build, the scale you've worked at, and the types of problems you solve. E.g., \"Backend engineer specializing in high-throughput APIs and distributed systems. 4 years building payment infrastructure processing $2M+ daily.\"",
-          resumeSection: "Summary",
+          resumeSection: "summary",
           resumeSectionId: "summary",
           actionChips: [
             { label: "Rewrite with AI", action: "rewrite", icon: "Sparkles" },
@@ -260,7 +260,7 @@ export const MOCK_PROFILE_STRENGTH: ProfileStrength = {
             "Here's why it matters:\nATS systems scan for keyword matches against the job description. Missing industry terms can get you filtered out before a human ever sees your resume.",
           action:
             "Here's what to do:\nAdd a skills section or adjust existing descriptions to include these terms naturally. E.g., \"Designed microservices\" is better than just \"worked on microservices.\"",
-          resumeSection: "Skills",
+          resumeSection: "skills",
           resumeSectionId: "skills",
           actionChips: [
             { label: "Optimize keywords", action: "optimize-keywords", icon: "Search" },
@@ -289,7 +289,7 @@ export const MOCK_PROFILE_STRENGTH: ProfileStrength = {
             "Here's why it matters:\nRecruiters and ATS systems use your headline as a primary signal. A generic headline makes it harder to match against specific roles and reduces callback rates.",
           action:
             "Here's what to do:\nBe more specific. \"Software Engineer\" → \"Senior Backend Engineer specializing in distributed systems and API design\"",
-          resumeSection: "Summary",
+          resumeSection: "summary",
           resumeSectionId: "summary",
           actionChips: [
             { label: "Tailor headline", action: "tailor-headline", icon: "Target" },

@@ -34,7 +34,7 @@ export function ResumePreview({
   if (!isVisible) return null;
 
   return (
-    <aside className={styles.previewPanel} aria-label="Resume preview">
+    <aside className={cn(styles.previewPanel, isVisible && styles.isVisible)} aria-label="Resume preview">
       {/* Toolbar */}
       <div className={styles.toolbar}>
         <div className={styles.toolbarTitle}>Resume Preview</div>

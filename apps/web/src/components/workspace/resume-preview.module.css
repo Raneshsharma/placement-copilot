@@ -1,17 +1,23 @@
 .previewPanel {
-  position: sticky;
-  top: 80px;
-  height: calc(100vh - 80px);
+  min-height: calc(100vh - 80px);
   overflow-y: auto;
   border-left: 1px solid var(--ws-border);
   background: var(--ws-surface);
-  width: 360px;
-  flex-shrink: 0;
 }
 
 @media (max-width: 1279px) {
   .previewPanel {
     display: none;
+  }
+  .previewPanel.is-visible {
+    display: block;
+    position: fixed;
+    right: 0;
+    top: 80px;
+    width: 400px;
+    height: calc(100vh - 80px);
+    z-index: 50;
+    box-shadow: -8px 0 32px rgba(0,0,0,0.08);
   }
 }
 
