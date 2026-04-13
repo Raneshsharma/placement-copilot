@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { X, Send } from "lucide-react";
 import { useInterviewStore } from "@/stores/interview-store";
-import styles from "../../interview.module.css";
+import styles from "../interview.module.css";
 
 function getScoreClass(score: number): string {
   if (score >= 80) return styles.scoreHigh;

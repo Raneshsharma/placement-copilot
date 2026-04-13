@@ -70,7 +70,7 @@ export default function SetupPage() {
         analyser.fftSize = 256;
 
         const dataArray = new Uint8Array(analyser.frequencyBinCount);
-        function updateLevel() {
+        const updateLevel = () => {
           if (!analyser) return;
           analyser.getByteFrequencyData(dataArray);
           const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
