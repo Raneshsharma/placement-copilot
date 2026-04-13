@@ -24,7 +24,8 @@ interface InterviewCardProps {
 function InterviewCard({ entry, onStart, isFeatured }: InterviewCardProps) {
   const color = getCompanyColor(entry.company);
   const catMeta = CATEGORY_META[entry.category];
-  const diffMeta = DIFFICULTY_META[entry.difficulties[0]];
+  const defaultDifficulty = entry.difficulties[0] ?? 'Amateur';
+  const diffMeta = DIFFICULTY_META[defaultDifficulty];
 
   return (
     <div className={`${styles.interviewCard} ${isFeatured ? styles.interviewCardFeatured : ''}`}>
@@ -90,7 +91,8 @@ export default function InterviewPage() {
   const recentPast = pastSessions.slice(-5).reverse();
 
   const handleStart = (entry: CatalogEntry) => {
-    selectInterview(entry, entry.difficulties[0]);
+    const difficulty = entry.difficulties[0] ?? 'Amateur';
+    selectInterview(entry, difficulty);
     router.push('/interview/setup');
   };
 
@@ -182,7 +184,7 @@ export default function InterviewPage() {
                   </div>
                 )}
                 <div style={{ fontSize: '10px', color: '#a8a29e', marginTop: '4px' }}>
-                  {new Date(session.completedAt!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  {session.completedAt ? new Date(session.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A'}
                 </div>
               </div>
             ))}
