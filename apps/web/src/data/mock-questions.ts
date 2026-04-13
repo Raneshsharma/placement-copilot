@@ -13,6 +13,7 @@ const TECHNICAL_QUESTIONS: Question[] = [
   { id: 't2', text: 'Explain the difference between SQL and NoSQL databases. When would you choose one over the other?', type: 'Technical', difficulty: 'Amateur' },
   { id: 't3', text: 'Walk me through how you would scale a chat application to support 10 million concurrent users.', type: 'Technical', difficulty: 'Expert' },
   { id: 't4', text: 'Describe your approach to debugging a production issue at 2am. What steps would you take first?', type: 'Technical', difficulty: 'Expert' },
+  { id: 't5', text: 'Design a real-time collaborative document editor like Google Docs. What architecture decisions would you make for conflict resolution and consistency?', type: 'Technical', difficulty: 'Expert' },
 ];
 
 const CASE_STUDY_QUESTIONS: Question[] = [
@@ -40,12 +41,17 @@ export function getMockQuestions(type: InterviewType, count: number): Question[]
     case 'Mixed': pool = MIXED_QUESTIONS; break;
     default: pool = BEHAVIORAL_QUESTIONS;
   }
+  if (count > pool.length) {
+    console.warn(`getMockQuestions: requested ${count} questions but pool only has ${pool.length}. Returning ${pool.length}.`);
+  }
   const shuffled = [...pool].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, count).map((q, i) => ({ ...q, id: `${q.id}-${Date.now()}-${i}` }));
 }
 
 export function getMockFollowUp(answerText: string): string | null {
-  if (answerText.length < 30) return 'Could you add more detail? Specifically, what was the outcome or measurable impact?';
-  if (!answerText.includes('I ') && !answerText.includes('we ')) return 'Can you walk me through the specific actions you took in that situation?';
+  const MAX_ANSWER_LENGTH = 10000;
+  const truncated = answerText.slice(0, MAX_ANSWER_LENGTH);
+  if (truncated.length < 30) return 'Could you add more detail? Specifically, what was the outcome or measurable impact?';
+  if (!truncated.includes('I ') && !truncated.includes('we ')) return 'Can you walk me through the specific actions you took in that situation?';
   return null;
 }
