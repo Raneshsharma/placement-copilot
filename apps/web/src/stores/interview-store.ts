@@ -69,6 +69,23 @@ function computeOverall(dimensions: DimensionScores): number {
   return Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
 }
 
+// ── Session finalization helper ───────────────────────────────────────────────
+
+function finalizeSession(session: InterviewSession): Partial<InterviewSession> {
+  const overall = mockScore();
+  const dimensions = mockDimensionScores(overall);
+  const final = computeOverall(dimensions);
+  return {
+    status: 'COMPLETED' as SessionStatus,
+    completedAt: new Date().toISOString(),
+    overallScore: final,
+    dimensionScores: dimensions,
+    durationMinutes: Math.round(
+      (Date.now() - new Date(session.startedAt).getTime()) / 60000
+    ),
+  };
+}
+
 // ── Store ─────────────────────────────────────────────────────────────────────
 
 export const useInterviewStore = create<InterviewState>()(
@@ -91,7 +108,10 @@ export const useInterviewStore = create<InterviewState>()(
 
       startSession: () => {
         const { selectedEntry, selectedDifficulty, sessions } = get();
-        if (!selectedEntry) return;
+        if (!selectedEntry) {
+          console.warn('startSession: no selectedEntry');
+          return;
+        }
 
         const questions = getMockQuestions(selectedEntry.interviewType, selectedEntry.questionCount);
         const session: InterviewSession = {
@@ -124,9 +144,16 @@ export const useInterviewStore = create<InterviewState>()(
 
       submitAnswer: () => {
         const { activeSession, currentQuestionIndex, answerText } = get();
-        if (!activeSession) return;
+        if (!activeSession) {
+          console.warn('submitAnswer: no activeSession');
+          return;
+        }
 
         const question = activeSession.questions[currentQuestionIndex];
+        if (!question) {
+          console.warn('submitAnswer: no question at current index');
+          return;
+        }
         const answerTextTrimmed = answerText.trim();
         const wordCount = answerTextTrimmed ? answerTextTrimmed.split(/\s+/).length : 0;
         const score = mockScore();
@@ -180,19 +207,10 @@ export const useInterviewStore = create<InterviewState>()(
           });
         } else {
           // End of interview
-          const overall = mockScore();
-          const dimensions = mockDimensionScores(overall);
-          const final = computeOverall(dimensions);
           set({
             activeSession: {
               ...updatedSession,
-              status: 'COMPLETED',
-              completedAt: new Date().toISOString(),
-              overallScore: final,
-              dimensionScores: dimensions,
-              durationMinutes: Math.round(
-                (Date.now() - new Date(activeSession.startedAt).getTime()) / 60000
-              ),
+              ...finalizeSession(updatedSession),
             },
             aiStatus: 'idle',
           });
@@ -201,22 +219,15 @@ export const useInterviewStore = create<InterviewState>()(
 
       endSession: () => {
         const { activeSession } = get();
-        if (!activeSession) return;
-
-        const overall = mockScore();
-        const dimensions = mockDimensionScores(overall);
-        const final = computeOverall(dimensions);
+        if (!activeSession) {
+          console.warn('endSession: no activeSession');
+          return;
+        }
 
         set({
           activeSession: {
             ...activeSession,
-            status: 'COMPLETED',
-            completedAt: new Date().toISOString(),
-            overallScore: final,
-            dimensionScores: dimensions,
-            durationMinutes: Math.round(
-              (Date.now() - new Date(activeSession.startedAt).getTime()) / 60000
-            ),
+            ...finalizeSession(activeSession),
           },
           aiStatus: 'idle',
         });
