@@ -1,6 +1,6 @@
 "use client";
 import { ArrowLeft, Archive, Trash2, Plus, Lightbulb } from "lucide-react";
-import type { Application } from '@/types/application';
+import type { Application, AppStatus } from '@/types/application';
 import { EmailTimeline } from "./email-timeline";
 import styles from "@/app/(dashboard)/applications/applications.module.css";
 import { useApplicationsStore } from '@/stores/applications-store';
@@ -174,7 +174,7 @@ export function ApplicationDrawer({ app, onClose, onAddNote }: ApplicationDrawer
           <button
             className={styles.drawerActionBtn}
             onClick={() => {
-              const statuses = ['WISHLIST', 'APPLIED', 'SUBMITTED', 'UNDER_REVIEW', 'SHORTLISTED', 'INTERVIEW', 'OFFER', 'REJECTED', 'ARCHIVED'];
+              const statuses: AppStatus[] = ['WISHLIST', 'APPLIED', 'SUBMITTED', 'UNDER_REVIEW', 'SHORTLISTED', 'INTERVIEW', 'OFFER', 'REJECTED', 'ARCHIVED'];
               const next = statuses[Math.min(statuses.indexOf(app.status) + 1, statuses.length - 1)];
               moveApplication(app.id, next);
             }}

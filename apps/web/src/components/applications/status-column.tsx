@@ -2,30 +2,21 @@
 
 import { ApplicationCard } from "./application-card";
 import { Plus } from "lucide-react";
+import type { Application } from "@/types/application";
 
 interface StatusColumnProps {
   id: string;
   label: string;
   color: string;
-  apps: Array<{
-    id: string;
-    company: string;
-    logo?: string;
-    role: string;
-    location?: string;
-    salary?: string;
-    appliedAt: string;
-    match?: number;
-    notes?: string;
-    interviewDate?: string;
-  }>;
+  apps: Application[];
   isDragOver?: boolean;
   onDrop?: () => void;
   onAdd?: () => void;
   onCardClick?: (id: string) => void;
+  onMenuAction?: (action: string, id: string) => void;
 }
 
-export function StatusColumn({ id, label, color, apps, isDragOver, onDrop, onAdd, onCardClick }: StatusColumnProps) {
+export function StatusColumn({ id, label, color, apps, isDragOver, onDrop, onAdd, onCardClick, onMenuAction }: StatusColumnProps) {
   return (
     <div
       className={`flex-shrink-0 w-72 rounded-xl p-3 transition-all ${
@@ -52,7 +43,12 @@ export function StatusColumn({ id, label, color, apps, isDragOver, onDrop, onAdd
 
       <div className="space-y-2 min-h-[100px]">
         {apps.map((app) => (
-          <ApplicationCard key={app.id} {...app} onClick={() => onCardClick?.(app.id)} />
+          <ApplicationCard
+            key={app.id}
+            app={app}
+            onClick={(id) => onCardClick?.(id)}
+            onMenuAction={(action, appId) => onMenuAction?.(action, appId)}
+          />
         ))}
         {apps.length === 0 && (
           <div className="h-24 border-2 border-dashed border-border rounded-lg flex items-center justify-center">
