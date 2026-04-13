@@ -35,7 +35,6 @@ export default function SetupPage() {
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const [micLevel, setMicLevel] = useState(0);
-  const [stream, setStream] = useState<MediaStream | null>(null);
   const [step, setStep] = useState<'summary' | 'permissions'>('summary');
   const [cameraError, setCameraError] = useState(false);
 
@@ -53,9 +52,9 @@ export default function SetupPage() {
     let animId: number;
 
     async function initMedia() {
+      let mediaStream: MediaStream | null = null;
       try {
-        const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        setStream(mediaStream);
+        mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         setCameraPermission(true);
         setMicPermission(true);
 
@@ -90,10 +89,9 @@ export default function SetupPage() {
 
     return () => {
       cancelAnimationFrame(animId);
-      if (stream) stream.getTracks().forEach(t => t.stop());
       if (audioCtx) audioCtx.close();
     };
-  }, [step, setCameraPermission, setMicPermission, stream]);
+  }, [step, setCameraPermission, setMicPermission]);
 
   if (!selectedEntry) return null;
 
@@ -249,7 +247,7 @@ export default function SetupPage() {
             </div>
 
             {/* Permission errors */}
-            {!cameraPermissionGranted && !cameraError && (
+            {!cameraPermissionGranted && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#fef3c7', border: '1px solid #fde68a', borderRadius: '8px', fontSize: '12px', color: '#92400e', marginBottom: '12px' }}>
                 <AlertCircle size={14} />
                 <span>Camera access is needed for the full experience. Enable in browser settings.</span>
@@ -269,7 +267,7 @@ export default function SetupPage() {
               >
                 <Camera size={14} /> Begin Interview
               </button>
-              <button className={styles.skipBtn} onClick={handleBegin}>
+              <button className={styles.skipBtn} onClick={handleBegin} disabled={!cameraPermissionGranted && !micPermissionGranted}>
                 Continue without camera
               </button>
               <button
