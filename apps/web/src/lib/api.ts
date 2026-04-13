@@ -212,21 +212,6 @@ export const applicationApi = {
   getStats: () => apiClient.get("/api/applications/stats"),
 };
 
-export const interviewApi = {
-  getTypes: () => apiClient.get("/api/interviews/types"),
-  getSessions: () => apiClient.get("/api/interviews"),
-  start: (type: string, params?: Record<string, unknown>) =>
-    apiClient.post("/api/interviews/sessions", { type, ...params }),
-  getById: (id: string) => apiClient.get(`/api/interviews/sessions/${id}`),
-  submitAnswer: (sessionId: string, questionId: string, answer: string) =>
-    apiClient.post(`/api/interviews/sessions/${sessionId}/answers`, { questionId, answer }),
-  startSession: (type: string, params?: Record<string, unknown>) =>
-    apiClient.post("/api/interviews/sessions", { type, ...params }),
-  getSession: (id: string) => apiClient.get(`/api/interviews/sessions/${id}`),
-  endSession: (id: string) => apiClient.post(`/api/interviews/sessions/${id}/end`),
-  getReport: (id: string) => apiClient.get(`/api/interviews/sessions/${id}/report`),
-};
-
 export const skillApi = {
   get: () => apiClient.get("/api/skills"),
 };
