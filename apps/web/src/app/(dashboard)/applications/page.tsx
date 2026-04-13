@@ -1,83 +1,227 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { KanbanBoard } from "@/components/applications/kanban-board";
-import { useApplicationStore } from "@/stores/application-store";
-import { applicationApi } from "@/lib/api";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect, useState } from "react";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { Plus } from "lucide-react";
-import { AddApplicationModal } from "@/components/applications/add-application-modal";
+import { toast } from "sonner";
+import { useApplicationsStore } from "@/stores/applications-store";
+import { GmailConnectBanner } from "@/components/applications/gmail-connect-banner";
+import { MetricsDashboard } from "@/components/applications/metrics-dashboard";
+import { ApplicationCard } from "@/components/applications/application-card";
+import { ApplicationDrawer } from "@/components/applications/application-drawer";
+import { ReviewQueue, ReviewQueueModal } from "@/components/applications/review-queue";
+import { KANBAN_COLUMNS } from "@/types/application";
+import type { Application, AppStatus } from "@/types/application";
+import styles from "./applications.module.css";
 
 export default function ApplicationsPage() {
-  const { columns, setApplications, isLoading, setLoading } = useApplicationStore();
-  const [showAddModal, setShowAddModal] = useState(false);
+  const {
+    applications,
+    gmailConnection,
+    selectedAppId,
+    drawerOpen,
+    reviewQueue,
+    isSyncing,
+    isLoading,
+    loadMockData,
+    setSelectedApp,
+    setDrawerOpen,
+    moveApplication,
+    acceptReviewQueueApp,
+    dismissReviewQueueApp,
+    addNoteToApp,
+    getStats,
+  } = useApplicationsStore();
+
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [gmailMode, setGmailMode] = useState<'connected' | 'unconnected' | 'manual'>('connected');
+
+  const stats = getStats();
+  const selectedApp = applications.find(a => a.id === selectedAppId) ?? null;
 
   useEffect(() => {
-    setLoading(true);
-    applicationApi.getAll()
-      .then((res) => {
-        const apps = res.data.data ?? res.data ?? [];
-        if (Array.isArray(apps) && apps.length > 0) {
-          setApplications(apps);
-        }
-      })
-      .catch(() => {
-        toast.error("Failed to load applications. Using cached data.");
-      })
-      .finally(() => setLoading(false));
+    loadMockData();
   }, []);
 
-  const totalApps = columns.reduce((sum, col) => sum + col.apps.length, 0);
-  const avgMatch = totalApps > 0
-    ? Math.round(columns.reduce((sum, col) => sum + col.apps.reduce((s, a) => s + (a.match || 0), 0), 0) / totalApps)
-    : 0;
-
-  const responseCount = columns.reduce((sum, col) => {
-    if (["UNDER_REVIEW", "INTERVIEW", "OFFERED"].includes(col.id)) {
-      return sum + col.apps.length;
+  useEffect(() => {
+    if (reviewQueue.length > 0 && !showReviewModal) {
+      setShowReviewModal(true);
     }
-    return sum;
-  }, 0);
-  const responseRate = totalApps > 0 ? Math.round((responseCount / totalApps) * 100) : 0;
+  }, [reviewQueue.length]);
 
-  const handleCardClick = (id: string) => {
-    console.log("Application clicked:", id);
-    toast.info("Detail view coming soon");
+  const handleDragEnd = (result: any) => {
+    const { destination, source, draggableId } = result;
+    if (!destination) return;
+    if (destination.droppableId === source.droppableId && destination.index === source.index) return;
+
+    const newStatus = destination.droppableId as AppStatus;
+    moveApplication(draggableId, newStatus);
+    toast.success(`Moved to ${newStatus.replace('_', ' ')}`);
   };
 
-  return (
-    <div className="p-6 min-h-screen">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-text-primary">Application Tracker</h1>
-          <p className="text-text-secondary mt-1">
-            {totalApps} applications &middot; {avgMatch}% avg match &middot; {responseRate}% response rate
-          </p>
+  const handleCardClick = (id: string) => {
+    setSelectedApp(id);
+  };
+
+  const handleMenuAction = (action: string, id: string) => {
+    toast.info(`Action: ${action} on ${id}`);
+  };
+
+  const handleAddNote = (content: string) => {
+    if (!selectedAppId) return;
+    addNoteToApp(selectedAppId, {
+      id: `note-${Date.now()}`,
+      content,
+      createdAt: new Date().toISOString(),
+    });
+    toast.success("Note added");
+  };
+
+  // Gmail not connected
+  if (gmailMode === 'unconnected') {
+    return (
+      <div className={styles.page}>
+        <div className={styles.pageHeader}>
+          <div className={styles.pageHeaderLeft}>
+            <h1 className={styles.pageTitle}>Application Tracker</h1>
+            <p className={styles.pageSubtitle}>Smart tracking powered by your Gmail inbox</p>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button size="sm" onClick={() => setShowAddModal(true)}>
-            <Plus className="w-4 h-4 mr-1" />Add
-          </Button>
+        <GmailConnectBanner
+          onConnect={() => setGmailMode('connected')}
+          onManualMode={() => setGmailMode('manual')}
+        />
+      </div>
+    );
+  }
+
+  // Loading
+  if (isLoading) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.pageHeader}>
+          <div className={styles.pageHeaderLeft}>
+            <h1 className={styles.pageTitle}>Application Tracker</h1>
+          </div>
+        </div>
+        <div className={styles.loadingState}>
+          <div className={styles.loadingSpinner} />
+          <h3 className={styles.loadingTitle}>Reading your emails...</h3>
+          <p className={styles.loadingText}>Scanning for job applications. This takes a moment.</p>
         </div>
       </div>
+    );
+  }
 
-      {isLoading ? (
-        <div className="flex gap-3 overflow-x-auto pb-6">
-          {Array.from({ length: 7 }).map((_, i) => (
-            <div key={i} className="flex-shrink-0 w-72 rounded-xl p-3 space-y-2">
-              <Skeleton className="h-5 w-24 rounded" />
-              <Skeleton className="h-24 rounded-lg" />
-              <Skeleton className="h-24 rounded-lg" />
-            </div>
-          ))}
+  return (
+    <div className={styles.page}>
+      {/* Page header */}
+      <div className={styles.pageHeader}>
+        <div className={styles.pageHeaderLeft}>
+          <h1 className={styles.pageTitle}>Application Tracker</h1>
+          <p className={styles.pageSubtitle}>Smart tracking powered by your Gmail inbox</p>
         </div>
-      ) : (
-        <KanbanBoard onCardClick={handleCardClick} onAddClick={() => setShowAddModal(true)} />
+        {gmailConnection && (
+          <div className={styles.gmailBadge}>
+            <span>📧</span>
+            {gmailConnection.email}
+            {isSyncing && <div className={styles.syncSpinner} />}
+          </div>
+        )}
+      </div>
+
+      {/* Metrics */}
+      <MetricsDashboard
+        stats={stats}
+        isSyncing={isSyncing}
+        lastSyncedAt={gmailConnection?.lastSyncedAt}
+        onSync={() => toast.info("Sync triggered (mock)")}
+      />
+
+      {/* Review queue banner */}
+      {reviewQueue.length > 0 && !showReviewModal && (
+        <ReviewQueue
+          apps={reviewQueue}
+          onAccept={(id) => acceptReviewQueueApp(id)}
+          onDismiss={(id) => dismissReviewQueueApp(id)}
+        />
       )}
 
-      <AddApplicationModal open={showAddModal} onClose={() => setShowAddModal(false)} />
+      {/* Main content */}
+      <div className={styles.mainContent}>
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <div className={styles.kanbanBoard}>
+            {KANBAN_COLUMNS.map((column) => {
+              const columnApps = applications.filter(a => a.status === column.id);
+              return (
+                <div key={column.id} className={styles.kanbanColumn}>
+                  <div className={styles.kanbanColumnHeader}>
+                    <div className={styles.kanbanColumnDot} style={{ backgroundColor: column.color }} />
+                    <span className={styles.kanbanColumnTitle}>{column.label}</span>
+                    <span className={styles.kanbanColumnCount}>{columnApps.length}</span>
+                    <button className={styles.kanbanColumnAdd} title="Add application">
+                      <Plus size={14} />
+                    </button>
+                  </div>
+
+                  <Droppable droppableId={column.id}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                        className={`${styles.kanbanColumnBody} ${snapshot.isDraggingOver ? styles.columnDragOver : ''}`}
+                      >
+                        {columnApps.length === 0 ? (
+                          <div className={styles.kanbanColumnEmpty}>
+                            <span>Empty</span>
+                          </div>
+                        ) : (
+                          columnApps.map((app, index) => (
+                            <Draggable key={app.id} draggableId={app.id} index={index}>
+                              {(provided) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                >
+                                  <ApplicationCard
+                                    app={app}
+                                    onClick={handleCardClick}
+                                    onMenuAction={handleMenuAction}
+                                  />
+                                </div>
+                              )}
+                            </Draggable>
+                          ))
+                        )}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </div>
+              );
+            })}
+          </div>
+        </DragDropContext>
+      </div>
+
+      {/* Detail drawer */}
+      {drawerOpen && selectedApp && (
+        <ApplicationDrawer
+          app={selectedApp}
+          onClose={() => setDrawerOpen(false)}
+          onAddNote={handleAddNote}
+        />
+      )}
+
+      {/* Review modal */}
+      {showReviewModal && reviewQueue.length > 0 && (
+        <ReviewQueueModal
+          apps={reviewQueue}
+          onAccept={(id) => { acceptReviewQueueApp(id); }}
+          onDismiss={(id) => { dismissReviewQueueApp(id); }}
+        />
+      )}
     </div>
   );
 }
