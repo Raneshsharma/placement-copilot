@@ -26,6 +26,7 @@ export default function SessionPage() {
 
   const [showEndModal, setShowEndModal] = useState(false);
   const [wordCount, setWordCount] = useState(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const transcriptRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -59,6 +60,11 @@ export default function SessionPage() {
     return () => window.removeEventListener('keydown', handler);
   }, [answerText, submitAnswer]);
 
+  useEffect(() => {
+    const id = setInterval(() => setElapsedSeconds(s => s + 1), 1000);
+    return () => clearInterval(id);
+  }, []);
+
   if (!activeSession) {
     return (
       <div style={{ minHeight: '100vh', background: '#1c1917', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
@@ -77,10 +83,10 @@ export default function SessionPage() {
   };
 
   const handleEnd = () => {
+    const sessionId = activeSession?.id;
     endSession();
-    const session = useInterviewStore.getState().activeSession;
-    if (session?.status === 'COMPLETED') {
-      router.push(`/interview/report/${session.id}`);
+    if (sessionId) {
+      router.push(`/interview/report/${sessionId}`);
     } else {
       router.push('/interview');
     }
@@ -98,8 +104,7 @@ export default function SessionPage() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div className={styles.sessionTimer}>
-            {Math.floor((Date.now() - new Date(activeSession.startedAt).getTime()) / 60000)}:
-            {((Date.now() - new Date(activeSession.startedAt).getTime()) / 1000 % 60).toString().padStart(2, '0')}
+            {Math.floor(elapsedSeconds / 60)}:{(elapsedSeconds % 60).toString().padStart(2, '0')}
           </div>
           <button
             onClick={() => setShowEndModal(true)}
