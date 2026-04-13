@@ -17,6 +17,11 @@ build/
 .turbo/
 out/
 
+# Sensitive files (do not commit)
+firebase-service-account.json
+get_token.py
+*.local.env
+
 # Environment and secrets
 .env
 .env.local
