@@ -1,0 +1,350 @@
+/* Gmail Connect Banner */
+.connectBanner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px;
+  text-align: center;
+  background: linear-gradient(135deg, #f8faff 0%, #fff8f0 100%);
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.connectBannerIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.connectTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 12px;
+}
+
+.connectSubtext {
+  font-size: 15px;
+  color: #6b7280;
+  margin: 0 0 24px;
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+.connectCTA {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.connectCTA:hover {
+  background: #f9fafb;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.scanList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 24px;
+  text-align: left;
+}
+
+.scanItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.scanItemCheck {
+  color: #22c55e;
+  flex-shrink: 0;
+}
+
+.scanItemSkip {
+  color: #d1d5db;
+  flex-shrink: 0;
+}
+
+.trustNote {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  font-size: 12px;
+  color: #9ca3af;
+  max-width: 380px;
+  line-height: 1.4;
+}
+
+.trustNoteIcon {
+  flex-shrink: 0;
+  color: #22c55e;
+}
+
+.connectDivider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+  width: 100%;
+  max-width: 400px;
+}
+
+.connectDividerLine {
+  flex: 1;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+.connectDivider span {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.manualCTA {
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.manualCTA:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+  color: #374151;
+}
+
+/* Metrics Dashboard */
+.metricsRow {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+}
+
+.metricCard {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 20px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  min-width: 100px;
+  transition: all 0.2s;
+}
+
+.metricCard:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.metricValue {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a2e;
+  line-height: 1;
+}
+
+.metricLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 6px;
+}
+
+/* Application Card */
+.applicationCard {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.applicationCard:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.applicationCard.isInterview {
+  border-color: #f59e0b;
+  background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%);
+}
+
+.applicationCard.isNeedsReview {
+  border-color: #3b82f6;
+}
+
+.applicationCard.isStale {
+  opacity: 0.7;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cardCompanyLogo {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.cardTitleGroup {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardRole {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardCompany {
+  font-size: 12px;
+  color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardHoverMenu {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  opacity: 0;
+  transition: opacity 0.2s, background 0.2s;
+}
+
+.applicationCard:hover .cardHoverMenu {
+  opacity: 1;
+}
+
+.cardHoverMenu:hover {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.cardBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.cardBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.badgeAIDetected {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.badgeNeedsReview {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.badgeStale {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.badgeEmailCount {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.badgeInterview {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.cardMetaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.cardMetaItem svg {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+}
+
+.cardSnippet {
+  font-size: 11px;
+  color: #9ca3af;
+  line-height: 1.4;
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
