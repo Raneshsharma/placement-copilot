@@ -152,6 +152,9 @@ export const jobApi = {
   list: () => apiClient.get("/api/jobs"),
   getById: (id: string) => apiClient.get(`/api/jobs/${id}`),
   search: (query: string) => apiClient.get("/api/jobs/search", { params: { q: query } }),
+  getSaved: () => apiClient.get("/api/saved-jobs"),
+  save: (jobId: string) => apiClient.post("/api/saved-jobs", { jobId }),
+  unsave: (savedJobId: string) => apiClient.delete(`/api/saved-jobs/${savedJobId}`),
 };
 
 export const applicationApi = {
@@ -159,6 +162,7 @@ export const applicationApi = {
   create: (data: Record<string, unknown>) => apiClient.post("/api/applications", data),
   update: (id: string, data: Record<string, unknown>) => apiClient.patch(`/api/applications/${id}`, data),
   delete: (id: string) => apiClient.delete(`/api/applications/${id}`),
+  getStats: () => apiClient.get("/api/applications/stats"),
 };
 
 export const skillApi = {
