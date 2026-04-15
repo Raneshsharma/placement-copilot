@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://drhbfttubncvlhljqnsy.supabase.co",
-  process.env.SUPABASE_ANON_KEY || ""
-);
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -17,6 +12,20 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Get Supabase keys from environment
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      console.error("Missing Supabase configuration");
+      return NextResponse.json(
+        { statusCode: 500, message: "Server configuration error", error: { message: "Database not configured. Please contact support." } },
+        { status: 500 }
+      );
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Sign in with Supabase Auth
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -39,7 +48,7 @@ export async function POST(request: NextRequest) {
       .from("profiles")
       .select("first_name, last_name")
       .eq("id", data.user.id)
-      .single();
+      .maybeSingle();
 
     if (profile) {
       firstName = profile.first_name || "";
@@ -70,10 +79,10 @@ export async function POST(request: NextRequest) {
 
     return response;
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Login error:", error);
     return NextResponse.json(
-      { statusCode: 500, message: "Internal server error", error: { message: "Login failed. Please try again." } },
+      { statusCode: 500, message: "Internal server error", error: { message: error.message || "Login failed. Please try again." } },
       { status: 500 }
     );
   }

@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-// Create Supabase client for server-side operations
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://drhbfttubncvlhljqnsy.supabase.co",
-  process.env.SUPABASE_ANON_KEY || ""
-);
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -19,7 +13,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json(
@@ -28,7 +21,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate password strength
     if (password.length < 6) {
       return NextResponse.json(
         { statusCode: 400, message: "Password too short", error: { message: "Password must be at least 6 characters" } },
@@ -36,12 +28,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user already exists in profiles table
+    // Get Supabase keys from environment
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      console.error("Missing Supabase configuration");
+      return NextResponse.json(
+        { statusCode: 500, message: "Server configuration error", error: { message: "Database not configured. Please contact support." } },
+        { status: 500 }
+      );
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Check if user already exists
     const { data: existingUser } = await supabase
       .from("profiles")
       .select("id")
       .eq("email", email.toLowerCase())
-      .single();
+      .maybeSingle();
 
     if (existingUser) {
       return NextResponse.json(
@@ -87,7 +93,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Return success response (user needs to verify email unless email_confirm is true)
     return NextResponse.json({
       data: {
         user: authData.user ? {
@@ -101,10 +106,10 @@ export async function POST(request: NextRequest) {
       message: "Registration successful! Please check your email to verify your account.",
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Registration error:", error);
     return NextResponse.json(
-      { statusCode: 500, message: "Internal server error", error: { message: "Registration failed. Please try again." } },
+      { statusCode: 500, message: "Internal server error", error: { message: error.message || "Registration failed. Please try again." } },
       { status: 500 }
     );
   }
