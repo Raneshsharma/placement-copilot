@@ -120,15 +120,32 @@ export const resumeApi = {
   getById: (id: string) => apiClient.get(`/api/resume/${id}`),
   create: (data: Record<string, unknown>) => apiClient.post("/api/resume", data),
   update: (id: string, data: Record<string, unknown>) => apiClient.patch(`/api/resume/${id}`, data),
+  updateById: (id: string, data: Record<string, unknown>) => apiClient.patch(`/api/resume/${id}`, data),
   delete: (id: string) => apiClient.delete(`/api/resume/${id}`),
+  duplicate: (id: string) => apiClient.post(`/api/resume/${id}/duplicate`, {}),
   generateSummary: (data: { prompt: string; currentSummary?: string; resumeData?: unknown }) =>
     apiClient.post("/api/resume/generate-summary", data),
   suggestAchievements: (data: { jobTitle: string; company: string; bullets?: string[]; existingAchievements?: string[] }) =>
     apiClient.post("/api/resume/suggest-achievements", data),
+  matchSkills: (data: { jobTitle: string; experience?: string; skills?: string[] }) =>
+    apiClient.post("/api/resume/match-skills", data),
   getAtsScore: (data: { resumeId?: string; roleId?: string; jobDescription?: string; resumeData?: unknown }) =>
     apiClient.post("/api/resume/ats-score", data),
+  autoOptimize: (data: { resumeId?: string; roleId?: string; resumeData?: unknown; jobDescription?: string }) =>
+    apiClient.post("/api/resume/optimize", data),
   optimize: (data: { resumeId?: string; jobDescription?: string; targetRole?: string; resumeData?: unknown }) =>
     apiClient.post("/api/resume/optimize", data),
+  importPdf: (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return apiClient.post("/api/resume/import-pdf", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+  downloadPdf: () => apiClient.get("/api/resume/pdf", { responseType: "blob" }),
+  downloadPdfById: (id: string) => apiClient.get(`/api/resume/${id}/pdf`, { responseType: "blob" }),
+  downloadDocx: () => apiClient.get("/api/resume/docx", { responseType: "blob" }),
+  downloadDocxById: (id: string) => apiClient.get(`/api/resume/${id}/docx`, { responseType: "blob" }),
 };
 
 export const jobApi = {
