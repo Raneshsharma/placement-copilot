@@ -62,3 +62,4 @@ prisma/migrations/
 .worktrees/
 
 .vercel
+.env*.local
