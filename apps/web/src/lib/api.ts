@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Supabase project reference
-const SUPABASE_PROJECT_REF = "drhbfttubncvlhljqnsy";
+const SUPABASE_PROJECT_REF = "gtzhyxigjtlmhkrebbdw";
 const SUPABASE_URL = `https://${SUPABASE_PROJECT_REF}.supabase.co`;
 const SUPABASE_EDGE_FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`;
 
