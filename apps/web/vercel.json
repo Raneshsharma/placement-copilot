@@ -38,7 +38,11 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://placement-copilot-api.flycast/:path*"
+      "destination": "https://placement-copilot.onrender.com/api/:path*"
     }
-  ]
+  ],
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://placement-copilot.onrender.com",
+    "NEXT_PUBLIC_AI_URL": "https://placement-copilot.onrender.com"
+  }
 }
