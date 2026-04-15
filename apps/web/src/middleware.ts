@@ -5,6 +5,7 @@ import type { NextRequest } from "next/server";
 // Client-side auth is handled in dashboard layout via useEffect with mock user.
 // Vercel deployment protection blocks all redirects to /login.
 export function middleware(request: NextRequest) {
+  // Allow /login through normally — don't redirect to /login from /login
   return NextResponse.next();
 }
 
