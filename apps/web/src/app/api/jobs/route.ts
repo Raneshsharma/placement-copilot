@@ -17,5 +17,6 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q");
   const filtered = q ? MOCK_JOBS.filter((j) => j.role.toLowerCase().includes(q.toLowerCase()) || j.company.toLowerCase().includes(q.toLowerCase())) : MOCK_JOBS;
-  return NextResponse.json({ data: filtered });
+  // Return in `items` format to match roles page expectations
+  return NextResponse.json({ items: filtered, data: filtered });
 }

@@ -50,8 +50,8 @@ export default function LoginPage() {
         const hasProfile = profileRes.data?.data !== null;
         router.push(hasProfile ? "/dashboard" : "/onboarding/entry");
       } catch {
-        // No profile exists — redirect to onboarding
-        router.push("/onboarding/entry");
+        // No profile exists — redirect to dashboard (not onboarding) so dashboard can show a profile prompt
+        router.push("/dashboard");
       }
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { error?: { message?: string }; message?: string }; message?: string }; message?: string };

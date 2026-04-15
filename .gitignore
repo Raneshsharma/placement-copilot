@@ -60,3 +60,5 @@ prisma/migrations/
 
 # Worktrees
 .worktrees/
+
+.vercel

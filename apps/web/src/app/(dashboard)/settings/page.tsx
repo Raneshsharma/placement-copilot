@@ -447,7 +447,7 @@ export default function SettingsPage() {
     setNotifications((prev) => ({ ...prev, [key]: value }));
     setPendingNotif((prev) => ({ ...prev, [key]: true }));
     try {
-      await apiClient.put("/api/users/me/notifications", {
+      await apiClient.put("/api/notifications", {
         ...notifications,
         [key]: value,
       });
@@ -487,14 +487,14 @@ export default function SettingsPage() {
   const handleExportData = async () => {
     setExporting(true);
     try {
-      const res = await apiClient.get("/api/users/me/data-export", {
+      const res = await apiClient.get("/api/export", {
         responseType: "blob",
       });
       const blob = res.data as Blob;
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `placement-copilot-data-export-${new Date().toISOString().split("T")[0]}.json`;
+      a.download = `placement-copilot-export-${new Date().toISOString().split("T")[0]}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -818,7 +818,22 @@ export default function SettingsPage() {
           <Card className="p-6">
             <h2 className="font-semibold text-[#1A1A2E] mb-2">About</h2>
             <p className="text-xs text-[#5C5C6D]">Placement Copilot v1.0.0</p>
-            <p className="text-xs text-[#5C5C6D]">Privacy Policy · Terms of Service</p>
+            <div className="flex gap-4 mt-2">
+              <a
+                href="/privacy"
+                className="text-xs text-[#0D7377] hover:underline"
+                target="_blank"
+              >
+                Privacy Policy
+              </a>
+              <a
+                href="/terms"
+                className="text-xs text-[#0D7377] hover:underline"
+                target="_blank"
+              >
+                Terms of Service
+              </a>
+            </div>
           </Card>
         </TabsContent>
       </Tabs>

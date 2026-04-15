@@ -18,3 +18,12 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ data: { updated: true } });
   }
 }
+
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    return NextResponse.json({ data: { ...body, updated: true } });
+  } catch {
+    return NextResponse.json({ data: { updated: true } });
+  }
+}

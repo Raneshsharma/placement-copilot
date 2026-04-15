@@ -52,10 +52,12 @@ apiClient.interceptors.request.use(
       config.baseURL = `${SUPABASE_EDGE_FUNCTIONS_URL}/resume`;
     } else if (path.startsWith("/api/skills")) {
       config.baseURL = `${SUPABASE_EDGE_FUNCTIONS_URL}/skills`;
-    } else if (path.startsWith("/api/jobs") || path.startsWith("/api/applications")) {
-      config.baseURL = `${SUPABASE_EDGE_FUNCTIONS_URL}/jobs`;
+    } else if (path.startsWith("/api/jobs")) {
+      config.baseURL = ""; // Use local Next.js API route with mock data
+    } else if (path.startsWith("/api/applications")) {
+      config.baseURL = ""; // Use local Next.js API route with mock data
     } else if (path.startsWith("/api/progress") || path.startsWith("/api/notifications")) {
-      config.baseURL = `${SUPABASE_EDGE_FUNCTIONS_URL}/jobs`;
+      config.baseURL = ""; // Use local Next.js API routes with mock data
     }
 
     // Get token from localStorage

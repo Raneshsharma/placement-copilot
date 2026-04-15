@@ -106,6 +106,26 @@ export default function SetupPage() {
     if (activeSession) {
       router.push(`/interview/${activeSession.id}`);
     } else {
+      // No active session — create a text-only session
+      router.push(`/interview`);
+    }
+  };
+
+  const handleContinueWithoutCamera = () => {
+    // Proceed with text-only interview (no camera/mic)
+    startSession();
+    const activeSession = useInterviewStore.getState().activeSession;
+    if (activeSession) {
+      router.push(`/interview/${activeSession.id}`);
+    } else {
+      router.push(`/interview`);
+    }
+  };
+    startSession();
+    const activeSession = useInterviewStore.getState().activeSession;
+    if (activeSession) {
+      router.push(`/interview/${activeSession.id}`);
+    } else {
       router.push('/interview');
     }
   };
@@ -267,7 +287,7 @@ export default function SetupPage() {
               >
                 <Camera size={14} /> Begin Interview
               </button>
-              <button className={styles.skipBtn} onClick={handleBegin} disabled={!cameraPermissionGranted && !micPermissionGranted}>
+              <button className={styles.skipBtn} onClick={handleContinueWithoutCamera}>
                 Continue without camera
               </button>
               <button

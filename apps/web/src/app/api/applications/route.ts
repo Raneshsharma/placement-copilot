@@ -7,7 +7,7 @@ const MOCK_APPLICATIONS = [
 ];
 
 export async function GET() {
-  return NextResponse.json({ data: MOCK_APPLICATIONS });
+  return NextResponse.json({ applications: MOCK_APPLICATIONS, data: MOCK_APPLICATIONS });
 }
 
 export async function POST(request: NextRequest) {
