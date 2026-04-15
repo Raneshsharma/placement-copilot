@@ -149,12 +149,13 @@ export const resumeApi = {
 };
 
 export const jobApi = {
-  list: () => apiClient.get("/api/jobs"),
+  list: (params?: Record<string, unknown>) => apiClient.get("/api/jobs", { params }),
   getById: (id: string) => apiClient.get(`/api/jobs/${id}`),
-  search: (query: string) => apiClient.get("/api/jobs/search", { params: { q: query } }),
+  search: (query: string, params?: Record<string, unknown>) => apiClient.get("/api/jobs/search", { params: { q: query, ...params } }),
   getSaved: () => apiClient.get("/api/saved-jobs"),
   save: (jobId: string) => apiClient.post("/api/saved-jobs", { jobId }),
   unsave: (savedJobId: string) => apiClient.delete(`/api/saved-jobs/${savedJobId}`),
+  recommendations: (params?: Record<string, unknown>) => apiClient.get("/api/jobs/recommendations", { params }),
 };
 
 export const applicationApi = {
