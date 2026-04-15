@@ -1,18 +1,36 @@
 import axios from "axios";
 
+// For server-side API routes (auth, profile, etc.), use relative URLs
+// For external services (AI), use NEXT_PUBLIC_API_URL
+const getBaseURL = (path: string) => {
+  // Auth and internal API routes should use relative URLs (handled by Next.js)
+  if (path.startsWith("/api/auth") || path.startsWith("/api/profile") ||
+      path.startsWith("/api/resume") || path.startsWith("/api/jobs") ||
+      path.startsWith("/api/applications") || path.startsWith("/api/skills") ||
+      path.startsWith("/api/progress") || path.startsWith("/api/notifications") ||
+      path.startsWith("/api/saved") || path.startsWith("/api/milestones")) {
+    return ""; // Use relative URL (Next.js API routes)
+  }
+  // External services use NEXT_PUBLIC_API_URL or NEXT_PUBLIC_AI_URL
+  return process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_AI_URL || "";
+};
+
 const apiClient = axios.create({
-  // Default to relative URLs (Next.js API routes) for standalone dev.
-  // Override with NEXT_PUBLIC_API_URL=http://localhost:3001 for NestJS backend.
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "",
+  baseURL: "",
   headers: { "Content-Type": "application/json" },
   withCredentials: false,
   timeout: 15000,
 });
 
+// Custom request interceptor to set baseURL per request
 apiClient.interceptors.request.use(
   (config) => {
+    // Set baseURL based on the request path
+    if (!config.baseURL || config.baseURL === "") {
+      config.baseURL = getBaseURL(config.url || "");
+    }
+
     if (typeof window !== "undefined") {
-      // Read token from auth-store persisted state (auth-storage key)
       let token: string | null = null;
       try {
         const raw = localStorage.getItem("auth-storage");
@@ -23,7 +41,6 @@ apiClient.interceptors.request.use(
       } catch {
         // ignore
       }
-      // Fallback: also check direct accessToken key (set synchronously by login flow)
       if (!token) {
         token = localStorage.getItem("accessToken");
       }
@@ -41,7 +58,6 @@ apiClient.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401) {
       if (typeof window !== "undefined") {
-        // Try reading refresh token from auth-storage (Zustand persist)
         let refreshToken: string | null = null;
         try {
           const raw = localStorage.getItem("auth-storage");
@@ -52,16 +68,14 @@ apiClient.interceptors.response.use(
         } catch {
           // ignore
         }
-        // Fallback: also check direct refreshToken key (set synchronously by login)
         if (!refreshToken) {
           refreshToken = localStorage.getItem("refreshToken");
         }
         if (refreshToken && !error.config._retry) {
           error.config._retry = true;
           try {
-            const res = await apiClient.post("/api/auth/refresh", { refreshToken });
+            const res = await axios.post("/api/auth/refresh", { refreshToken });
             const { accessToken: newToken, refreshToken: newRefreshToken } = res.data?.data ?? res.data;
-            // Update auth-storage (Zustand persist key)
             try {
               const raw = localStorage.getItem("auth-storage");
               if (raw) {
@@ -193,7 +207,7 @@ export const resumeApi = {
   downloadDocxById: (id: string) => apiClient.get(`/api/resumes/${id}/docx`, { responseType: "blob" }),
   downloadTxt: (id: string) => apiClient.get(`/api/resumes/${id}/txt`, { responseType: "blob" }),
   getVersions: (id: string) => apiClient.get(`/api/resumes/${id}/versions`),
-  restoreVersion: (id: string, versionId: string) => apiClient.post(`/api/resumes/${id}/restore/${versionId}`),
+  restoreVersion: (id: string, versionId: string) => apiClient.post(`/api/resumes/${id}/restore/${versionId}`, {}),
 };
 
 export const jobApi = {
