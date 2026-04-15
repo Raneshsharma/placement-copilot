@@ -160,4 +160,19 @@ export const notificationApi = {
   getAll: () => apiClient.get("/api/notifications"),
 };
 
+export const milestonesApi = {
+  getAll: (params?: Record<string, unknown>) => apiClient.get("/api/milestones", { params }),
+};
+
+export const recommendedJobsApi = {
+  getRecommended: (params?: Record<string, unknown>) =>
+    apiClient.get("/api/jobs/recommendations", { params }),
+};
+
+export const skillGapApi = {
+  analyze: (targetRole: string) =>
+    apiClient.post("/api/skills/analyze", { targetRole }),
+  getRoadmap: (role: string) => apiClient.get(`/api/skills/roadmap/${role}`),
+};
+
 export default apiClient;
