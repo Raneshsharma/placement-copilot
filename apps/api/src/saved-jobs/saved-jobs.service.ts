@@ -15,7 +15,7 @@ export class SavedJobsService {
       where: { id: { in: jobIds } },
     });
     const jobsMap = new Map(jobs.map((j) => [j.id, j]));
-    return saved.map((s) => ({
+    return saved.map((s: { id: string; jobId: string; savedAt: Date }) => ({
       id: s.id,
       jobId: s.jobId,
       savedAt: s.savedAt,
