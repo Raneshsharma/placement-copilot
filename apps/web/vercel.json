@@ -5,44 +5,13 @@
   "framework": "nextjs",
   "headers": [
     {
-      "source": "/api/(.*)",
+      "source": "/(.*)",
       "headers": [
         {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0"
-        },
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Access-Control-Allow-Methods",
-          "value": "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "Content-Type, Authorization"
-        }
-      ]
-    },
-    {
-      "source": "/health",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache"
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
         }
       ]
     }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "https://placement-copilot.onrender.com/api/:path*"
-    }
-  ],
-  "env": {
-    "NEXT_PUBLIC_API_URL": "https://placement-copilot.onrender.com",
-    "NEXT_PUBLIC_AI_URL": "https://placement-copilot.onrender.com"
-  }
+  ]
 }
