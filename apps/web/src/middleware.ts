@@ -8,10 +8,14 @@ export function middleware(request: NextRequest) {
   const isOnboardingEntry = request.nextUrl.pathname === "/onboarding/entry";
   const isOnboardingConfirm = request.nextUrl.pathname === "/onboarding/confirm";
   const isWorkspace = request.nextUrl.pathname === "/workspace";
+  const isDemoLogin = request.nextUrl.pathname.startsWith("/api/auth/demo-login");
 
   // Allow auth pages and onboarding entry through; protected pages require auth token cookie
-  if (!token && !isAuthPage && !isOnboardingEntry && !isOnboardingConfirm && !isWorkspace && request.nextUrl.pathname !== "/") {
-    return NextResponse.redirect(new URL("/login", request.url));
+  if (!token && !isAuthPage && !isOnboardingEntry && !isOnboardingConfirm && !isWorkspace && !isDemoLogin && request.nextUrl.pathname !== "/") {
+    // Redirect to demo login to set cookie server-side, then return to intended page
+    const redirectUrl = new URL("/api/auth/demo-login", request.url);
+    redirectUrl.searchParams.set("redirect", request.nextUrl.pathname);
+    return NextResponse.redirect(redirectUrl);
   }
   return NextResponse.next();
 }

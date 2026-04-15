@@ -17,7 +17,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const pathname = usePathname();
 
-  // Bypass auth for demo - set a mock user
+  // Bypass auth for demo — cookie is now set server-side by /api/auth/demo-login
   useEffect(() => {
     if (!isAuthenticated) {
       const mockUser = {
@@ -27,13 +27,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         lastName: "User",
         role: "USER",
       };
-      const mockToken = "demo-token";
-      login(mockUser, mockToken, "demo-refresh-token");
-      localStorage.setItem("accessToken", mockToken);
-      localStorage.setItem("refreshToken", "demo-refresh-token");
-      localStorage.setItem("user", JSON.stringify(mockUser));
-      // Set cookie for middleware auth check
-      document.cookie = `auth-token=${mockToken}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+      login(mockUser, "demo-token", "demo-refresh-token");
     }
   }, [isAuthenticated, login]);
 
