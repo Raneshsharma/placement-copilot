@@ -112,21 +112,12 @@ export default function SetupPage() {
   };
 
   const handleContinueWithoutCamera = () => {
-    // Proceed with text-only interview (no camera/mic)
     startSession();
     const activeSession = useInterviewStore.getState().activeSession;
     if (activeSession) {
       router.push(`/interview/${activeSession.id}`);
     } else {
       router.push(`/interview`);
-    }
-  };
-    startSession();
-    const activeSession = useInterviewStore.getState().activeSession;
-    if (activeSession) {
-      router.push(`/interview/${activeSession.id}`);
-    } else {
-      router.push('/interview');
     }
   };
 
