@@ -1,0 +1,10 @@
+node_modules
+.git
+.next
+.vercel
+*.log
+.env*.local
+.worktrees
+.superpowers
+.claude/tasks
+.claude/agents
