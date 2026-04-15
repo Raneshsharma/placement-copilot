@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
-// In-memory user store for demo purposes
-const DEMO_USERS: Record<string, { id: string; email: string; firstName: string; lastName: string; role: string; password: string }> = {
-  "demo@placementcopilot.com": { id: "demo-user-id", email: "demo@placementcopilot.com", firstName: "Demo", lastName: "User", role: "USER", password: "Demo1234!" },
-  "alex@example.com": { id: "user-1", email: "alex@example.com", firstName: "Alex", lastName: "Johnson", role: "USER", password: "password123" },
-};
-
-function generateToken(): string {
-  return `token_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-}
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://drhbfttubncvlhljqnsy.supabase.co",
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+);
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,12 +18,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const user = DEMO_USERS[email.toLowerCase()];
-    if (!user || user.password !== password) {
+    // Sign in with Supabase Auth
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
       return NextResponse.json(
-        { statusCode: 401, message: "Invalid credentials", error: { message: "Invalid email or password" } },
+        { statusCode: 401, message: "Invalid credentials", error: { message: error.message } },
         { status: 401 }
       );
+    }
+
+    // Get user profile
+    let firstName = "";
+    let lastName = "";
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("first_name, last_name")
+      .eq("id", data.user.id)
+      .single();
+
+    if (profile) {
+      firstName = profile.first_name || "";
+      lastName = profile.last_name || "";
     }
 
     const accessToken = generateToken();
@@ -35,21 +51,34 @@ export async function POST(request: NextRequest) {
 
     const response = NextResponse.json({
       data: {
-        user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role },
+        user: {
+          id: data.user.id,
+          email: data.user.email,
+          firstName,
+          lastName,
+          role: "USER"
+        },
         accessToken,
         refreshToken,
+        session: data.session,
       },
     });
 
-    response.cookies.set("accessToken", accessToken, { httpOnly: true, secure: false, sameSite: "lax", path: "/", maxAge: 86400 });
-    response.cookies.set("refreshToken", refreshToken, { httpOnly: true, secure: false, sameSite: "lax", path: "/", maxAge: 604800 });
-    response.cookies.set("auth-token", accessToken, { httpOnly: true, secure: false, sameSite: "lax", path: "/", maxAge: 86400 });
+    response.cookies.set("accessToken", accessToken, { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 86400 });
+    response.cookies.set("refreshToken", refreshToken, { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 604800 });
+    response.cookies.set("auth-token", accessToken, { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 86400 });
 
     return response;
-  } catch (err) {
+
+  } catch (error) {
+    console.error("Login error:", error);
     return NextResponse.json(
       { statusCode: 500, message: "Internal server error", error: { message: "Login failed. Please try again." } },
       { status: 500 }
     );
   }
+}
+
+function generateToken(): string {
+  return `token_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 }
