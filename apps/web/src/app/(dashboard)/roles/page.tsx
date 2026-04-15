@@ -142,7 +142,7 @@ export default function RolesPage() {
     jobApi
       .list(params)
       .then((res) => {
-        const items = res.data?.items ?? res.data?.data ?? res.data ?? [];
+        const items = (res.data?.items ?? res.data?.data ?? res.data ?? []) as JobRecord[];
         setJobs(items);
       })
       .catch(() => {
@@ -378,7 +378,7 @@ export default function RolesPage() {
             const logo = job.company?.charAt(0).toUpperCase() ?? "?";
             const salary = formatSalary(job.salaryMin, job.salaryMax);
             const isSaved = savedJobIds.includes(job.id);
-            const skills = (job.keywords ?? []).slice(0, 3);
+            const skills = (Array.isArray(job.keywords) ? job.keywords : []).slice(0, 3);
 
             return (
               <motion.div
@@ -457,7 +457,7 @@ export default function RolesPage() {
             const logo = job.company?.charAt(0).toUpperCase() ?? "?";
             const salary = formatSalary(job.salaryMin, job.salaryMax);
             const isSaved = savedJobIds.includes(job.id);
-            const skills = (job.keywords ?? []).slice(0, 3);
+            const skills = (Array.isArray(job.keywords) ? job.keywords : []).slice(0, 3);
 
             return (
               <motion.div

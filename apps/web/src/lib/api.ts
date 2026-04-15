@@ -21,7 +21,10 @@ apiClient.interceptors.request.use(
           token = parsed?.state?.token ?? parsed?.state?.accessToken ?? null;
         }
       } catch {
-        // fallback: try legacy direct key
+        // ignore
+      }
+      // Fallback: also check direct accessToken key (set synchronously by login flow)
+      if (!token) {
         token = localStorage.getItem("accessToken");
       }
       if (token) {
@@ -47,6 +50,10 @@ apiClient.interceptors.response.use(
             refreshToken = parsed?.state?.refreshToken ?? null;
           }
         } catch {
+          // ignore
+        }
+        // Fallback: also check direct refreshToken key (set synchronously by login)
+        if (!refreshToken) {
           refreshToken = localStorage.getItem("refreshToken");
         }
         if (refreshToken && !error.config._retry) {

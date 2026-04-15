@@ -1484,7 +1484,9 @@ function StepSave({ store, onComplete }: { store: ResumeState; onComplete: () =>
 export default function ResumeBuilderPage() {
   const store = useResumeStore();
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState<StepId>(0);
+  const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+  const fromOnboarding = searchParams.get("from") === "onboarding";
+  const [currentStep, setCurrentStep] = useState<StepId>(fromOnboarding ? 2 : 0);
   const [resumeId] = useState<string | null>(null);
   const { saveStatus } = useAutoSave(store, resumeId, currentStep);
 

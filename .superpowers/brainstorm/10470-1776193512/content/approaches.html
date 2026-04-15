@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head><style>
+body{margin:0;padding:40px;font-family:system-ui;background:#f8f8f8;color:#333;}
+.container{max-width:900px;margin:0 auto;}
+h2{font-size:22px;margin-bottom:4px;}
+.subtitle{color:#666;margin-bottom:32px;font-size:15px;}
+.approaches{display:flex;flex-direction:column;gap:20px;}
+.approach{border:2px solid #e0e0e0;border-radius:12px;padding:24px;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;}
+.approach:hover{border-color:#999;box-shadow:0 2px 12px rgba(0,0,0,0.08);}
+.approach.selected{border-color:#1a56db;box-shadow:0 0 0 3px rgba(26,86,219,0.15);}
+.approach h3{font-size:18px;margin:0 0 8px;display:flex;align-items:center;gap:10px;}
+.tag{display:inline-block;background:#dbeafe;color:#1e40af;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;}
+.tag.rec{display:inline-block;background:#dcfce7;color:#166534;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;}
+.approach p{color:#555;font-size:14px;line-height:1.6;margin:0 0 12px;}
+.approach ul{margin:0 0 12px;padding-left:18px;color:#555;font-size:14px;line-height:1.7;}
+.approach li{margin-bottom:4px;}
+.tradeoff{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;font-size:13px;color:#92400e;}
+.btn{display:inline-block;margin-top:16px;background:#1a56db;color:#fff;font-weight:600;font-size:15px;padding:12px 28px;border-radius:8px;border:none;cursor:pointer;}
+</style></head>
+<body>
+<div class="container">
+<h2>Three Approaches for Multi-Role Targeting</h2>
+<p class="subtitle">Same goal, different tradeoffs in UX depth and engineering complexity</p>
+
+<div class="approaches">
+<div class="approach" data-choice="a" onclick="toggleSelect(this)">
+<h3>Approach A: Role-Centric Hub <span class="tag">Leanest</span></h3>
+<p>A dedicated "My Roles" hub becomes the central control plane. Each role card shows its overlay summary, linked resume variant, and skill gap score. Everything flows FROM the roles hub to other modules.</p>
+<ul>
+<li>Roles page is the home base — primary role badge, active role indicator</li>
+<li>Resume builder shows role context as a sidebar: "Building for: Business Analyst"</li>
+<li>Apply flow reads active role's overlay automatically; preview in confirmation step</li>
+<li>Interview prompts shown contextually ("Practice BA-specific questions?")</li>
+<li>Skills module: per-role tabs + aggregate sidebar</li>
+<li>Applications: primary + variant model per posting</li>
+</ul>
+<p>Overlay architecture: Separate table (master bullets untouched, overlay stores custom summary + bullet priority map + keywords). LinkedIn enriches master only.</p>
+<div class="tradeoff"><strong>Tradeoff:</strong> Roles hub adds a new top-level concept. Existing single-role users have a new surface area to navigate. Lower engineering complexity — overlays are a new data layer, no schema migrations.</div>
+</div>
+
+<div class="approach" data-choice="b" onclick="toggleSelect(this)">
+<h3>Approach B: Role-Augmented Existing Pages <span class="tag rec">Recommended</span></h3>
+<p>No new hub. Instead, existing pages (resume, roles, apply, interview, skills) are each "role-aware" — they detect the active role and show role-specific context inline. Roles are managed from a compact settings panel or a drawer.</p>
+<ul>
+<li>Roles page becomes richer: grid of role cards with overlay previews inline</li>
+<li>Resume builder: role selector dropdown in the header ("Building for: [BA ▾]")</li>
+<li>Apply flow: same recommended-with-preview as A</li>
+<li>Interview: same contextual prompts as A</li>
+<li>Skills module: same tabs + sidebar as A</li>
+<li>Applications: same primary + variant model as A</li>
+<li>New: "Role Panel" drawer (accessed from any page) — add/edit/swap active role</li>
+</ul>
+<p>Overlay architecture: Same separate table model. Role panel is a global UI element (like a notification drawer) accessible from any page.</p>
+<div class="tradeoff"><strong>Tradeoff:</strong> More complex distributed UX (role context appears in many places). But users never leave their current page to manage roles. Higher engineering complexity — role context needs to flow through more components.</div>
+</div>
+
+<div class="approach" data-choice="c" onclick="toggleSelect(this)">
+<h3>Approach C: Guided Role Journey <span class="tag">Highest engagement potential</span></h3>
+<p>Roles are managed through a structured journey — not just a settings panel. After onboarding, users enter a "Role Targeting Wizard" that walks them through discovery (guided), ranking (primary selection), and overlay customization. After that, it's mostly self-directed.</p>
+<ul>
+<li>First-time flow: Role Targeting Wizard (3 screens: discover → rank → customize overlay)</li>
+<li>Returning users: "My Roles" micro-hub embedded in dashboard</li>
+<li>Resume builder: role context shown as a "story selector" in the builder header</li>
+<li>All other modules: same as Approach B</li>
+<li>New: "Role Story" — a short description of how you position yourself for each role, generated from your overlay and used in interview prep and cover letters</li>
+</ul>
+<p>Overlay architecture: Same separate table model. New "Role Story" text field on each overlay. Story is AI-generatable from overlay data.</p>
+<div class="tradeoff"><strong>Tradeoff:</strong> Highest upside for user engagement (the wizard creates initial investment). But the wizard adds a new flow to onboard. Users who skip the wizard end up in the self-directed mode anyway. Most engineering work.</div>
+</div>
+</div>
+</div>
+<script>
+function toggleSelect(el) {
+  document.querySelectorAll('.approach').forEach(a => a.classList.remove('selected'));
+  el.classList.add('selected');
+}
+</script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, RotateCcw } from "lucide-react";
 import { useInterviewStore } from "@/stores/interview-store";
@@ -17,8 +17,9 @@ function getScoreClass(score: number): string {
   return styles.scoreLow;
 }
 
-function RadarChart({ scores }: {
+function RadarChart({ scores, inView }: {
   scores: { communication: number; structure: number; specificity: number; confidence: number; roleFit: number };
+  inView: boolean;
 }) {
   const axes = [
     { label: 'Communication', value: scores.communication },
@@ -50,7 +51,13 @@ function RadarChart({ scores }: {
   const labelPoints = axes.map((_, i) => polarToXY(i * angleStep - Math.PI / 2, r + 22));
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ overflow: 'visible' }}>
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      style={{ overflow: 'visible' }}
+      className={`${styles.radarAnimated} ${inView ? styles.radarAnimated : ''}`}
+    >
       {gridLines.map((d, i) => (
         <path key={i} d={d} fill="none" stroke="#e7e5e4" strokeWidth="1" />
       ))}
@@ -58,12 +65,35 @@ function RadarChart({ scores }: {
         const p = polarToXY(i * angleStep - Math.PI / 2, r);
         return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="#e7e5e4" strokeWidth="1" />;
       })}
-      <path d={dataPath} fill="rgba(217,119,6,0.15)" stroke="#d97706" strokeWidth="2" />
+      <path
+        d={dataPath}
+        fill="rgba(217,119,6,0.15)"
+        stroke="#d97706"
+        strokeWidth="2"
+        style={{ transition: 'all 0.8s cubic-bezier(0.4,0,0.2,1)', opacity: inView ? 1 : 0 }}
+      />
       {dataPoints.map((p, i) => (
-        <circle key={i} cx={p.x} cy={p.y} r="4" fill="#d97706" />
+        <circle
+          key={i}
+          cx={p.x}
+          cy={p.y}
+          r="4"
+          fill="#d97706"
+          style={{ transition: `all 0.8s cubic-bezier(0.4,0,0.2,1) ${0.1 * i}s`, opacity: inView ? 1 : 0 }}
+        />
       ))}
       {axes.map((axis, i) => (
-        <text key={i} x={labelPoints[i].x} y={labelPoints[i].y} textAnchor="middle" dominantBaseline="middle" fontSize="9" fontWeight="600" fill="#57534e">
+        <text
+          key={i}
+          x={labelPoints[i].x}
+          y={labelPoints[i].y}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fontSize="9"
+          fontWeight="600"
+          fill="#57534e"
+          style={{ transition: `opacity 0.6s ease ${0.3 + 0.05 * i}s`, opacity: inView ? 1 : 0 }}
+        >
           {axis.label}
         </text>
       ))}
@@ -75,10 +105,51 @@ export default function ReportPage() {
   const params = useParams();
   const router = useRouter();
   const { activeSession, sessions, clearActiveSession } = useInterviewStore();
+  const [barsInView, setBarsInView] = useState(false);
+  const [radarInView, setRadarInView] = useState(false);
+  const [showComparison, setShowComparison] = useState(false);
+  const scoreSectionRef = useRef<HTMLDivElement>(null);
+  const radarSectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.target === scoreSectionRef.current && entry.isIntersecting) {
+            setBarsInView(true);
+          }
+          if (entry.target === radarSectionRef.current && entry.isIntersecting) {
+            setRadarInView(true);
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+
+    if (scoreSectionRef.current) observer.observe(scoreSectionRef.current);
+    if (radarSectionRef.current) observer.observe(radarSectionRef.current);
+    return () => observer.disconnect();
+  }, [activeSession, sessions]);
 
   const reportSession = activeSession?.status === 'COMPLETED' && activeSession.id === params.sessionId
     ? activeSession
     : sessions.find(s => s.id === params.sessionId && s.status === 'COMPLETED');
+
+  // Keyboard navigation for comparison toggle
+  const toggleComparison = useCallback(() => {
+    if (sessions.length > 1) setShowComparison(v => !v);
+  }, [sessions.length]);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        toggleComparison();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [toggleComparison]);
 
   if (!reportSession) {
     return (
@@ -135,29 +206,86 @@ export default function ReportPage() {
           </div>
         </div>
 
-        <div className={styles.scoreSection}>
-          <div className={styles.scoreSectionTitle}>Score Breakdown</div>
-          {dimensionsList.map(dim => (
-            <div key={dim.label} className={styles.scoreBarRow}>
-              <div className={styles.scoreBarLabel}>{dim.label}</div>
-              <div className={styles.scoreBarTrack}>
-                <div className={styles.scoreBarFill} style={{ width: `${dim.value}%`, backgroundColor: getScoreColor(dim.value) }} />
-              </div>
-              <div className={styles.scoreBarValue} style={{ color: getScoreColor(dim.value) }}>{dim.value}</div>
+        {/* Before / After toggle */}
+        {sessions.length > 1 && (
+          <div
+            role="group"
+            aria-label="Score comparison toggle — use arrow keys to switch"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '12px 28px 0', gap: '8px' }}
+          >
+            <span style={{ fontSize: '11px', color: '#a8a29e', fontWeight: 500 }}>{showComparison ? 'Before' : 'After'}</span>
+            <div style={{ display: 'flex', background: '#f5f5f0', borderRadius: '20px', padding: '3px', gap: '2px', cursor: 'pointer' }}>
+              <button
+                onClick={() => setShowComparison(false)}
+                style={{
+                  padding: '5px 14px', borderRadius: '16px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 600,
+                  background: !showComparison ? '#d97706' : 'transparent', color: !showComparison ? '#fff' : '#57534e',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                Current
+              </button>
+              <button
+                onClick={() => setShowComparison(true)}
+                style={{
+                  padding: '5px 14px', borderRadius: '16px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 600,
+                  background: showComparison ? '#d97706' : 'transparent', color: showComparison ? '#fff' : '#57534e',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                Compare
+              </button>
             </div>
-          ))}
+          </div>
+        )}
+
+        <div className={styles.scoreSection} ref={scoreSectionRef}>
+          <div className={styles.scoreSectionTitle}>Score Breakdown</div>
+          {dimensionsList.map((dim, idx) => {
+            const displayValue = showComparison ? Math.round(dim.value * 0.85) : dim.value;
+            return (
+              <div key={dim.label} className={styles.scoreBarRow}>
+                <div className={styles.scoreBarLabel}>{dim.label}</div>
+                <div className={styles.scoreBarTrack}>
+                  <div
+                    className={`${styles.animatedBar} ${barsInView ? styles.animatedBarInView : ''}`}
+                    style={{
+                      width: `${dim.value}%`,
+                      backgroundColor: getScoreColor(dim.value),
+                      transitionDelay: `${idx * 0.12}s`,
+                    }}
+                  />
+                  {showComparison && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        height: '100%',
+                        width: `${displayValue}%`,
+                        backgroundColor: getScoreColor(displayValue),
+                        opacity: 0.3,
+                        borderRadius: '3px',
+                      }}
+                    />
+                  )}
+                </div>
+                <div className={styles.scoreBarValue} style={{ color: getScoreColor(dim.value) }}>{dim.value}</div>
+              </div>
+            );
+          })}
         </div>
 
-        <div className={styles.radarSection}>
-          <RadarChart scores={dimensions} />
+        <div className={styles.radarSection} ref={radarSectionRef}>
+          <RadarChart scores={dimensions} inView={radarInView} />
         </div>
 
         <div className={styles.strengthsSection}>
           <div>
             <div className={`${styles.strengthsTitle} ${styles.strengthsGood}`}>✓ What You Did Well</div>
             {strengths.length > 0 ? (
-              <ul className={`${styles.strengthsList} ${styles.strengthsGood}`}>
-                {strengths.map((s, i) => <li key={i}>{s}</li>)}
+              <ul className={styles.strengthsList}>
+                {strengths.map((s, i) => <li key={i} style={{ paddingLeft: '16px', position: 'relative' }}><span style={{ position: 'absolute', left: '0', top: '8px', width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', display: 'block' }} />{s}</li>)}
               </ul>
             ) : (
               <p style={{ fontSize: '13px', color: '#57534e' }}>Keep practicing to identify strengths.</p>
@@ -166,8 +294,8 @@ export default function ReportPage() {
           <div>
             <div className={`${styles.strengthsTitle} ${styles.strengthsImprove}`}>↑ Areas to Improve</div>
             {improvements.length > 0 ? (
-              <ul className={`${styles.strengthsList} ${styles.strengthsImprove}`}>
-                {improvements.map((s, i) => <li key={i}>{s}</li>)}
+              <ul className={styles.strengthsList}>
+                {improvements.map((s, i) => <li key={i} style={{ paddingLeft: '16px', position: 'relative' }}><span style={{ position: 'absolute', left: '0', top: '8px', width: '6px', height: '6px', borderRadius: '50%', background: '#d97706', display: 'block' }} />{s}</li>)}
               </ul>
             ) : (
               <p style={{ fontSize: '13px', color: '#57534e' }}>No critical areas identified. Great job!</p>

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 // In-memory user store for demo purposes
 const DEMO_USERS: Record<string, { id: string; email: string; firstName: string; lastName: string; role: string; password: string }> = {
-  "demo@placementcopilot.com": { id: "demo-user-id", email: "demo@placementcopilot.com", firstName: "Demo", lastName: "User", role: "USER", password: "demo123" },
+  "demo@placementcopilot.com": { id: "demo-user-id", email: "demo@placementcopilot.com", firstName: "Demo", lastName: "User", role: "USER", password: "Demo1234!" },
   "alex@example.com": { id: "user-1", email: "alex@example.com", firstName: "Alex", lastName: "Johnson", role: "USER", password: "password123" },
 };
 

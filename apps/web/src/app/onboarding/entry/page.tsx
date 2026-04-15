@@ -6,7 +6,7 @@ import { Upload, Linkedin, Check, ArrowRight, FileText } from "lucide-react";
 import { resumeApi } from "@/lib/api";
 import styles from "./onboarding-welcome.module.css";
 
-type ScreenState = "choose" | "upload" | "loading" | "success" | "error";
+type ScreenState = "choose" | "upload" | "loading" | "success" | "error" | "coming_soon";
 
 export default function OnboardingEntryPage() {
   const router = useRouter();
@@ -16,20 +16,26 @@ export default function OnboardingEntryPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
 
+  // Open file picker immediately when upload screen is active
+  const openFilePicker = () => fileInputRef.current?.click();
+
   const handleResumeStart = () => {
     setSelectedMethod("resume");
     setScreenState("upload");
+    // Open the file picker immediately
+    setTimeout(openFilePicker, 50);
   };
 
   const handleLinkedInStart = () => {
-    setSelectedMethod("linkedin");
     const clientId = process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID;
-    const redirectUri = `${window.location.origin}/onboarding/linkedin/callback`;
     if (clientId) {
+      setSelectedMethod("linkedin");
+      const redirectUri = `${window.location.origin}/onboarding/linkedin/callback`;
       window.location.href = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=r_liteprofile%20r_emailaddress%20w_member_social`;
     } else {
-      setErrorMessage("LinkedIn connection is being set up. Try uploading your resume instead.");
-      setScreenState("error");
+      // No client ID configured — show a clear "coming soon" state
+      setSelectedMethod("linkedin");
+      setScreenState("coming_soon");
     }
   };
 
@@ -160,10 +166,10 @@ export default function OnboardingEntryPage() {
             {/* Build from Scratch Card */}
             <div
               className={styles.card}
-              onClick={() => router.push("/resume/builder")}
+              onClick={() => router.push("/resume/builder?from=onboarding")}
               role="button"
               tabIndex={0}
-              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") router.push("/resume/builder"); }}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") router.push("/resume/builder?from=onboarding"); }}
             >
               <div className={styles.cardIcon}>
                 <FileText size={24} color="#D97706" />
@@ -176,7 +182,7 @@ export default function OnboardingEntryPage() {
               </div>
               <button
                 className={styles.cardButton}
-                onClick={(e) => { e.stopPropagation(); router.push("/resume/builder"); }}
+                onClick={(e) => { e.stopPropagation(); router.push("/resume/builder?from=onboarding"); }}
               >
                 Start from Scratch
                 <ArrowRight size={16} />
@@ -247,6 +253,40 @@ export default function OnboardingEntryPage() {
                 Try again
               </button>
             )}
+            <button
+              className={styles.skipLink}
+              onClick={handleSkip}
+              aria-label="Skip for now and go to dashboard"
+            >
+              I&apos;ll do this later
+            </button>
+          </div>
+        )}
+
+        {/* State: Coming Soon (LinkedIn not configured) */}
+        {screenState === "coming_soon" && (
+          <div className={styles.comingSoonState}>
+            <div className={styles.comingSoonIcon}>
+              <Linkedin size={28} color="#0077B5" />
+            </div>
+            <p className={styles.comingSoonTitle}>LinkedIn integration is coming soon</p>
+            <p className={styles.comingSoonDescription}>
+              We&apos;re working on connecting your LinkedIn profile. For now, try uploading your resume or building from scratch.
+            </p>
+            <div className={styles.comingSoonActions}>
+              <button
+                className={styles.comingSoonPrimary}
+                onClick={handleResumeStart}
+              >
+                Upload Resume
+              </button>
+              <button
+                className={styles.comingSoonSecondary}
+                onClick={() => router.push("/resume/builder?from=onboarding")}
+              >
+                Build from Scratch
+              </button>
+            </div>
             <button
               className={styles.skipLink}
               onClick={handleSkip}

@@ -104,7 +104,7 @@ export default function SetupPage() {
     startSession();
     const activeSession = useInterviewStore.getState().activeSession;
     if (activeSession) {
-      router.push(`/interview/session/${activeSession.id}`);
+      router.push(`/interview/${activeSession.id}`);
     } else {
       router.push('/interview');
     }

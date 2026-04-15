@@ -314,8 +314,77 @@
   background-color: var(--warm-primary-light);
 }
 
-/* Upload container wrapper */
-.uploadContainer {
+/* Coming soon state (LinkedIn not configured) */
+.comingSoonState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 32px;
+  background: var(--warm-surface);
+  border: 1px solid var(--warm-border);
+  border-radius: 16px;
   width: 100%;
-  max-width: 420px;
+  max-width: 460px;
+  text-align: center;
 }
+.comingSoonIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background-color: #E8F4F8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.comingSoonTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--warm-text-primary);
+  margin: 0;
+}
+.comingSoonDescription {
+  font-size: 14px;
+  color: var(--warm-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+.comingSoonActions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-top: 4px;
+}
+.comingSoonPrimary {
+  background-color: var(--warm-primary);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  flex: 1;
+  transition: background-color 0.2s ease;
+  min-height: 44px;
+}
+.comingSoonPrimary:hover {
+  background-color: var(--warm-primary-hover);
+}
+.comingSoonSecondary {
+  background-color: var(--warm-surface);
+  color: var(--warm-primary);
+  border: 1px solid var(--warm-primary);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  flex: 1;
+  transition: background-color 0.2s ease;
+  min-height: 44px;
+}
+.comingSoonSecondary:hover {
+  background-color: var(--warm-primary-light);
+}
+

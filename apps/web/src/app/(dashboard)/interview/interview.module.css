@@ -809,6 +809,7 @@
   background: var(--warm-border, #e7e5e4);
   border-radius: 3px;
   overflow: hidden;
+  position: relative;
 }
 .scoreBarFill {
   height: 100%;
@@ -848,18 +849,34 @@
 .strengthsGood { color: #22c55e; }
 .strengthsImprove { color: #d97706; }
 .strengthsList { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
-.strengthsList li { font-size: 13px; color: var(--warm-text-secondary, #57534e); line-height: 1.5; padding-left: 16px; position: relative; }
-.strengthsList li::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 8px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
+.strengthsList li { font-size: 13px; color: var(--warm-text-secondary, #57534e); line-height: 1.5; padding-left: 16px; }
+
+/* Animated score bars */
+@keyframes barGrow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
 }
-.strengthsGood li::before { background: #22c55e; }
-.strengthsImprove li::before { background: #d97706; }
+.animatedBar {
+  height: 100%;
+  border-radius: 3px;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.animatedBarInView {
+  animation: barGrow 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Animated radar chart */
+@keyframes radarReveal {
+  0% { opacity: 0; transform: scale(0.7); }
+  60% { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.radarAnimated {
+  animation: radarReveal 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  transform-origin: center;
+  opacity: 0;
+}
 
 /* Question feedback */
 .questionFeedbackSection {

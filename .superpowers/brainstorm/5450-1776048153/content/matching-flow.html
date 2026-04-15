@@ -1,0 +1,112 @@
+<h2>Email → Application Matching Flow</h2>
+<p class="subtitle">How the system connects a new email to the right application card</p>
+
+<div style="display: flex; flex-direction: column; gap: 16px;">
+
+  <!-- Step 1 -->
+  <div style="display: flex; align-items: flex-start; gap: 12px;">
+    <div style="width: 28px; height: 28px; background: #0d7377; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: white; flex-shrink: 0;">1</div>
+    <div style="flex: 1; background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 16px;">
+      <div style="font-size: 13px; font-weight: 600; margin-bottom: 6px;">New email arrives via Gmail sync</div>
+      <div style="font-size: 11px; color: #888;">From: recruiter@accenture.com<br>Subject: Update on your Strategist application</div>
+    </div>
+  </div>
+
+  <!-- Arrow -->
+  <div style="margin-left: 14px; border-left: 2px dashed #ddd; height: 16px;"></div>
+
+  <!-- Step 2 -->
+  <div style="display: flex; align-items: flex-start; gap: 12px;">
+    <div style="width: 28px; height: 28px; background: #0d7377; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: white; flex-shrink: 0;">2</div>
+    <div style="flex: 1; background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 16px;">
+      <div style="font-size: 13px; font-weight: 600; margin-bottom: 6px;">Job Email Filter — Is this job-related?</div>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #22c55e;">
+          <span>✓</span> Has recruiter/company sender domain
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #22c55e;">
+          <span>✓</span> Subject/body contains job keywords
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #22c55e;">
+          <span>✓</span> Not a newsletter or calendar invite
+        </div>
+        <div style="font-size: 11px; color: #22c55e; margin-top: 4px; font-weight: 600;">→ Job email confirmed</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Arrow -->
+  <div style="margin-left: 14px; border-left: 2px dashed #ddd; height: 16px;"></div>
+
+  <!-- Step 3: Matching Passes -->
+  <div style="display: flex; align-items: flex-start; gap: 12px;">
+    <div style="width: 28px; height: 28px; background: #0d7377; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: white; flex-shrink: 0;">3</div>
+    <div style="flex: 1; background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 16px;">
+      <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">3-Pass Matching (in order of confidence)</div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <!-- Pass 1 -->
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 8px 10px;">
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+            <span style="font-size: 10px; background: #22c55e; color: white; padding: 1px 6px; border-radius: 4px; font-weight: 700;">PASS 1</span>
+            <span style="font-size: 11px; font-weight: 600;">Thread ID match</span>
+            <span style="font-size: 10px; color: #22c55e; margin-left: auto; font-weight: 600;">Confidence: 98%</span>
+          </div>
+          <div style="font-size: 10px; color: #555;">Email thread ID matches existing application thread</div>
+          <div style="font-size: 10px; color: #22c55e; font-weight: 600; margin-top: 4px;">→ Direct match: Accenture Strategist ✓</div>
+        </div>
+
+        <!-- Pass 2 -->
+        <div style="background: #f8f9fa; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px 10px; opacity: 0.6;">
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+            <span style="font-size: 10px; background: #94a3b8; color: white; padding: 1px 6px; border-radius: 4px; font-weight: 700;">PASS 2</span>
+            <span style="font-size: 11px; font-weight: 600;">Recruiter domain match</span>
+            <span style="font-size: 10px; color: #888; margin-left: auto;">skip — already matched</span>
+          </div>
+          <div style="font-size: 10px; color: #888;">Domain @accenture.com → existing Accenture applications</div>
+        </div>
+
+        <!-- Pass 3 -->
+        <div style="background: #f8f9fa; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px 10px; opacity: 0.6;">
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+            <span style="font-size: 10px; background: #94a3b8; color: white; padding: 1px 6px; border-radius: 4px; font-weight: 700;">PASS 3</span>
+            <span style="font-size: 11px; font-weight: 600;">Fuzzy company + role match</span>
+            <span style="font-size: 10px; color: #888; margin-left: auto;">skip — already matched</span>
+          </div>
+          <div style="font-size: 10px; color: #888;">"Strategist" + "Accenture" text matching against stored applications</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Arrow -->
+  <div style="margin-left: 14px; border-left: 2px dashed #ddd; height: 16px;"></div>
+
+  <!-- Step 4 -->
+  <div style="display: flex; align-items: flex-start; gap: 12px;">
+    <div style="width: 28px; height: 28px; background: #0d7377; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: white; flex-shrink: 0;">4</div>
+    <div style="flex: 1; background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 16px;">
+      <div style="font-size: 13px; font-weight: 600; margin-bottom: 6px;">Status Detection + Auto-Move</div>
+      <div style="font-size: 11px; color: #555; margin-bottom: 8px;">Email subject: "Update on your Strategist application"</div>
+      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <div style="background: #f8f9fa; border: 1px solid #ddd; border-radius: 6px; padding: 4px 10px; font-size: 11px;">Submitted</div>
+        <span style="color: #0d7377; font-size: 14px;">→</span>
+        <div style="background: #fffbeb; border: 1px solid #f59e0b40; border-radius: 6px; padding: 4px 10px; font-size: 11px; color: #d97706; font-weight: 600;">Interview ← triggered by "invite", "call", "schedule"</div>
+      </div>
+      <div style="font-size: 11px; color: #22c55e; margin-top: 8px; font-weight: 600;">✓ Card auto-moved to Interview. Email added to timeline.</div>
+    </div>
+  </div>
+
+  <!-- Arrow -->
+  <div style="margin-left: 14px; border-left: 2px dashed #ddd; height: 16px;"></div>
+
+  <!-- Step 5 -->
+  <div style="display: flex; align-items: flex-start; gap: 12px;">
+    <div style="width: 28px; height: 28px; background: #0d7377; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: white; flex-shrink: 0;">5</div>
+    <div style="flex: 1; background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 16px;">
+      <div style="font-size: 13px; font-weight: 600; margin-bottom: 6px;">Low-confidence result?</div>
+      <div style="font-size: 11px; color: #888;">If no match above 75% confidence, the email appears in a <strong style="color: #d97706;">Needs Review</strong> queue. User reviews, confirms or corrects the match before any card is created or moved. <strong>Never auto-create on low confidence.</strong></div>
+    </div>
+  </div>
+
+</div>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const DEMO_USERS: Record<string, { id: string; email: string; firstName: string; lastName: string; role: string; password: string }> = {
-  "demo@placementcopilot.com": { id: "demo-user-id", email: "demo@placementcopilot.com", firstName: "Demo", lastName: "User", role: "USER", password: "demo123" },
+  "demo@placementcopilot.com": { id: "demo-user-id", email: "demo@placementcopilot.com", firstName: "Demo", lastName: "User", role: "USER", password: "Demo1234!" },
 };
 
 function generateToken(): string {

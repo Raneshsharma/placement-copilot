@@ -1,0 +1,72 @@
+<h2>Email → Status Classification</h2>
+<p class="subtitle">How the system maps email content to Kanban stages</p>
+
+<div style="display: flex; flex-direction: column; gap: 12px;">
+
+  <div style="display: flex; align-items: center; gap: 12px; background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 16px;">
+    <div style="width: 10px; height: 10px; border-radius: 50%; background: #94a3b8; flex-shrink: 0;"></div>
+    <div style="flex: 1;">
+      <div style="font-size: 13px; font-weight: 600;">Wishlist</div>
+      <div style="font-size: 11px; color: #888;">User-added only — no email triggers this stage</div>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 12px; background: white; border: 1px solid #0d737720; border-radius: 10px; padding: 12px 16px;">
+    <div style="width: 10px; height: 10px; border-radius: 50%; background: #0d7377; flex-shrink: 0;"></div>
+    <div style="flex: 1;">
+      <div style="font-size: 13px; font-weight: 600;">Submitted</div>
+      <div style="font-size: 11px; color: #888;">Keywords: "application received", "received your application", "confirming receipt", "we've received", "application submitted"</div>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 12px; background: white; border: 1px solid #7c6bb220; border-radius: 10px; padding: 12px 16px;">
+    <div style="width: 10px; height: 10px; border-radius: 50%; background: #7c6bb2; flex-shrink: 0;"></div>
+    <div style="flex: 1;">
+      <div style="font-size: 13px; font-weight: 600;">Under Review</div>
+      <div style="font-size: 11px; color: #888;">Keywords: "under review", "reviewing your application", "your profile is being reviewed", "in the hiring process", "moving forward"</div>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 12px; background: white; border: 1px solid #f59e0b30; border-radius: 10px; padding: 12px 16px;">
+    <div style="width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; flex-shrink: 0;"></div>
+    <div style="flex: 1;">
+      <div style="font-size: 13px; font-weight: 600;">Interview</div>
+      <div style="font-size: 11px; color: #888;">Keywords: "interview", "invite you to", "schedule a call", "would like to meet", "technical assessment", "phone screen", "video call"</div>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 12px; background: white; border: 1px solid #22c55e20; border-radius: 10px; padding: 12px 16px;">
+    <div style="width: 10px; height: 10px; border-radius: 50%; background: #22c55e; flex-shrink: 0;"></div>
+    <div style="flex: 1;">
+      <div style="font-size: 13px; font-weight: 600;">Offer</div>
+      <div style="font-size: 11px; color: #888;">Keywords: "offer", "extend an offer", "pleased to offer", "compensation", "start date", "offer letter"</div>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 12px; background: white; border: 1px solid #ef444420; border-radius: 10px; padding: 12px 16px;">
+    <div style="width: 10px; height: 10px; border-radius: 50%; background: #ef4444; flex-shrink: 0;"></div>
+    <div style="flex: 1;">
+      <div style="font-size: 13px; font-weight: 600;">Rejected</div>
+      <div style="font-size: 11px; color: #888;">Keywords: "not moving forward", "decided not to proceed", "going with another candidate", "regret to inform", "unfortunately", "position has been filled"</div>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 12px; background: white; border: 1px solid #9ca3af; border-radius: 10px; padding: 12px 16px;">
+    <div style="width: 10px; height: 10px; border-radius: 50%; background: #9ca3af; flex-shrink: 0;"></div>
+    <div style="flex: 1;">
+      <div style="font-size: 13px; font-weight: 600;">Archived</div>
+      <div style="font-size: 11px; color: #888;">User action only — manually archive old applications</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="section" style="margin-top: 20px;">
+  <h3>Classification Behavior</h3>
+  <ul style="font-size: 12px; color: #555; line-height: 1.8;">
+    <li>Multiple keywords can fire — system picks the <strong>most advanced stage</strong> (Offer > Interview > Under Review > Submitted)</li>
+    <li>Keyword matching is <strong>case-insensitive</strong> and phrase-aware (avoiding false positives like "we are excited" inside a rejection)</li>
+    <li>Email must be matched to an existing application first — <strong>no orphan status changes</strong></li>
+    <li>User can reclassify any auto-detected status via the detail panel</li>
+  </ul>
+</div>
